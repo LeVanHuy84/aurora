@@ -1,0 +1,51 @@
+{
+  "common": {
+    "appName": "Aurora",
+    "tagline": "A little place for your everyday",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "share": "Share",
+    "error": "An error occurred"
+  },
+  "auth": {
+    "login": "Log In",
+    "register": "Sign Up",
+    "email": "Email address",
+    "password": "Password",
+    "username": "Username",
+    "displayName": "Display Name",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithApple": "Continue with Apple",
+    "dontHaveAccount": "Don't have an account? Sign up",
+    "alreadyHaveAccount": "Already have an account? Log in",
+    "logout": "Log Out"
+  },
+  "tabs": {
+    "today": "Today",
+    "memories": "Memories",
+    "create": "Create",
+    "me": "Me"
+  },
+  "moments": {
+    "whatsHappening": "What's happening?",
+    "photo": "Photo",
+    "note": "Note",
+    "mood": "Mood",
+    "howAreYouFeeling": "How are you feeling?",
+    "visibility": "Visibility",
+    "onlyMe": "Only Me",
+    "friends": "Friends",
+    "closeFriends": "Close Friends",
+    "noMomentsToday": "No moments recorded today yet. Tap + to share one!",
+    "onThisDay": "On This Day"
+  },
+  "profile": {
+    "totalMoments": "Moments",
+    "monthlyMoodSummary": "Monthly Mood Summary",
+    "editProfile": "Edit Profile",
+    "bio": "Bio"
+  }
+}

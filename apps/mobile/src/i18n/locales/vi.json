@@ -1,0 +1,51 @@
+{
+  "common": {
+    "appName": "Aurora",
+    "tagline": "Một góc nhỏ cho ngày của bạn",
+    "loading": "Đang tải...",
+    "save": "Lưu lại",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "confirm": "Xác nhận",
+    "share": "Chia sẻ",
+    "error": "Có lỗi xảy ra"
+  },
+  "auth": {
+    "login": "Đăng Nhập",
+    "register": "Đăng Ký",
+    "email": "Địa chỉ Email",
+    "password": "Mật khẩu",
+    "username": "Tên đăng nhập (Username)",
+    "displayName": "Tên hiển thị",
+    "continueWithGoogle": "Tiếp tục với Google",
+    "continueWithApple": "Tiếp tục với Apple",
+    "dontHaveAccount": "Chưa có tài khoản? Đăng ký ngay",
+    "alreadyHaveAccount": "Đã có tài khoản? Đăng nhập",
+    "logout": "Đăng Xuất"
+  },
+  "tabs": {
+    "today": "Hôm nay",
+    "memories": "Kỷ niệm",
+    "create": "Tạo mới",
+    "me": "Tôi"
+  },
+  "moments": {
+    "whatsHappening": "Đang có chuyện gì thế?",
+    "photo": "Ảnh",
+    "note": "Ghi chú",
+    "mood": "Cảm xúc",
+    "howAreYouFeeling": "Bạn đang cảm thấy thế nào?",
+    "visibility": "Quyền xem",
+    "onlyMe": "Chỉ mình tôi",
+    "friends": "Bạn bè",
+    "closeFriends": "Bạn thân",
+    "noMomentsToday": "Hôm nay chưa có khoảnh khắc nào. Chạm + để lưu lại nhé!",
+    "onThisDay": "Ngày này năm xưa"
+  },
+  "profile": {
+    "totalMoments": "Khoảnh khắc",
+    "monthlyMoodSummary": "Tổng quan cảm xúc tháng",
+    "editProfile": "Sửa hồ sơ",
+    "bio": "Tiểu sử"
+  }
+}
