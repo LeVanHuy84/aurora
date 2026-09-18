@@ -26,6 +26,41 @@ export interface UserProfile {
   createdAt: string;
 }
 
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface AuthResponse {
+  user: UserProfile;
+  tokens: AuthTokens;
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface RegisterPayload {
+  email: string;
+  username: string;
+  displayName: string;
+  password: string;
+}
+
+export interface OAuthPayload {
+  idToken: string;
+}
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  statusCode: number;
+  data: T;
+  message?: string;
+  error?: string;
+  timestamp: string;
+}
+
 export interface EmotionItem {
   id: string;
   code: string;
@@ -50,3 +85,4 @@ export interface MomentItem {
   reactionsCount?: number;
   commentsCount?: number;
 }
+

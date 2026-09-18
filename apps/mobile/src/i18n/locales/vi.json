@@ -8,20 +8,60 @@
     "delete": "Xóa",
     "confirm": "Xác nhận",
     "share": "Chia sẻ",
-    "error": "Có lỗi xảy ra"
+    "error": "Có lỗi xảy ra",
+    "or": "hoặc"
+  },
+  "errors": {
+    "networkError": "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại mạng hoặc thử lại sau.",
+    "timeoutError": "Yêu cầu quá thời gian chờ. Vui lòng thử lại.",
+    "serverError": "Máy chủ hiện không phản hồi. Vui lòng thử lại sau ít phút.",
+    "unauthorized": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+    "forbidden": "Bạn không có quyền thực hiện thao tác này.",
+    "notFound": "Không tìm thấy dữ liệu yêu cầu.",
+    "unknownError": "Đã xảy ra sự cố không xác định. Vui lòng thử lại."
   },
   "auth": {
+    "welcomeTitle": "Chào mừng đến với Aurora",
+    "welcomeSubtitle": "Ghi lại, chiêm nghiệm và sẻ chia những khoảnh khắc chân thực với những người thân yêu nhất.",
+    "getStarted": "Bắt đầu ngay",
     "login": "Đăng Nhập",
     "register": "Đăng Ký",
+    "loginTitle": "Chào Mừng Trở Lại",
+    "loginSubtitle": "Đăng nhập để tiếp tục hành trình nhật ký riêng tư",
+    "registerTitle": "Tạo Tài Khoản",
+    "registerSubtitle": "Bắt đầu cuốn nhật ký thường ngày cùng nhóm bạn thân",
     "email": "Địa chỉ Email",
+    "emailPlaceholder": "name@example.com",
     "password": "Mật khẩu",
+    "passwordPlaceholder": "Nhập mật khẩu của bạn",
     "username": "Tên đăng nhập (Username)",
+    "usernamePlaceholder": "vd: huy_aurora",
     "displayName": "Tên hiển thị",
+    "displayNamePlaceholder": "vd: Huy Lê",
     "continueWithGoogle": "Tiếp tục với Google",
     "continueWithApple": "Tiếp tục với Apple",
+    "orContinueWith": "hoặc tiếp tục với",
     "dontHaveAccount": "Chưa có tài khoản? Đăng ký ngay",
     "alreadyHaveAccount": "Đã có tài khoản? Đăng nhập",
-    "logout": "Đăng Xuất"
+    "logout": "Đăng Xuất",
+    "termsNotice": "Bằng việc tiếp tục, bạn đồng ý với Điều khoản dịch vụ & Chính sách quyền riêng tư của Aurora.",
+    "authSuccessTitle": "Đăng Nhập Thành Công",
+    "authSuccessDesc": "Đã đăng nhập tài khoản @{{username}} ({{email}}). Phiên làm việc được lưu an toàn trong SecureStore.",
+    "highlights": {
+      "polaroidMoments": "Khoảnh khắc Polaroid & Kỷ niệm trong ngày",
+      "privateSharing": "Chia sẻ riêng tư 1-1 cùng nhóm Bạn thân",
+      "moodTracking": "Theo dõi cảm xúc mỗi ngày & Chiêm nghiệm tháng"
+    },
+    "errors": {
+      "invalidEmail": "Vui lòng nhập địa chỉ email hợp lệ.",
+      "passwordTooShort": "Mật khẩu phải có ít nhất 6 ký tự.",
+      "usernameRequired": "Vui lòng nhập tên đăng nhập.",
+      "usernameInvalid": "Tên đăng nhập chỉ chứa chữ cái thường, số và dấu gạch dưới.",
+      "displayNameRequired": "Vui lòng nhập tên hiển thị.",
+      "loginFailed": "Email hoặc mật khẩu không chính xác. Vui lòng thử lại.",
+      "registerFailed": "Không thể tạo tài khoản. Vui lòng kiểm tra lại thông tin.",
+      "oauthFailed": "Đăng nhập mạng xã hội thất bại. Vui lòng thử lại."
+    }
   },
   "tabs": {
     "today": "Hôm nay",
