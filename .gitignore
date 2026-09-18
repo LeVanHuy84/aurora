@@ -6,6 +6,8 @@ node_modules/
 # Build outputs & Cache
 dist/
 build/
+coverage/
+*.lcov
 .turbo/
 .cache/
 *.tsbuildinfo
@@ -13,6 +15,7 @@ build/
 # Agent & Prompt Customizations
 .agents/
 docs/prompts/
+.vscode/
 
 # Environment variables & secrets (Security)
 .env

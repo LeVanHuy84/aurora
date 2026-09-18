@@ -1,10 +1,30 @@
 import { Module } from '@nestjs/common';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
+import { PrismaModule } from './common/prisma/prisma.module.js';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor.js';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
+import { AuthModule } from './modules/auth/auth.module.js';
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard.js';
 
 @Module({
-  imports: [],
+  imports: [PrismaModule, AuthModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

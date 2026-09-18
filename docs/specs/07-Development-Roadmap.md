@@ -19,7 +19,7 @@
 ---
 
 ## 🟢 Phase 2: Xây Dựng Backend API MVP Core (`apps/api`)
-- [ ] **Task 2.1:** **Auth Module:** Register, Login, Refresh Token (JWT Access/Refresh Token) & Google/Apple OAuth Strategy.
+- [x] **Task 2.1:** **Auth Module:** Register, Login, Refresh Token (JWT Access/Refresh Token) & Google/Apple OAuth Strategy.
 - [ ] **Task 2.2:** **Users Module:** API Lấy/Cập nhật thông tin cá nhân (`/users/me`), tìm kiếm bạn bè (`/users/search`).
 - [ ] **Task 2.3:** **Media Module (Cloudinary):** Cấp Presigned Signature cho Mobile upload ảnh trực tiếp lên Cloudinary.
 - [ ] **Task 2.4:** **Moments Module (Core Entity):** API Tạo Moment (`PHOTO`, `NOTE`, `MOOD`), Timeline `Today`, Calendar Mood theo tháng.
