@@ -15,7 +15,7 @@ export class MomentsService {
 
   async create(userId: string, dto: CreateMomentDto) {
     if (dto.type === MomentType.PHOTO && !dto.imageUrl) {
-      throw new BadRequestException('Image URL is required for PHOTO moment');
+      throw new BadRequestException('IMAGE_REQUIRED');
     }
 
     if (dto.emotionId) {
@@ -23,7 +23,7 @@ export class MomentsService {
         where: { id: dto.emotionId },
       });
       if (!emotion) {
-        throw new NotFoundException('Emotion not found');
+        throw new NotFoundException('EMOTION_NOT_FOUND');
       }
     }
 
@@ -221,13 +221,13 @@ export class MomentsService {
     });
 
     if (!moment) {
-      throw new NotFoundException('Moment not found');
+      throw new NotFoundException('MOMENT_NOT_FOUND');
     }
 
     if (moment.userId !== userId) {
       // Check visibility permission if not owner
       if (moment.visibility === Visibility.ONLY_ME) {
-        throw new ForbiddenException('You do not have permission to view this moment');
+        throw new ForbiddenException('FORBIDDEN');
       }
     }
 
@@ -240,11 +240,11 @@ export class MomentsService {
     });
 
     if (!moment) {
-      throw new NotFoundException('Moment not found');
+      throw new NotFoundException('MOMENT_NOT_FOUND');
     }
 
     if (moment.userId !== userId) {
-      throw new ForbiddenException('You cannot delete someone else moment');
+      throw new ForbiddenException('FORBIDDEN');
     }
 
     await this.prisma.moment.update({

@@ -25,14 +25,14 @@ export class AuthService {
       where: { email: dto.email, deletedAt: null },
     });
     if (existingEmail) {
-      throw new ConflictException('Email already in use');
+      throw new ConflictException('EMAIL_EXISTS');
     }
 
     const existingUsername = await this.prisma.user.findFirst({
       where: { username: dto.username, deletedAt: null },
     });
     if (existingUsername) {
-      throw new ConflictException('Username already taken');
+      throw new ConflictException('USERNAME_EXISTS');
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
@@ -69,12 +69,12 @@ export class AuthService {
     });
 
     if (!user || !user.password) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException('INVALID_CREDENTIALS');
     }
 
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException('INVALID_CREDENTIALS');
     }
 
     const tokens = await this.generateTokens(user.id, user.email);

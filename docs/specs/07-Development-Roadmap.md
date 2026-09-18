@@ -25,7 +25,7 @@
 - [x] **Task 2.4:** **Moments Module (Core Entity):** API Tạo Moment (`PHOTO`, `NOTE`, `MOOD`), Timeline `Today`, Calendar Mood theo tháng.
 - [x] **Task 2.5:** **Friends Module:** Gửi/Chấp nhận lời mời kết bạn, Hủy kết bạn, Đánh dấu `Close Friends`.
 - [x] **Task 2.6:** **Reactions & Private Comments Module:** Thả/Gỡ Reaction, Đăng & Xem Comment riêng tư 1-1.
-- [ ] **Task 2.7:** **i18n & Exception Filters:** Cấu hình `nestjs-i18n` hỗ trợ thông báo lỗi song ngữ Anh - Việt.
+- [x] **Task 2.7:** **i18n & Exception Filters:** Cấu hình `nestjs-i18n` hỗ trợ thông báo lỗi song ngữ Anh - Việt.
 
 ---
 
