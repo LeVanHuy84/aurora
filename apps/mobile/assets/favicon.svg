@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6F8FD9"/>
+      <stop offset="48%" stop-color="#AFA8E7"/>
+      <stop offset="78%" stop-color="#F1B9C7"/>
+      <stop offset="100%" stop-color="#F6D49A"/>
+    </linearGradient>
+
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF9E8" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#FFEBC7" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#FFEBC7" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="wave1" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#718DD4"/>
+      <stop offset="55%" stop-color="#8299DF"/>
+      <stop offset="100%" stop-color="#A8A4E4"/>
+    </linearGradient>
+
+    <linearGradient id="wave2" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C2B9EA"/>
+      <stop offset="100%" stop-color="#8198DC"/>
+    </linearGradient>
+
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+
+    <clipPath id="round">
+      <rect width="512" height="512" rx="116"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <!-- Aurora-like sky -->
+    <rect width="512" height="512" fill="url(#sky)"/>
+
+    <!-- Soft atmospheric shapes -->
+    <path d="M-30 92 C80 42 126 88 186 156 C229 205 292 204 350 166 C401 133 463 132 542 178 L542 -20 L-30 -20Z"
+          fill="#D9D4F2" opacity="0.18"/>
+    <path d="M-40 330 C67 274 131 290 206 318 C285 348 339 322 420 274 C466 247 510 250 548 271 L548 390 L-40 390Z"
+          fill="#FFD9D6" opacity="0.12"/>
+
+    <!-- Sun glow -->
+    <circle cx="352" cy="350" r="116" fill="url(#sunGlow)" filter="url(#blur)"/>
+    <circle cx="352" cy="350" r="58" fill="#FFF8E5" opacity="0.98"/>
+
+    <!-- Distant horizon -->
+    <path d="M-20 374 C62 338 116 346 180 366 C247 387 293 378 348 357 C410 333 462 337 532 364 L532 532 L-20 532Z"
+          fill="#B4B7E8" opacity="0.72"/>
+
+    <!-- Flowing foreground waves -->
+    <path d="M-25 395 C70 351 138 374 209 405 C284 438 348 440 421 405 C467 383 505 381 540 392 L540 540 L-25 540Z"
+          fill="url(#wave1)"/>
+
+    <path d="M-25 459 C66 424 128 425 202 451 C280 478 340 492 421 462 C474 443 511 443 540 452 L540 540 L-25 540Z"
+          fill="url(#wave2)" opacity="0.92"/>
+
+    <!-- Elegant flowing line -->
+    <path d="M-10 447 C94 420 166 444 244 475 C321 506 401 503 522 439"
+          fill="none" stroke="#F8DCCF" stroke-width="3" opacity="0.72"/>
+
+    <!-- Minimal sparkle -->
+    <path d="M427 137 L433 153 L449 159 L433 165 L427 181 L421 165 L405 159 L421 153Z"
+          fill="#FFF8E7" opacity="0.95"/>
+
+    <circle cx="112" cy="176" r="3.5" fill="#FFF6E4" opacity="0.8"/>
+    <circle cx="452" cy="245" r="3" fill="#FFF6E4" opacity="0.72"/>
+  </g>
+</svg>
