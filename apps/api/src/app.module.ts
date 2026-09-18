@@ -10,10 +10,19 @@ import { UsersModule } from './modules/users/users.module.js';
 import { MediaModule } from './modules/media/media.module.js';
 import { MomentsModule } from './modules/moments/moments.module.js';
 import { FriendsModule } from './modules/friends/friends.module.js';
+import { InteractionsModule } from './modules/interactions/interactions.module.js';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard.js';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, MediaModule, MomentsModule, FriendsModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    UsersModule,
+    MediaModule,
+    MomentsModule,
+    FriendsModule,
+    InteractionsModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,
