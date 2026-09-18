@@ -8,20 +8,60 @@
     "delete": "Delete",
     "confirm": "Confirm",
     "share": "Share",
-    "error": "An error occurred"
+    "error": "An error occurred",
+    "or": "or"
+  },
+  "errors": {
+    "networkError": "Cannot connect to the server. Please check your internet connection or try again later.",
+    "timeoutError": "Request timed out. Please try again.",
+    "serverError": "Server is currently unavailable. Please try again later.",
+    "unauthorized": "Your session has expired. Please log in again.",
+    "forbidden": "You do not have permission to perform this action.",
+    "notFound": "The requested resource was not found.",
+    "unknownError": "An unexpected error occurred. Please try again."
   },
   "auth": {
+    "welcomeTitle": "Welcome to Aurora",
+    "welcomeSubtitle": "Capture, reflect, and share life's genuine moments with those who matter most.",
+    "getStarted": "Get Started",
     "login": "Log In",
     "register": "Sign Up",
-    "email": "Email address",
+    "loginTitle": "Welcome Back",
+    "loginSubtitle": "Sign in to continue your private journey",
+    "registerTitle": "Create Account",
+    "registerSubtitle": "Start your private daily diary with your close circle",
+    "email": "Email Address",
+    "emailPlaceholder": "name@example.com",
     "password": "Password",
+    "passwordPlaceholder": "Enter your password",
     "username": "Username",
+    "usernamePlaceholder": "e.g. huy_aurora",
     "displayName": "Display Name",
+    "displayNamePlaceholder": "e.g. Huy Le",
     "continueWithGoogle": "Continue with Google",
     "continueWithApple": "Continue with Apple",
+    "orContinueWith": "or continue with",
     "dontHaveAccount": "Don't have an account? Sign up",
     "alreadyHaveAccount": "Already have an account? Log in",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "termsNotice": "By continuing, you agree to Aurora's Terms & Privacy Policy.",
+    "authSuccessTitle": "Authentication Successful",
+    "authSuccessDesc": "Logged in as @{{username}} ({{email}}). Token session is safely stored in SecureStore.",
+    "highlights": {
+      "polaroidMoments": "Polaroid Moments & 1-day Memories",
+      "privateSharing": "Private 1-on-1 sharing with Close Friends",
+      "moodTracking": "Daily Mood Track & Monthly Reflections"
+    },
+    "errors": {
+      "invalidEmail": "Please enter a valid email address.",
+      "passwordTooShort": "Password must be at least 6 characters.",
+      "usernameRequired": "Username is required.",
+      "usernameInvalid": "Username can only contain lowercase letters, numbers, and underscores.",
+      "displayNameRequired": "Display name is required.",
+      "loginFailed": "Invalid email or password. Please try again.",
+      "registerFailed": "Could not create account. Please try again.",
+      "oauthFailed": "Social login failed. Please try again."
+    }
   },
   "tabs": {
     "today": "Today",
