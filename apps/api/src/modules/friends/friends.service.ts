@@ -78,7 +78,7 @@ export class FriendsService {
 
   async sendRequest(userId: string, dto: SendFriendRequestDto) {
     if (userId === dto.receiverId) {
-      throw new BadRequestException('You cannot send friend request to yourself');
+      throw new BadRequestException('CANNOT_FRIEND_SELF');
     }
 
     const receiver = await this.prisma.user.findFirst({
@@ -86,7 +86,7 @@ export class FriendsService {
     });
 
     if (!receiver) {
-      throw new NotFoundException('Receiver user not found');
+      throw new NotFoundException('RECEIVER_NOT_FOUND');
     }
 
     const existingFriendship = await this.prisma.friendship.findFirst({
@@ -100,13 +100,13 @@ export class FriendsService {
 
     if (existingFriendship) {
       if (existingFriendship.status === FriendshipStatus.ACCEPTED) {
-        throw new ConflictException('You are already friends');
+        throw new ConflictException('ALREADY_FRIENDS');
       }
       if (existingFriendship.status === FriendshipStatus.PENDING) {
-        throw new ConflictException('Friend request is already pending');
+        throw new ConflictException('REQUEST_ALREADY_PENDING');
       }
       if (existingFriendship.status === FriendshipStatus.BLOCKED) {
-        throw new ForbiddenException('Cannot send friend request');
+        throw new ForbiddenException('FORBIDDEN');
       }
     }
 
@@ -135,15 +135,15 @@ export class FriendsService {
     });
 
     if (!friendship) {
-      throw new NotFoundException('Friend request not found');
+      throw new NotFoundException('REQUEST_NOT_FOUND');
     }
 
     if (friendship.receiverId !== userId) {
-      throw new ForbiddenException('Only the receiver can accept this friend request');
+      throw new ForbiddenException('FORBIDDEN');
     }
 
     if (friendship.status === FriendshipStatus.ACCEPTED) {
-      throw new BadRequestException('Friend request is already accepted');
+      throw new BadRequestException('ALREADY_FRIENDS');
     }
 
     return this.prisma.friendship.update({

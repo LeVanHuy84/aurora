@@ -1,0 +1,19 @@
+{
+  "INVALID_CREDENTIALS": "Invalid email or password",
+  "EMAIL_EXISTS": "Email already in use",
+  "USERNAME_EXISTS": "Username already taken",
+  "USER_NOT_FOUND": "User not found or deleted",
+  "UNAUTHORIZED": "Unauthorized access",
+  "FORBIDDEN": "You do not have permission to perform this action",
+  "MOMENT_NOT_FOUND": "Moment not found",
+  "IMAGE_REQUIRED": "Image URL is required for PHOTO moment",
+  "EMOTION_NOT_FOUND": "Emotion not found",
+  "RECEIVER_NOT_FOUND": "Receiver user not found",
+  "CANNOT_FRIEND_SELF": "You cannot send friend request to yourself",
+  "ALREADY_FRIENDS": "You are already friends",
+  "REQUEST_ALREADY_PENDING": "Friend request is already pending",
+  "REQUEST_NOT_FOUND": "Friend request not found",
+  "REACTION_NOT_FOUND": "Reaction not found",
+  "COMMENT_NOT_FOUND": "Comment not found",
+  "INTERNAL_SERVER_ERROR": "Internal server error"
+}

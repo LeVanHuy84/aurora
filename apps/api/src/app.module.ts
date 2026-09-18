@@ -9,12 +9,35 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { MediaModule } from './modules/media/media.module.js';
 import { MomentsModule } from './modules/moments/moments.module.js';
+import { fileURLToPath } from 'url';
+import * as path from 'path';
+import {
+  AcceptLanguageResolver,
+  HeaderResolver,
+  I18nModule,
+  QueryResolver,
+} from 'nestjs-i18n';
 import { FriendsModule } from './modules/friends/friends.module.js';
 import { InteractionsModule } from './modules/interactions/interactions.module.js';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 @Module({
   imports: [
+    I18nModule.forRoot({
+      fallbackLanguage: 'en',
+      loaderOptions: {
+        path: path.join(__dirname, '/i18n/'),
+        watch: true,
+      },
+      resolvers: [
+        new HeaderResolver(['x-custom-lang']),
+        new AcceptLanguageResolver(),
+        new QueryResolver(['lang', 'locale']),
+      ],
+    }),
     PrismaModule,
     AuthModule,
     UsersModule,

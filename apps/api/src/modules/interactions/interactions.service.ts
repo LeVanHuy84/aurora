@@ -17,7 +17,7 @@ export class InteractionsService {
     });
 
     if (!moment) {
-      throw new NotFoundException('Moment not found');
+      throw new NotFoundException('MOMENT_NOT_FOUND');
     }
 
     return moment;
@@ -58,7 +58,7 @@ export class InteractionsService {
     });
 
     if (!existing) {
-      throw new NotFoundException('Reaction not found');
+      throw new NotFoundException('REACTION_NOT_FOUND');
     }
 
     await this.prisma.reaction.delete({
@@ -131,12 +131,12 @@ export class InteractionsService {
     });
 
     if (!comment) {
-      throw new NotFoundException('Comment not found');
+      throw new NotFoundException('COMMENT_NOT_FOUND');
     }
 
     // Either author of comment or author of moment can delete
     if (comment.userId !== userId && comment.moment.userId !== userId) {
-      throw new ForbiddenException('You do not have permission to delete this comment');
+      throw new ForbiddenException('FORBIDDEN');
     }
 
     await this.prisma.comment.update({
