@@ -1,10 +1,14 @@
-import { Text, View, StyleSheet } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Colors, Spacing } from '../src/constants/theme';
 
 export default function HomeScreen() {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Aurora Mobile App</Text>
-      <Text style={styles.subtitle}>Expo SDK 57 + TypeScript + Expo Router</Text>
+      <Text style={styles.title}>{t('common.appName')}</Text>
+      <Text style={styles.tagline}>{t('common.tagline')}</Text>
     </View>
   );
 }
@@ -12,18 +16,20 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDFBF7',
+    backgroundColor: Colors.background,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: Spacing.lg,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#2C2C2C',
+    fontSize: 28,
+    fontWeight: '700',
+    color: Colors.textPrimary,
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#757575',
-    marginTop: 8,
+  tagline: {
+    fontSize: 16,
+    color: Colors.accentDark,
+    marginTop: Spacing.sm,
+    fontStyle: 'italic',
   },
 });
