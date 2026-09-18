@@ -32,6 +32,9 @@ jobs:
       - name: Build shared packages (@aurora/types)
         run: pnpm --filter types build
 
+      - name: Generate Prisma Client
+        run: pnpm --filter api exec prisma generate
+
       - name: Type-check API (NestJS)
         run: pnpm --filter api exec tsc --noEmit
 
