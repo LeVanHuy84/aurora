@@ -52,10 +52,10 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Install pnpm for production runner
 RUN npm install -g pnpm@10.15.1
 
-# Copy files with proper ownership
-COPY --chown=nestjs:nodejs --from=dependencies /app/node_modules ./node_modules
-COPY --chown=nestjs:nodejs --from=dependencies /app/packages/types/node_modules ./packages/types/node_modules
-COPY --chown=nestjs:nodejs --from=dependencies /app/apps/api/node_modules ./apps/api/node_modules
+# Copy node_modules (including generated Prisma Client) from builder stage
+COPY --chown=nestjs:nodejs --from=builder /app/node_modules ./node_modules
+COPY --chown=nestjs:nodejs --from=builder /app/packages/types/node_modules ./packages/types/node_modules
+COPY --chown=nestjs:nodejs --from=builder /app/apps/api/node_modules ./apps/api/node_modules
 COPY --chown=nestjs:nodejs --from=builder /app/packages/types/dist ./packages/types/dist
 COPY --chown=nestjs:nodejs --from=builder /app/packages/types/package.json ./packages/types/package.json
 COPY --chown=nestjs:nodejs --from=builder /app/apps/api/dist ./apps/api/dist
