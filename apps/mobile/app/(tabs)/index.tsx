@@ -16,6 +16,7 @@ import { useTodayMoments } from '../../src/hooks/use-moments';
 import { useFriends } from '../../src/hooks/use-friends';
 import { ScreenContainer } from '../../src/components/common/ScreenContainer';
 import { HomeHeroSlide } from '../../src/components/moments/HomeHeroSlide';
+import { HomeHeroSkeleton } from '../../src/components/moments/HomeHeroSkeleton';
 import { MomentSlide } from '../../src/components/moments/MomentSlide';
 import { EmptyTodayState } from '../../src/components/moments/EmptyTodayState';
 import { FloatingMomentFilter } from '../../src/components/moments/FloatingMomentFilter';
@@ -106,6 +107,22 @@ export default function TodayScreen() {
     return t('moments.everyone', 'Tất cả mọi người');
   };
 
+  // Calculate current user's today moments and emotions
+  const myMoments = (moments || []).filter((m: MomentItem) => m.userId === user?.id);
+  const myMomentsCount = myMoments.length;
+  const myEmotionsCount = new Set(
+    myMoments.map((m: MomentItem) => m.emotion?.id || m.emotion?.code).filter(Boolean),
+  ).size;
+
+  // Active friends who posted moments today
+  const activeFriendIds = Array.from(
+    new Set(
+      (moments || [])
+        .filter((m: MomentItem) => m.userId !== user?.id)
+        .map((m: MomentItem) => m.userId),
+    ),
+  );
+
   // Build the list of full-screen snap items
   const feedItems: FeedItem[] = [
     { type: 'HERO', id: 'hero-header' },
@@ -123,6 +140,9 @@ export default function TodayScreen() {
           height={containerHeight}
           displayName={user?.displayName || user?.username}
           momentsCount={filteredMoments.length}
+          myMomentsCount={myMomentsCount}
+          myEmotionsCount={myEmotionsCount}
+          activeFriendIds={activeFriendIds}
           onCheckInPress={handleCreateMoment}
           onCreatePress={handleCreateMoment}
           onFriendPress={(friendId) => {
@@ -195,12 +215,7 @@ export default function TodayScreen() {
         )}
 
         {isLoading && !moments ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.accentDark} />
-            <Body color="secondary" style={styles.loadingText}>
-              {t('common.loading')}
-            </Body>
-          </View>
+          <HomeHeroSkeleton />
         ) : (
           <FlatList
             ref={flatListRef}
@@ -221,7 +236,7 @@ export default function TodayScreen() {
             })}
             refreshControl={
               <RefreshControl
-                refreshing={refreshing || isRefetching}
+                refreshing={refreshing}
                 onRefresh={onRefresh}
                 tintColor={colors.accentDark}
                 colors={[colors.accentDark]}

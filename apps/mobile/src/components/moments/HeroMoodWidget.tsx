@@ -1,3 +1,4 @@
+import React from 'react';
 import { StyleSheet, View, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '../common/Icon';
@@ -15,83 +16,99 @@ export function HeroMoodWidget({ displayName, onCheckInPress, style }: HeroMoodW
   const { colors, isDark } = useAppTheme();
   const { t } = useTranslation();
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
+  const getGreetingData = () => {
+    const now = new Date();
+    const hour = now.getHours();
+
+    const dateOptions: Intl.DateTimeFormatOptions = {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    };
+    const dateFormatted = now.toLocaleDateString('vi-VN', dateOptions);
+
     if (hour < 12) {
       return {
-        text: t('moments.greetingMorning', { name: displayName || 'you' }),
-        icon: 'sunny-outline',
+        greeting: t('moments.greetingMorning', { name: displayName || 'bạn' }),
+        icon: 'sunny' as const,
         iconColor: '#F4A261',
+        iconBg: isDark ? 'rgba(244, 162, 97, 0.15)' : '#FFF3E6',
+        tagline: t('moments.heroMoodPrompt', 'Hôm nay của bạn đang thế nào?'),
+        date: dateFormatted,
       };
     }
     if (hour < 18) {
       return {
-        text: t('moments.greetingAfternoon', { name: displayName || 'you' }),
-        icon: 'partly-sunny-outline',
+        greeting: t('moments.greetingAfternoon', { name: displayName || 'bạn' }),
+        icon: 'partly-sunny' as const,
         iconColor: '#E76F51',
+        iconBg: isDark ? 'rgba(231, 111, 81, 0.15)' : '#FFEEDB',
+        tagline: t('moments.heroMoodPrompt', 'Hôm nay của bạn đang thế nào?'),
+        date: dateFormatted,
       };
     }
     return {
-      text: t('moments.greetingEvening', { name: displayName || 'you' }),
-      icon: 'moon-outline',
-      iconColor: '#8E7DBE',
+      greeting: t('moments.greetingEvening', { name: displayName || 'bạn' }),
+      icon: 'moon' as const,
+      iconColor: '#9D8DF1',
+      iconBg: isDark ? 'rgba(157, 141, 241, 0.15)' : '#F2EEFF',
+      tagline: t('moments.heroMoodPrompt', 'Hôm nay của bạn đang thế nào?'),
+      date: dateFormatted,
     };
   };
 
-  const greeting = getGreeting();
+  const data = getGreetingData();
 
   return (
     <View
       style={[
         styles.container,
         {
-          backgroundColor: isDark ? '#242220' : '#FFF9F2',
-          borderColor: colors.cardBorder,
+          backgroundColor: isDark ? '#23201D' : '#FFFDF9',
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : colors.cardBorder,
         },
         style,
       ]}
     >
-      <View style={styles.topRow}>
-        <View style={styles.greetingInfo}>
-          <View style={styles.greetingTitleRow}>
-            <Title level={2} style={styles.greetingTitle}>
-              {greeting.text}
-            </Title>
-          </View>
-          <Body color="secondary" style={styles.greetingSubtitle}>
-            {t('moments.heroMoodPrompt')}
-          </Body>
+      {/* Top Meta Header: Date & Time Icon */}
+      <View style={styles.headerRow}>
+        <View style={styles.dateTag}>
+          <Caption color="muted" weight="medium" style={styles.dateText}>
+            {data.date.toUpperCase()}
+          </Caption>
         </View>
 
-        <View
-          style={[
-            styles.iconWrapper,
-            { backgroundColor: isDark ? '#2C2926' : '#FDF4EB' },
-          ]}
-        >
-          <Ionicons name={greeting.icon} size={26} color={greeting.iconColor} />
+        <View style={[styles.timeBadge, { backgroundColor: data.iconBg }]}>
+          <Ionicons name={data.icon} size={18} color={data.iconColor} />
         </View>
       </View>
 
-      {/* Quick Mood Check-In Prompt Button */}
+      {/* Greeting Title & Subtitle */}
+      <View style={styles.greetingContent}>
+        <Title level={2} style={styles.greetingTitle}>
+          {data.greeting}
+        </Title>
+        <Body color="secondary" style={styles.greetingSubtitle}>
+          {data.tagline}
+        </Body>
+      </View>
+
+      {/* Prominent Check-In CTA Button */}
       <TouchableOpacity
-        activeOpacity={0.8}
+        activeOpacity={0.82}
         onPress={onCheckInPress}
         style={[
-          styles.checkInBtn,
-          {
-            backgroundColor: colors.surfaceSoft,
-            borderColor: colors.cardBorder,
-          },
+          styles.actionBtn,
+          { backgroundColor: colors.accentDark },
         ]}
       >
-        <View style={styles.checkInContent}>
-          <Ionicons name="sparkles" size={16} color={colors.accentDark} />
-          <Caption color="primary" weight="semibold">
-            {t('moments.checkInMoodAction')}
-          </Caption>
+        <View style={styles.actionBtnInner}>
+          <Ionicons name="sparkles" size={17} color="#FFFFFF" />
+          <Body color="white" weight="bold" style={styles.actionBtnText}>
+            {t('moments.checkInMoodAction', 'Ghi lại khoảnh khắc hôm nay')}
+          </Body>
         </View>
-        <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+        <Ionicons name="arrow-forward" size={17} color="#FFFFFF" />
       </TouchableOpacity>
     </View>
   );
@@ -99,57 +116,69 @@ export function HeroMoodWidget({ displayName, onCheckInPress, style }: HeroMoodW
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: BorderRadius.card,
-    borderWidth: 1,
-    padding: Spacing.md + 2,
-    marginBottom: Spacing.lg,
+    borderRadius: BorderRadius.card + 4,
+    borderWidth: 1.5,
+    paddingHorizontal: Spacing.md + 2,
+    paddingVertical: Spacing.md,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
   },
-  topRow: {
+  headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.sm + 4,
+    marginBottom: 6,
   },
-  greetingInfo: {
-    flex: 1,
-    paddingRight: Spacing.sm,
+  dateTag: {
+    paddingHorizontal: 2,
   },
-  greetingTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  dateText: {
+    fontSize: 11,
+    letterSpacing: 0.8,
   },
-  greetingTitle: {
-    fontSize: 21,
-    letterSpacing: -0.3,
-  },
-  greetingSubtitle: {
-    marginTop: 2,
-    fontSize: 13,
-  },
-  iconWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  timeBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkInBtn: {
+  greetingContent: {
+    marginBottom: Spacing.sm + 2,
+  },
+  greetingTitle: {
+    fontSize: 21,
+    lineHeight: 26,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+  },
+  greetingSubtitle: {
+    marginTop: 3,
+    fontSize: 14,
+    lineHeight: 19,
+  },
+  actionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
+    paddingVertical: 11,
+    paddingHorizontal: Spacing.md + 2,
+    borderRadius: BorderRadius.full,
+    shadowColor: '#E76F51',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.22,
+    shadowRadius: 5,
+    elevation: 3,
   },
-  checkInContent: {
+  actionBtnInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.xs + 2,
+    gap: 8,
+  },
+  actionBtnText: {
+    fontSize: 14.5,
   },
 });
