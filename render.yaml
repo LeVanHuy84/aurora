@@ -11,7 +11,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 3000
+        value: 10000
       - key: DATABASE_URL
         sync: false # Paste your Neon Postgres connection string here (e.g., postgresql://user:pass@ep-xyz.neon.tech/aurora?sslmode=require)
       - key: JWT_SECRET

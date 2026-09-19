@@ -43,7 +43,7 @@ WORKDIR /app
 RUN apk add --no-cache openssl
 
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=10000
 
 # Security: Create non-root user and group
 RUN addgroup --system --gid 1001 nodejs && \
@@ -65,7 +65,7 @@ COPY --chown=nestjs:nodejs --from=builder /app/package.json /app/pnpm-workspace.
 
 USER nestjs
 
-EXPOSE 3000
+EXPOSE 10000
 
 WORKDIR /app/apps/api
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
