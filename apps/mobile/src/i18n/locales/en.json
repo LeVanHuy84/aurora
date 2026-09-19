@@ -70,6 +70,16 @@
     "create": "Create",
     "me": "Me"
   },
+  "emotions": {
+    "happy": "Happy",
+    "calm": "Calm",
+    "excited": "Excited",
+    "loved": "Loved",
+    "tired": "Tired",
+    "sad": "Sad",
+    "stressed": "Stressed",
+    "grateful": "Grateful"
+  },
   "moments": {
     "whatsHappening": "What's happening?",
     "photo": "Photo",
@@ -91,7 +101,28 @@
     "noMomentsTodayTitle": "Quiet Today",
     "noMomentsToday": "No moments recorded today yet. Capture a photo, mood, or note to remember this day!",
     "shareFirstMomentBtn": "Share Moment",
-    "onThisDay": "On This Day"
+    "createMomentTitle": "New Moment",
+    "addPhotoPrompt": "Add a Photo",
+    "addPhotoDesc": "Capture 1 genuine moment of your day",
+    "takePhoto": "Camera",
+    "pickFromGallery": "Gallery",
+    "captionLabel": "Photo Caption",
+    "captionPlaceholder": "Write a note about this photo...",
+    "noteContentLabel": "Your Daily Note / Diary",
+    "notePlaceholder": "What is on your mind today?...",
+    "moodReasonLabel": "Mood Note (Optional)",
+    "moodPlaceholder": "Why are you feeling this way today?...",
+    "shareMomentBtn": "Share Moment",
+    "sharingProgress": "Sharing Moment...",
+    "galleryPermissionDenied": "Please enable photo gallery access in settings.",
+    "cameraPermissionDenied": "Please enable camera access in settings.",
+    "onThisDay": "On This Day",
+    "errors": {
+      "photoRequired": "Please take or select a photo.",
+      "contentRequired": "Please enter your note text.",
+      "emotionRequired": "Please select a mood.",
+      "createFailed": "Failed to create moment. Please try again."
+    }
   },
   "profile": {
     "totalMoments": "Moments",
