@@ -1,39 +1,25 @@
 import { apiClient } from '../api-client';
-import { ReactionType } from '@aurora/types';
+import { MomentInteractionsResponse, ReactionItem, ReactionType } from '@aurora/types';
 
 export const interactionsService = {
   /**
-   * Add or update reaction on a moment
+   * Thả hoặc cập nhật reaction trên một Moment
    */
-  async addReaction(momentId: string, type: ReactionType = ReactionType.LOVE): Promise<any> {
-    return apiClient.post(`/moments/${momentId}/reactions`, { type });
+  async addReaction(momentId: string, type: ReactionType = ReactionType.LOVE): Promise<ReactionItem> {
+    return apiClient.post<ReactionItem>(`/moments/${momentId}/reactions`, { type });
   },
 
   /**
-   * Remove reaction from a moment
+   * Gỡ reaction khỏi Moment
    */
-  async removeReaction(momentId: string): Promise<any> {
-    return apiClient.delete(`/moments/${momentId}/reactions`);
+  async removeReaction(momentId: string): Promise<{ success: boolean; message: string }> {
+    return apiClient.delete<{ success: boolean; message: string }>(`/moments/${momentId}/reactions`);
   },
 
   /**
-   * Fetch comments on a moment
+   * Lấy tổng hợp tương tác (Reactions & Danh sách phản hồi 1-1) của Moment
    */
-  async getComments(momentId: string): Promise<any[]> {
-    return apiClient.get<any[]>(`/moments/${momentId}/comments`);
-  },
-
-  /**
-   * Add a comment to a moment
-   */
-  async addComment(momentId: string, content: string, parentId?: string): Promise<any> {
-    return apiClient.post(`/moments/${momentId}/comments`, { content, parentId });
-  },
-
-  /**
-   * Delete a comment
-   */
-  async deleteComment(commentId: string): Promise<void> {
-    return apiClient.delete<void>(`/comments/${commentId}`);
+  async getMomentInteractions(momentId: string): Promise<MomentInteractionsResponse> {
+    return apiClient.get<MomentInteractionsResponse>(`/moments/${momentId}/interactions`);
   },
 };
