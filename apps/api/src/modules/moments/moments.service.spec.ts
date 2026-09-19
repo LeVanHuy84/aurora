@@ -204,7 +204,8 @@ describe('MomentsService', () => {
 
       const result = await service.findOne('user-uuid-1', 'moment-uuid-1');
 
-      expect(result).toEqual(mockMoment);
+      expect(result).toMatchObject(mockMoment);
+      expect(result.hasReacted).toBe(false);
     });
   });
 

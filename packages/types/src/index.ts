@@ -24,6 +24,12 @@ export enum ReactionType {
   PROUD = 'PROUD',
 }
 
+export enum MessageType {
+  TEXT = 'TEXT',
+  MOMENT_REPLY = 'MOMENT_REPLY',
+  REACTION_BURST = 'REACTION_BURST',
+}
+
 export enum MediaFolder {
   MOMENTS = 'moments',
   AVATARS = 'avatars',
@@ -124,12 +130,15 @@ export interface MomentItem {
   user?: UserProfile;
   emotion?: EmotionItem | null;
   reactionsCount?: number;
+  messagesCount?: number;
   commentsCount?: number;
   _count?: {
     reactions?: number;
+    messages?: number;
     comments?: number;
   };
   hasReacted?: boolean;
+  userReactionType?: ReactionType | string | null;
 }
 
 export interface CreateMomentPayload {
@@ -158,3 +167,80 @@ export interface HistoryResponse {
   meta: HistoryMeta;
 }
 
+// ------------------------------------------------------
+// CHAT & INTERACTIONS TYPES
+// ------------------------------------------------------
+
+export interface QuotedMomentSummary {
+  id: string;
+  type: MomentType;
+  content?: string | null;
+  imageUrl?: string | null;
+  createdAt: string;
+  userId: string;
+  emotion?: EmotionItem | null;
+}
+
+export interface ChatMessageItem {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  content: string;
+  type: MessageType;
+  momentId?: string | null;
+  moment?: QuotedMomentSummary | null;
+  sender?: UserProfile | FriendUser;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ConversationMemberItem {
+  id: string;
+  userId: string;
+  lastReadAt?: string | null;
+  joinedAt: string;
+  user: UserProfile | FriendUser;
+}
+
+export interface ConversationItem {
+  id: string;
+  isGroup: boolean;
+  name?: string | null;
+  lastMessageAt: string;
+  createdAt: string;
+  updatedAt: string;
+  friend?: FriendUser | UserProfile;
+  lastMessage?: ChatMessageItem | null;
+  unreadCount?: number;
+  members?: ConversationMemberItem[];
+}
+
+export interface SendMessagePayload {
+  content: string;
+  momentId?: string;
+  type?: MessageType;
+}
+
+export interface ReactionItem {
+  id: string;
+  momentId: string;
+  userId: string;
+  type: ReactionType | string;
+  createdAt: string;
+  user: FriendUser | UserProfile;
+}
+
+export interface MomentInteractionThread {
+  friend: FriendUser | UserProfile;
+  conversationId: string;
+  lastMessage?: ChatMessageItem | null;
+  messages: ChatMessageItem[];
+}
+
+export interface MomentInteractionsResponse {
+  momentId: string;
+  isOwner: boolean;
+  reactions: ReactionItem[];
+  threads: MomentInteractionThread[];
+  myReaction?: ReactionItem | null;
+}

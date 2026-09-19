@@ -89,7 +89,7 @@ export class MomentsService {
       }
     }
 
-    return this.prisma.moment.findMany({
+    const moments = await this.prisma.moment.findMany({
       where: {
         deletedAt: null,
         createdAt: {
@@ -122,13 +122,29 @@ export class MomentsService {
             avatarUrl: true,
           },
         },
+        reactions: {
+          where: { userId },
+          select: { type: true },
+        },
         _count: {
           select: {
             reactions: true,
-            comments: true,
+            quotedMessages: true,
           },
         },
       },
+    });
+
+    return moments.map((m) => {
+      const userReaction = m.reactions?.[0];
+      const { reactions, ...rest } = m;
+      return {
+        ...rest,
+        hasReacted: Boolean(userReaction),
+        userReactionType: userReaction?.type || null,
+        reactionsCount: m._count?.reactions ?? 0,
+        messagesCount: m._count?.quotedMessages ?? 0,
+      };
     });
   }
 
@@ -191,7 +207,7 @@ export class MomentsService {
         _count: {
           select: {
             reactions: true,
-            comments: true,
+            quotedMessages: true,
           },
         },
       },
@@ -224,10 +240,14 @@ export class MomentsService {
             avatarUrl: true,
           },
         },
+        reactions: {
+          where: { userId },
+          select: { type: true },
+        },
         _count: {
           select: {
             reactions: true,
-            comments: true,
+            quotedMessages: true,
           },
         },
       },
@@ -244,7 +264,15 @@ export class MomentsService {
       }
     }
 
-    return moment;
+    const userReaction = moment.reactions?.[0];
+    const { reactions, ...rest } = moment;
+    return {
+      ...rest,
+      hasReacted: Boolean(userReaction),
+      userReactionType: userReaction?.type || null,
+      reactionsCount: moment._count?.reactions ?? 0,
+      messagesCount: moment._count?.quotedMessages ?? 0,
+    };
   }
 
   async remove(userId: string, momentId: string) {
