@@ -43,6 +43,13 @@
       "expo-router",
       "expo-secure-store",
       "expo-localization"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "cdf46ce7-0a4f-4a02-94c1-635d35fc6482"
+      }
+    },
+    "owner": "huylezz"
   }
 }

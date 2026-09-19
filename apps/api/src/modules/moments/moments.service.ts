@@ -137,7 +137,7 @@ export class MomentsService {
 
     return moments.map((m) => {
       const userReaction = m.reactions?.[0];
-      const { reactions, ...rest } = m;
+      const { reactions: _reactions, ...rest } = m;
       return {
         ...rest,
         hasReacted: Boolean(userReaction),
@@ -265,7 +265,7 @@ export class MomentsService {
     }
 
     const userReaction = moment.reactions?.[0];
-    const { reactions, ...rest } = moment;
+    const { reactions: _reactions, ...rest } = moment;
     return {
       ...rest,
       hasReacted: Boolean(userReaction),
