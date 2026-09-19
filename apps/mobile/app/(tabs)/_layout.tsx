@@ -19,13 +19,14 @@ export default function TabsLayout() {
           backgroundColor: colors.card,
           borderTopColor: colors.cardBorder,
           borderTopWidth: 1,
-          height: 60,
-          paddingBottom: Spacing.xs + 2,
-          paddingTop: Spacing.xs,
+          height: 70,
+          paddingBottom: Spacing.sm + 2,
+          paddingTop: Spacing.xs + 2,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 11.5,
           fontWeight: '600',
+          marginTop: 2,
         },
       }}
     >
@@ -37,7 +38,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'sunny' : 'sunny-outline'}
-              size={22}
+              size={24}
               color={color}
             />
           ),
@@ -52,7 +53,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'calendar' : 'calendar-outline'}
-              size={22}
+              size={23}
               color={color}
             />
           ),
@@ -67,7 +68,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'add-circle' : 'add-circle-outline'}
-              size={26}
+              size={28}
               color={colors.accentDark}
             />
           ),
@@ -82,7 +83,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'person' : 'person-outline'}
-              size={22}
+              size={24}
               color={color}
             />
           ),

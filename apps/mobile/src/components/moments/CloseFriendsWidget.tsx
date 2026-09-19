@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '../common/Icon';
@@ -11,11 +11,13 @@ import { Spacing, BorderRadius } from '../../constants/theme';
 export interface CloseFriendsWidgetProps {
   onFriendPress?: (friendId: string) => void;
   onAddFriendPress?: () => void;
+  style?: StyleProp<ViewStyle>;
 }
 
 export function CloseFriendsWidget({
   onFriendPress,
   onAddFriendPress,
+  style,
 }: CloseFriendsWidgetProps) {
   const { colors, isDark } = useAppTheme();
   const { t } = useTranslation();
@@ -27,7 +29,7 @@ export function CloseFriendsWidget({
   })) || [];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       <View style={styles.header}>
         <Title level={3} style={styles.title}>
           {t('moments.closeFriendsWidgetTitle')}

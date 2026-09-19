@@ -1,5 +1,4 @@
-import React from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '../common/Icon';
 import { useAppTheme } from '../../hooks/use-theme';
@@ -9,9 +8,10 @@ import { Spacing, BorderRadius } from '../../constants/theme';
 export interface HeroMoodWidgetProps {
   displayName?: string;
   onCheckInPress?: () => void;
+  style?: StyleProp<ViewStyle>;
 }
 
-export function HeroMoodWidget({ displayName, onCheckInPress }: HeroMoodWidgetProps) {
+export function HeroMoodWidget({ displayName, onCheckInPress, style }: HeroMoodWidgetProps) {
   const { colors, isDark } = useAppTheme();
   const { t } = useTranslation();
 
@@ -48,6 +48,7 @@ export function HeroMoodWidget({ displayName, onCheckInPress }: HeroMoodWidgetPr
           backgroundColor: isDark ? '#242220' : '#FFF9F2',
           borderColor: colors.cardBorder,
         },
+        style,
       ]}
     >
       <View style={styles.topRow}>

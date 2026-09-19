@@ -8,10 +8,22 @@ import { Title, Body } from '../ui/Typography';
 import { Spacing, BorderRadius } from '../../constants/theme';
 
 export interface EmptyTodayStateProps {
+  title?: string;
+  subtitle?: string;
+  actionText?: string;
   onCreatePress?: () => void;
+  onResetFilterPress?: () => void;
+  resetFilterText?: string;
 }
 
-export function EmptyTodayState({ onCreatePress }: EmptyTodayStateProps) {
+export function EmptyTodayState({
+  title,
+  subtitle,
+  actionText,
+  onCreatePress,
+  onResetFilterPress,
+  resetFilterText,
+}: EmptyTodayStateProps) {
   const { colors, isDark } = useAppTheme();
   const { t } = useTranslation();
 
@@ -38,23 +50,36 @@ export function EmptyTodayState({ onCreatePress }: EmptyTodayStateProps) {
       </View>
 
       <Title level={3} align="center" style={styles.title}>
-        {t('moments.noMomentsTodayTitle')}
+        {title || t('moments.noMomentsTodayTitle', 'Hôm nay thật yên ả')}
       </Title>
 
       <Body color="secondary" align="center" style={styles.subtitle}>
-        {t('moments.noMomentsToday')}
+        {subtitle || t('moments.noMomentsToday', 'Hôm nay chưa có khoảnh khắc nào. Chụp một bức ảnh, chọn cảm xúc hoặc viết một dòng nhật ký nhé!')}
       </Body>
 
-      {onCreatePress && (
-        <Button
-          title={t('moments.shareFirstMomentBtn')}
-          size="md"
-          variant="primary"
-          leftIcon={<Ionicons name="add" size={18} color="#FFFFFF" />}
-          onPress={onCreatePress}
-          style={styles.actionBtn}
-        />
-      )}
+      <View style={styles.actionGroup}>
+        {onResetFilterPress && (
+          <Button
+            title={resetFilterText || t('moments.showAllMoments', 'Xem tất cả khoảnh khắc')}
+            size="md"
+            variant="secondary"
+            leftIcon={<Ionicons name="globe-outline" size={17} color={colors.textPrimary} />}
+            onPress={onResetFilterPress}
+            style={styles.actionBtn}
+          />
+        )}
+
+        {onCreatePress && (
+          <Button
+            title={actionText || t('moments.shareFirstMomentBtn', 'Lưu khoảnh khắc')}
+            size="md"
+            variant="primary"
+            leftIcon={<Ionicons name="add" size={18} color="#FFFFFF" />}
+            onPress={onCreatePress}
+            style={styles.actionBtn}
+          />
+        )}
+      </View>
     </View>
   );
 }
@@ -85,8 +110,15 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: Spacing.lg,
   },
+  actionGroup: {
+    flexDirection: 'column',
+    gap: Spacing.sm,
+    alignItems: 'center',
+    width: '100%',
+  },
   actionBtn: {
     width: 'auto',
-    paddingHorizontal: Spacing.xl,
+    minWidth: 200,
+    paddingHorizontal: Spacing.lg,
   },
 });
