@@ -32,7 +32,7 @@
 ## 📱 Phase 3: Phát Triển Mobile App Expo Go (`apps/mobile`)
 - [x] **Task 3.1:** **Setup UI Base & i18n:** Cấu hình `i18next` + `expo-localization`, Theme Warm Organic, TanStack Query Provider.
 - [x] **Task 3.2:** **Auth Flow Screens:** Màn hình Splash, Login, Register, Google/Apple OAuth Button.
-- [ ] **Task 3.3:** **Tab 1 — `Today` Screen (Home):** Timeline hiển thị các Moment dưới dạng Polaroid Card & Close Friends Widget.
+- [x] **Task 3.3:** **Tab 1 — `Today` Screen (Home):** Timeline hiển thị các Moment dưới dạng Polaroid Card & Close Friends Widget.
 - [ ] **Task 3.4:** **Tab 3 — `+` Create Moment Interactive Bottom Sheet:** Flow tạo Moment 10–15s (1 ảnh / Note / Mood).
 - [ ] **Task 3.5:** **Tab 2 — `Memories` Screen (Calendar & History):** Lịch tháng hiển thị Emoji Mood & "On This Day".
 - [ ] **Task 3.6:** **Tab 4 — `Me` Screen (Profile & Monthly Mood):** Profile cá nhân & Biểu đồ Monthly Mood Chart.

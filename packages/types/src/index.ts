@@ -16,6 +16,14 @@ export enum FriendshipStatus {
   BLOCKED = 'BLOCKED',
 }
 
+export enum ReactionType {
+  LOVE = 'LOVE',
+  CARE = 'CARE',
+  FUNNY = 'FUNNY',
+  RELATABLE = 'RELATABLE',
+  PROUD = 'PROUD',
+}
+
 export interface UserProfile {
   id: string;
   email: string;
@@ -24,6 +32,24 @@ export interface UserProfile {
   avatarUrl?: string | null;
   bio?: string | null;
   createdAt: string;
+}
+
+export interface FriendUser {
+  id: string;
+  username: string;
+  displayName: string;
+  avatarUrl?: string | null;
+  bio?: string | null;
+}
+
+export interface FriendshipItem {
+  id: string;
+  requesterId: string;
+  receiverId: string;
+  status: FriendshipStatus;
+  isCloseFriend: boolean;
+  createdAt: string;
+  friend: FriendUser;
 }
 
 export interface AuthTokens {
@@ -84,5 +110,17 @@ export interface MomentItem {
   emotion?: EmotionItem | null;
   reactionsCount?: number;
   commentsCount?: number;
+  _count?: {
+    reactions?: number;
+    comments?: number;
+  };
+  hasReacted?: boolean;
 }
 
+export interface CreateMomentPayload {
+  type: MomentType;
+  content?: string;
+  imageUrl?: string;
+  emotionId?: string;
+  visibility?: Visibility;
+}
