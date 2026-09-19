@@ -10,7 +10,9 @@
     "share": "Share",
     "add": "Add",
     "error": "An error occurred",
-    "or": "or"
+    "or": "or",
+    "more": "more",
+    "less": "less"
   },
   "errors": {
     "networkError": "Cannot connect to the server. Please check your internet connection or try again later.",
@@ -196,6 +198,29 @@
     "onThisDaySubtitle": "{{count}} moments you recorded on this day in previous times",
     "viewDetail": "View Detail",
     "totalRecorded": "{{count}} moments recorded",
-    "momentDetail": "Moment Details"
+    "momentDetail": "Moment Details",
+    "interactionsOverview": "Interactions & Replies",
+    "viewAllInteractions": "View all",
+    "replyViaChat": "Send private reply"
+  },
+  "chat": {
+    "inboxTitle": "Inbox",
+    "friend": "Friend",
+    "noConversations": "No messages yet",
+    "noConversationsDesc": "Reply to friends' moments or start chatting to stay connected.",
+    "startedConversation": "Started a conversation",
+    "inputPlaceholder": "Send a message...",
+    "quotedMoment": "Moment",
+    "replyingToMoment": "Replying to moment",
+    "reactionsCount": "reactions",
+    "repliesCount": "replies",
+    "viewInteractions": "View replies",
+    "interactionsTitle": "Moment Interactions",
+    "reactions": "Reactions",
+    "noReactionsYet": "No reactions yet",
+    "privateMessages": "Private Messages & Replies",
+    "sentMomentReply": "Replied to this moment",
+    "reply": "Reply",
+    "noRepliesYet": "No private replies for this moment yet"
   }
 }

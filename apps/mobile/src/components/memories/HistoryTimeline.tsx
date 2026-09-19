@@ -2,16 +2,23 @@ import React from 'react';
 import { StyleSheet, View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
+import * as Haptics from 'expo-haptics';
 import { useAppTheme } from '../../hooks/use-theme';
 import { Title, Body, Caption } from '../ui/Typography';
 import { Ionicons } from '../common/Icon';
-import { MomentItem, MomentType } from '@aurora/types';
+import { MomentItem, MomentType, Visibility } from '@aurora/types';
 import { Spacing, BorderRadius } from '../../constants/theme';
 
 export interface HistoryTimelineProps {
   moments: MomentItem[];
   isLoading?: boolean;
   onSelectMoment: (moment: MomentItem) => void;
+}
+
+interface MonthSection {
+  title: string;
+  items: MomentItem[];
+  topEmotion?: { icon: string; label: string; color?: string } | null;
 }
 
 export function HistoryTimeline({
@@ -55,8 +62,8 @@ export function HistoryTimeline({
     );
   }
 
-  // Group moments by Month & Year
-  const groupedSections: { title: string; items: MomentItem[] }[] = [];
+  // Group moments by Month & Year, and calculate top emotion
+  const groupedSections: MonthSection[] = [];
   const groupMap: { [key: string]: MomentItem[] } = {};
 
   moments.forEach((item) => {
@@ -67,6 +74,29 @@ export function HistoryTimeline({
       groupedSections.push({ title: key, items: groupMap[key] });
     }
     groupMap[key].push(item);
+  });
+
+  // Calculate dominant emotion for each month
+  groupedSections.forEach((section) => {
+    const emotionCountMap: { [label: string]: { count: number; emotion: any } } = {};
+    section.items.forEach((item) => {
+      if (item.emotion?.label) {
+        if (!emotionCountMap[item.emotion.label]) {
+          emotionCountMap[item.emotion.label] = { count: 0, emotion: item.emotion };
+        }
+        emotionCountMap[item.emotion.label].count += 1;
+      }
+    });
+
+    let maxCount = 0;
+    let dominant: any = null;
+    Object.values(emotionCountMap).forEach((entry) => {
+      if (entry.count > maxCount) {
+        maxCount = entry.count;
+        dominant = entry.emotion;
+      }
+    });
+    section.topEmotion = dominant;
   });
 
   const formatDay = (isoString: string) => {
@@ -87,35 +117,112 @@ export function HistoryTimeline({
     }
   };
 
+  const handleCardPress = (item: MomentItem) => {
+    try {
+      Haptics.selectionAsync();
+    } catch {
+      // ignore
+    }
+    onSelectMoment(item);
+  };
+
+  const renderVisibilityIcon = (visibility?: Visibility) => {
+    if (visibility === Visibility.CLOSE_FRIENDS) {
+      return (
+        <View
+          style={[
+            styles.visibilityTag,
+            { backgroundColor: isDark ? '#1D2E26' : '#EAF6F0' },
+          ]}
+        >
+          <Ionicons name="star" size={10} color={colors.closeFriends} />
+          <Caption weight="bold" style={{ fontSize: 10, color: colors.closeFriends }}>
+            {t('moments.closeFriends', 'Bạn thân')}
+          </Caption>
+        </View>
+      );
+    }
+    if (visibility === Visibility.ONLY_ME) {
+      return (
+        <View
+          style={[
+            styles.visibilityTag,
+            { backgroundColor: isDark ? '#2B2621' : '#F4EFE6' },
+          ]}
+        >
+          <Ionicons name="lock-closed" size={10} color={colors.textSecondary} />
+        </View>
+      );
+    }
+    return null;
+  };
+
   return (
     <View style={styles.container}>
       {groupedSections.map((section, sIdx) => (
         <View key={sIdx} style={styles.sectionGroup}>
-          {/* Month Section Header Capsule */}
+          {/* Month Chapter Header */}
           <View style={styles.monthHeaderRow}>
             <View
               style={[
                 styles.monthCapsule,
                 {
-                  backgroundColor: isDark ? '#2D2824' : '#F7EFE6',
+                  backgroundColor: isDark ? '#2B2621' : '#F5EFE6',
                   borderColor: colors.cardBorder,
                 },
               ]}
             >
-              <Ionicons name="calendar-outline" size={13} color={colors.accentDark} />
+              <Ionicons name="journal-outline" size={14} color={colors.accentDark} />
               <Body
                 weight="bold"
                 style={{
-                  fontSize: 13,
-                  color: isDark ? '#F5F3EF' : colors.textPrimary,
+                  fontSize: 13.5,
+                  color: isDark ? '#FDFCF9' : colors.textPrimary,
                 }}
               >
                 {section.title}
               </Body>
-              <Caption color="muted" style={{ fontSize: 11.5 }}>
-                ({section.items.length})
-              </Caption>
+              <View
+                style={[
+                  styles.countBadge,
+                  { backgroundColor: isDark ? '#3D342C' : '#E8DECة'.replace('ة', 'F') || '#EAE0D2' },
+                ]}
+              >
+                <Caption
+                  weight="bold"
+                  style={{
+                    fontSize: 11,
+                    color: isDark ? '#E5D6C5' : colors.accentDark,
+                  }}
+                >
+                  {section.items.length}
+                </Caption>
+              </View>
             </View>
+
+            {section.topEmotion && (
+              <View
+                style={[
+                  styles.topEmotionBadge,
+                  {
+                    backgroundColor: isDark ? '#2B221B' : '#FFF6ED',
+                    borderColor: section.topEmotion.color || colors.accent,
+                  },
+                ]}
+              >
+                <Caption style={{ fontSize: 11 }}>{section.topEmotion.icon}</Caption>
+                <Caption
+                  weight="semibold"
+                  style={{
+                    fontSize: 11,
+                    color: isDark ? '#F2E8DC' : colors.accentDark,
+                  }}
+                >
+                  {section.topEmotion.label}
+                </Caption>
+              </View>
+            )}
+
             <View style={[styles.headerDivider, { backgroundColor: colors.divider }]} />
           </View>
 
@@ -125,12 +232,14 @@ export function HistoryTimeline({
             <View
               style={[
                 styles.verticalLine,
-                { backgroundColor: isDark ? '#38322C' : '#EAE4D9' },
+                { backgroundColor: isDark ? '#3A332C' : '#EBE4D8' },
               ]}
             />
 
-            {section.items.map((item, itemIdx) => {
+            {section.items.map((item) => {
               const baseEmotionColor = item.emotion?.color || colors.accent;
+              const reactionsCount = item.reactionsCount ?? item._count?.reactions ?? 0;
+              const messagesCount = item.messagesCount ?? item._count?.messages ?? 0;
 
               return (
                 <View key={item.id} style={styles.timelineItemRow}>
@@ -139,7 +248,7 @@ export function HistoryTimeline({
                     style={[
                       styles.timelineNode,
                       {
-                        backgroundColor: isDark ? '#201D1A' : '#FDFBF7',
+                        backgroundColor: isDark ? '#221E1A' : '#FDFBF7',
                         borderColor: baseEmotionColor,
                       },
                     ]}
@@ -152,10 +261,10 @@ export function HistoryTimeline({
                     />
                   </View>
 
-                  {/* Timeline Item Card */}
+                  {/* Timeline Journal Card */}
                   <TouchableOpacity
                     activeOpacity={0.88}
-                    onPress={() => onSelectMoment(item)}
+                    onPress={() => handleCardPress(item)}
                     style={[
                       styles.journalCard,
                       {
@@ -164,9 +273,10 @@ export function HistoryTimeline({
                       },
                     ]}
                   >
-                    {/* Card Top Meta */}
+                    {/* Card Header Meta */}
                     <View style={styles.cardHeaderMeta}>
                       <View style={styles.dayBadge}>
+                        <Ionicons name="time-outline" size={13} color={colors.accentDark} />
                         <Body weight="bold" color="primary" style={{ fontSize: 13 }}>
                           {formatDay(item.createdAt)}
                         </Body>
@@ -175,39 +285,44 @@ export function HistoryTimeline({
                         </Caption>
                       </View>
 
-                      {item.emotion && (
-                        <View
-                          style={[
-                            styles.emotionPill,
-                            {
-                              backgroundColor: isDark ? '#2D2520' : '#FFF5EB',
-                              borderColor: baseEmotionColor,
-                            },
-                          ]}
-                        >
-                          <Caption style={styles.pillEmoji}>
-                            {item.emotion.icon}
-                          </Caption>
-                          <Caption
-                            weight="bold"
-                            style={{
-                              fontSize: 11.5,
-                              color: isDark ? '#F5F3EF' : colors.accentDark,
-                            }}
+                      <View style={styles.metaRightGroup}>
+                        {renderVisibilityIcon(item.visibility)}
+
+                        {item.emotion && (
+                          <View
+                            style={[
+                              styles.emotionPill,
+                              {
+                                backgroundColor: isDark ? '#2E241E' : '#FFF6EC',
+                                borderColor: baseEmotionColor,
+                              },
+                            ]}
                           >
-                            {item.emotion.label}
-                          </Caption>
-                        </View>
-                      )}
+                            <Caption style={styles.pillEmoji}>
+                              {item.emotion.icon}
+                            </Caption>
+                            <Caption
+                              weight="bold"
+                              style={{
+                                fontSize: 11,
+                                color: isDark ? '#F5EFEB' : colors.accentDark,
+                              }}
+                            >
+                              {item.emotion.label}
+                            </Caption>
+                          </View>
+                        )}
+                      </View>
                     </View>
 
-                    {/* 1. PHOTO MOMENT */}
+                    {/* 1. PHOTO MOMENT (Polaroid / Framed Photo Style) */}
                     {item.type === MomentType.PHOTO && item.imageUrl ? (
                       <View style={styles.photoContainer}>
                         <Image
                           source={{ uri: item.imageUrl }}
                           style={styles.photoImage}
                           contentFit="cover"
+                          transition={200}
                         />
                         {item.content ? (
                           <View
@@ -228,40 +343,45 @@ export function HistoryTimeline({
                       </View>
                     ) : null}
 
-                    {/* 2. NOTE MOMENT */}
+                    {/* 2. NOTE MOMENT (Warm Journal Parchment Paper Style) */}
                     {item.type === MomentType.NOTE ? (
                       <View
                         style={[
                           styles.noteContainer,
                           {
-                            backgroundColor: isDark ? '#282420' : '#FAF6EE',
+                            backgroundColor: isDark ? '#2A2520' : '#FAF6EE',
                             borderColor: colors.cardBorder,
                           },
                         ]}
                       >
                         <View style={styles.noteTop}>
-                          <Ionicons
-                            name="document-text-outline"
-                            size={16}
-                            color={colors.accentDark}
-                          />
-                          <Caption weight="bold" color="primary" style={{ fontSize: 11.5 }}>
-                            Ghi chú nhật ký
+                          <View style={styles.noteBadge}>
+                            <Ionicons
+                              name="document-text"
+                              size={14}
+                              color={colors.accentDark}
+                            />
+                            <Caption weight="bold" color="primary" style={{ fontSize: 11 }}>
+                              Nhật ký tâm sự
+                            </Caption>
+                          </View>
+                          <Caption color="muted" style={{ fontSize: 18, lineHeight: 18 }}>
+                            “
                           </Caption>
                         </View>
                         <Body color="primary" style={styles.noteText}>
-                          "{item.content}"
+                          {item.content}
                         </Body>
                       </View>
                     ) : null}
 
-                    {/* 3. MOOD MOMENT */}
+                    {/* 3. MOOD MOMENT (Soft Emotion Card with Glow) */}
                     {item.type === MomentType.MOOD ? (
                       <View
                         style={[
                           styles.moodContainer,
                           {
-                            backgroundColor: isDark ? '#2E2721' : '#FFF7EE',
+                            backgroundColor: isDark ? '#2D251F' : '#FFF7EE',
                             borderColor: baseEmotionColor,
                           },
                         ]}
@@ -295,19 +415,66 @@ export function HistoryTimeline({
                       ]}
                     >
                       <View style={styles.footerStats}>
-                        <Caption color="muted" style={{ fontSize: 12 }}>
-                          ❤️ {item._count?.reactions || item.reactionsCount || 0}
-                        </Caption>
-                        <Caption color="muted" style={{ fontSize: 12 }}>
-                          💬 {item._count?.comments || item.commentsCount || 0}
-                        </Caption>
+                        <View
+                          style={[
+                            styles.statChip,
+                            {
+                              backgroundColor:
+                                reactionsCount > 0
+                                  ? isDark
+                                    ? '#36281F'
+                                    : '#FFF1E2'
+                                  : 'transparent',
+                            },
+                          ]}
+                        >
+                          <Caption style={{ fontSize: 12, lineHeight: 14 }}>❤️</Caption>
+                          <Caption
+                            weight={reactionsCount > 0 ? 'bold' : 'normal'}
+                            color={reactionsCount > 0 ? 'primary' : 'muted'}
+                            style={{ fontSize: 11.5 }}
+                          >
+                            {reactionsCount}
+                          </Caption>
+                        </View>
+
+                        <View
+                          style={[
+                            styles.statChip,
+                            {
+                              backgroundColor:
+                                messagesCount > 0
+                                  ? isDark
+                                    ? '#22302A'
+                                    : '#EBF6F1'
+                                  : 'transparent',
+                            },
+                          ]}
+                        >
+                          <Caption style={{ fontSize: 12, lineHeight: 14 }}>💬</Caption>
+                          <Caption
+                            weight={messagesCount > 0 ? 'bold' : 'normal'}
+                            color={messagesCount > 0 ? 'primary' : 'muted'}
+                            style={{ fontSize: 11.5 }}
+                          >
+                            {messagesCount}
+                          </Caption>
+                        </View>
                       </View>
-                      <Caption
-                        weight="semibold"
-                        style={{ color: colors.accentDark, fontSize: 11.5 }}
-                      >
-                        Xem chi tiết →
-                      </Caption>
+
+                      <View style={styles.viewDetailLink}>
+                        <Caption
+                          weight="semibold"
+                          style={{ color: colors.accentDark, fontSize: 11.5 }}
+                        >
+                          {t('memories.viewDetail', 'Xem chi tiết')}
+                        </Caption>
+                        <Ionicons
+                          name="chevron-forward"
+                          size={12}
+                          color={colors.accentDark}
+                        />
+                      </View>
                     </View>
                   </TouchableOpacity>
                 </View>
@@ -352,19 +519,33 @@ const styles = StyleSheet.create({
     maxWidth: 260,
   },
   sectionGroup: {
-    marginBottom: Spacing.md + 4,
+    marginBottom: Spacing.lg,
   },
   monthHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: Spacing.sm + 2,
+    marginBottom: Spacing.sm + 4,
     gap: 8,
   },
   monthCapsule: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+  },
+  countBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: BorderRadius.full,
+  },
+  topEmotionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: BorderRadius.full,
     borderWidth: 1,
@@ -380,14 +561,14 @@ const styles = StyleSheet.create({
   verticalLine: {
     position: 'absolute',
     left: 7,
-    top: 6,
+    top: 8,
     bottom: 12,
     width: 2,
     borderRadius: 1,
   },
   timelineItemRow: {
     position: 'relative',
-    marginBottom: Spacing.sm + 6,
+    marginBottom: Spacing.md,
   },
   timelineNode: {
     position: 'absolute',
@@ -407,14 +588,14 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   journalCard: {
-    borderRadius: 18,
-    borderWidth: 1,
+    borderRadius: 20,
+    borderWidth: 1.2,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1.5 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
   },
   cardHeaderMeta: {
     flexDirection: 'row',
@@ -426,7 +607,20 @@ const styles = StyleSheet.create({
   dayBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 5,
+  },
+  metaRightGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  visibilityTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.full,
   },
   emotionPill: {
     flexDirection: 'row',
@@ -438,8 +632,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   pillEmoji: {
-    fontSize: 12,
-    lineHeight: 15,
+    fontSize: 11,
+    lineHeight: 14,
   },
   photoContainer: {
     width: '100%',
@@ -449,8 +643,8 @@ const styles = StyleSheet.create({
     aspectRatio: 1.15,
   },
   photoCaptionWrap: {
-    paddingHorizontal: Spacing.sm + 4,
-    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm + 2,
     borderTopWidth: 0.5,
     borderTopColor: '#EBE6DE22',
   },
@@ -461,37 +655,42 @@ const styles = StyleSheet.create({
   noteContainer: {
     marginHorizontal: Spacing.sm + 4,
     marginBottom: Spacing.sm,
-    padding: Spacing.sm + 4,
-    borderRadius: 12,
+    padding: Spacing.md,
+    borderRadius: 14,
     borderWidth: 1,
   },
   noteTop: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  noteBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 4,
-    marginBottom: 4,
   },
   noteText: {
     fontSize: 14,
-    lineHeight: 21,
+    lineHeight: 22,
     fontStyle: 'italic',
   },
   moodContainer: {
     marginHorizontal: Spacing.sm + 4,
     marginBottom: Spacing.sm,
-    padding: Spacing.md,
-    borderRadius: 14,
-    borderWidth: 1,
+    padding: Spacing.md + 2,
+    borderRadius: 16,
+    borderWidth: 1.2,
     alignItems: 'center',
     justifyContent: 'center',
   },
   moodLargeEmoji: {
-    fontSize: 38,
-    lineHeight: 46,
+    fontSize: 40,
+    lineHeight: 48,
     marginBottom: 2,
   },
   moodTitle: {
-    fontSize: 16,
+    fontSize: 16.5,
     fontWeight: '700',
     marginBottom: 2,
   },
@@ -505,11 +704,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.sm + 4,
-    paddingVertical: 7,
+    paddingVertical: 8,
     borderTopWidth: 0.8,
   },
   footerStats: {
     flexDirection: 'row',
-    gap: Spacing.sm,
+    gap: 8,
+  },
+  statChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.full,
+  },
+  viewDetailLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
   },
 });

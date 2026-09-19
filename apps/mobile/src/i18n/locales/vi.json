@@ -10,7 +10,9 @@
     "share": "Chia sẻ",
     "add": "Thêm",
     "error": "Có lỗi xảy ra",
-    "or": "hoặc"
+    "or": "hoặc",
+    "more": "Xem thêm",
+    "less": "Thu gọn"
   },
   "errors": {
     "networkError": "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại mạng hoặc thử lại sau.",
@@ -196,6 +198,29 @@
     "onThisDaySubtitle": "{{count}} khoảnh khắc bạn đã lưu vào ngày này trong quá khứ",
     "viewDetail": "Xem chi tiết",
     "totalRecorded": "Đã lưu {{count}} khoảnh khắc",
-    "momentDetail": "Chi tiết khoảnh khắc"
+    "momentDetail": "Chi tiết khoảnh khắc",
+    "interactionsOverview": "Tương tác & Phản hồi",
+    "viewAllInteractions": "Xem tất cả",
+    "replyViaChat": "Nhắn tin phản hồi riêng"
+  },
+  "chat": {
+    "inboxTitle": "Hộp thư",
+    "friend": "Bạn bè",
+    "noConversations": "Chưa có tin nhắn nào",
+    "noConversationsDesc": "Phản hồi khoảnh khắc của bạn bè hoặc bắt đầu trò chuyện để kết nối.",
+    "startedConversation": "Bắt đầu cuộc trò chuyện",
+    "inputPlaceholder": "Nhắn tin...",
+    "quotedMoment": "Khoảnh khắc",
+    "replyingToMoment": "Đang phản hồi khoảnh khắc",
+    "reactionsCount": "cảm xúc",
+    "repliesCount": "tin nhắn",
+    "viewInteractions": "Xem phản hồi",
+    "interactionsTitle": "Tương tác khoảnh khắc",
+    "reactions": "Cảm xúc",
+    "noReactionsYet": "Chưa có cảm xúc nào",
+    "privateMessages": "Tin nhắn & phản hồi riêng",
+    "sentMomentReply": "Đã phản hồi khoảnh khắc này",
+    "reply": "Trả lời",
+    "noRepliesYet": "Chưa có tin nhắn riêng nào cho khoảnh khắc này"
   }
 }
