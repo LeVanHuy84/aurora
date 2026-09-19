@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
@@ -91,11 +90,16 @@ export default function CreateMomentScreen() {
     router.replace('/(tabs)');
   };
 
+  // Validation check for primary CTA
+  const isSubmitDisabled =
+    (momentType === MomentType.PHOTO && !selectedImage) ||
+    (momentType === MomentType.NOTE && !content.trim()) ||
+    (momentType === MomentType.MOOD && !selectedEmotion);
+
   // Submit Handler
   const handleShareMoment = async () => {
     setErrorMessage('');
 
-    // Validation
     if (momentType === MomentType.PHOTO && !selectedImage) {
       setErrorMessage(t('moments.errors.photoRequired'));
       return;
@@ -126,7 +130,7 @@ export default function CreateMomentScreen() {
         type: momentType,
         content: content.trim() || undefined,
         imageUrl: finalImageUrl,
-        emotionId: undefined, // Backend allows optional emotion or default
+        emotionId: undefined, // Backend associates emotion or allows custom
         visibility,
       });
 
@@ -145,25 +149,39 @@ export default function CreateMomentScreen() {
   return (
     <ScreenContainer
       scrollable
+      edges={['top', 'left', 'right']}
       contentContainerStyle={styles.scrollContent}
       header={
         <View style={[styles.topNav, { borderBottomColor: colors.divider }]}>
+          {/* Left: Close button */}
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={handleClose}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             style={[
-              styles.closeBtn,
+              styles.navBtn,
               { backgroundColor: colors.surfaceSoft, borderColor: colors.cardBorder },
             ]}
           >
-            <Ionicons name="close" size={20} color={colors.textPrimary} />
+            <Ionicons name="close" size={19} color={colors.textPrimary} />
           </TouchableOpacity>
 
+          {/* Center: Title */}
           <Title level={3} style={styles.navTitle}>
             {t('moments.createMomentTitle')}
           </Title>
 
-          <View style={styles.navPlaceholder} />
+          {/* Right: Secondary Options/Settings button */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            style={[
+              styles.navBtn,
+              { backgroundColor: colors.surfaceSoft, borderColor: colors.cardBorder },
+            ]}
+          >
+            <Ionicons name="ellipsis-horizontal" size={18} color={colors.textSecondary} />
+          </TouchableOpacity>
         </View>
       }
     >
@@ -176,21 +194,24 @@ export default function CreateMomentScreen() {
       >
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={() => setMomentType(MomentType.PHOTO)}
+          onPress={() => {
+            setMomentType(MomentType.PHOTO);
+            setErrorMessage('');
+          }}
           style={[
             styles.segmentBtn,
-            momentType === MomentType.PHOTO && {
-              backgroundColor: colors.card,
-              shadowColor: '#000',
-              shadowOpacity: 0.08,
-              shadowRadius: 4,
-              elevation: 2,
-            },
+            momentType === MomentType.PHOTO && [
+              styles.segmentBtnActive,
+              {
+                backgroundColor: colors.card,
+                borderColor: isDark ? colors.cardBorder : 'rgba(0,0,0,0.06)',
+              },
+            ],
           ]}
         >
           <Ionicons
             name="camera-outline"
-            size={16}
+            size={15}
             color={
               momentType === MomentType.PHOTO
                 ? colors.accentDark
@@ -199,11 +220,13 @@ export default function CreateMomentScreen() {
           />
           <Caption
             weight={momentType === MomentType.PHOTO ? 'bold' : 'medium'}
-            color={
-              momentType === MomentType.PHOTO
-                ? colors.accentDark
-                : 'secondary'
-            }
+            style={{
+              color:
+                momentType === MomentType.PHOTO
+                  ? colors.accentDark
+                  : colors.textSecondary,
+              fontSize: 13,
+            }}
           >
             {t('moments.photo')}
           </Caption>
@@ -211,21 +234,24 @@ export default function CreateMomentScreen() {
 
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={() => setMomentType(MomentType.NOTE)}
+          onPress={() => {
+            setMomentType(MomentType.NOTE);
+            setErrorMessage('');
+          }}
           style={[
             styles.segmentBtn,
-            momentType === MomentType.NOTE && {
-              backgroundColor: colors.card,
-              shadowColor: '#000',
-              shadowOpacity: 0.08,
-              shadowRadius: 4,
-              elevation: 2,
-            },
+            momentType === MomentType.NOTE && [
+              styles.segmentBtnActive,
+              {
+                backgroundColor: colors.card,
+                borderColor: isDark ? colors.cardBorder : 'rgba(0,0,0,0.06)',
+              },
+            ],
           ]}
         >
           <Ionicons
             name="create-outline"
-            size={16}
+            size={15}
             color={
               momentType === MomentType.NOTE
                 ? colors.accentDark
@@ -234,11 +260,13 @@ export default function CreateMomentScreen() {
           />
           <Caption
             weight={momentType === MomentType.NOTE ? 'bold' : 'medium'}
-            color={
-              momentType === MomentType.NOTE
-                ? colors.accentDark
-                : 'secondary'
-            }
+            style={{
+              color:
+                momentType === MomentType.NOTE
+                  ? colors.accentDark
+                  : colors.textSecondary,
+              fontSize: 13,
+            }}
           >
             {t('moments.note')}
           </Caption>
@@ -246,21 +274,24 @@ export default function CreateMomentScreen() {
 
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={() => setMomentType(MomentType.MOOD)}
+          onPress={() => {
+            setMomentType(MomentType.MOOD);
+            setErrorMessage('');
+          }}
           style={[
             styles.segmentBtn,
-            momentType === MomentType.MOOD && {
-              backgroundColor: colors.card,
-              shadowColor: '#000',
-              shadowOpacity: 0.08,
-              shadowRadius: 4,
-              elevation: 2,
-            },
+            momentType === MomentType.MOOD && [
+              styles.segmentBtnActive,
+              {
+                backgroundColor: colors.card,
+                borderColor: isDark ? colors.cardBorder : 'rgba(0,0,0,0.06)',
+              },
+            ],
           ]}
         >
           <Ionicons
             name="happy-outline"
-            size={16}
+            size={15}
             color={
               momentType === MomentType.MOOD
                 ? colors.accentDark
@@ -269,11 +300,13 @@ export default function CreateMomentScreen() {
           />
           <Caption
             weight={momentType === MomentType.MOOD ? 'bold' : 'medium'}
-            color={
-              momentType === MomentType.MOOD
-                ? colors.accentDark
-                : 'secondary'
-            }
+            style={{
+              color:
+                momentType === MomentType.MOOD
+                  ? colors.accentDark
+                  : colors.textSecondary,
+              fontSize: 13,
+            }}
           >
             {t('moments.mood')}
           </Caption>
@@ -285,17 +318,17 @@ export default function CreateMomentScreen() {
         <View
           style={[
             styles.errorBanner,
-            { backgroundColor: '#FDE8E8', borderColor: colors.danger },
+            { backgroundColor: isDark ? '#2D1618' : '#FDE8E8', borderColor: colors.danger },
           ]}
         >
-          <Ionicons name="alert-circle" size={18} color={colors.danger} />
+          <Ionicons name="alert-circle" size={17} color={colors.danger} />
           <Body color="danger" weight="medium" style={styles.errorText}>
             {errorMessage}
           </Body>
         </View>
       ) : null}
 
-      {/* 2. TAB: PHOTO (Hero Photo Upload Box + Caption) */}
+      {/* 2. TAB: PHOTO */}
       {momentType === MomentType.PHOTO && (
         <>
           <View style={styles.section}>
@@ -316,7 +349,7 @@ export default function CreateMomentScreen() {
                   onPress={() => setSelectedImage(null)}
                   style={styles.removeImageBtn}
                 >
-                  <Ionicons name="trash-outline" size={18} color="#FFFFFF" />
+                  <Ionicons name="trash-outline" size={16} color="#FFFFFF" />
                 </TouchableOpacity>
               </View>
             ) : (
@@ -335,7 +368,7 @@ export default function CreateMomentScreen() {
                     { backgroundColor: isDark ? '#2C2926' : '#FDF4EB' },
                   ]}
                 >
-                  <Ionicons name="camera-outline" size={32} color={colors.accentDark} />
+                  <Ionicons name="camera-outline" size={26} color={colors.accentDark} />
                 </View>
                 <Title level={3} style={styles.uploadPromptTitle}>
                   {t('moments.addPhotoPrompt')}
@@ -348,25 +381,27 @@ export default function CreateMomentScreen() {
                   <Button
                     title={t('moments.takePhoto')}
                     size="sm"
-                    variant="secondary"
-                    leftIcon={<Ionicons name="camera" size={16} color={colors.textPrimary} />}
+                    variant="primary"
+                    leftIcon={<Ionicons name="camera" size={15} color="#FFFFFF" />}
                     onPress={handleCaptureCamera}
                     fullWidth={false}
+                    style={styles.heroActionBtn}
                   />
                   <Button
                     title={t('moments.pickFromGallery')}
                     size="sm"
-                    variant="primary"
-                    leftIcon={<Ionicons name="images" size={16} color="#FFFFFF" />}
+                    variant="secondary"
+                    leftIcon={<Ionicons name="images-outline" size={15} color={colors.textPrimary} />}
                     onPress={handlePickFromGallery}
                     fullWidth={false}
+                    style={styles.heroActionBtn}
                   />
                 </View>
               </View>
             )}
           </View>
 
-          {/* Caption */}
+          {/* Caption Textarea */}
           <View style={styles.section}>
             <Label color="primary" style={styles.sectionLabel}>
               {t('moments.captionLabel')}
@@ -410,32 +445,37 @@ export default function CreateMomentScreen() {
         </>
       )}
 
-      {/* 3. TAB: NOTE (Hero Memo / Journal Card with large typography) */}
+      {/* 3. TAB: NOTE */}
       {momentType === MomentType.NOTE && (
         <>
           <View style={styles.section}>
+            <Label color="primary" style={styles.sectionLabel}>
+              {t('moments.noteContentLabel')}
+            </Label>
             <View
               style={[
                 styles.memoCardContainer,
                 {
-                  backgroundColor: isDark ? '#262422' : '#FFFDF9',
-                  borderColor: isDark ? '#3D3835' : '#E8DFD5',
+                  backgroundColor: isDark ? '#242220' : '#FAF7F2',
+                  borderColor: colors.cardBorder,
                 },
               ]}
             >
               <View style={styles.memoHeader}>
                 <View style={styles.memoPin}>
-                  <Ionicons name="document-text-outline" size={18} color={colors.accentDark} />
+                  <Ionicons name="document-text-outline" size={15} color={colors.accentDark} />
                   <Caption color="primary" weight="bold">
                     {t('moments.note')}
                   </Caption>
                 </View>
-                <Caption color="muted">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Caption>
+                <Caption color="muted">
+                  {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Caption>
               </View>
 
               <TextInput
                 multiline
-                numberOfLines={6}
+                numberOfLines={5}
                 value={content}
                 autoFocus
                 onChangeText={(text) => {
@@ -458,7 +498,7 @@ export default function CreateMomentScreen() {
           {/* Optional Emotion for Note */}
           <View style={styles.section}>
             <Label color="secondary" style={styles.sectionLabel}>
-              {t('moments.howAreYouFeeling')} ({t('common.optional', 'Tùy chọn')})
+              {t('moments.howAreYouFeeling')}
             </Label>
             <EmotionSelector
               selectedCode={selectedEmotion?.code}
@@ -468,7 +508,7 @@ export default function CreateMomentScreen() {
         </>
       )}
 
-      {/* 4. TAB: MOOD (Hero Mood Check-in Widget + Optional Short Reflection) */}
+      {/* 4. TAB: MOOD */}
       {momentType === MomentType.MOOD && (
         <>
           {/* Hero Selected Mood Display */}
@@ -479,11 +519,11 @@ export default function CreateMomentScreen() {
                 {
                   backgroundColor: selectedEmotion
                     ? isDark
-                      ? '#2A2520'
-                      : '#FFF7ED'
+                      ? selectedEmotion.bgDark
+                      : selectedEmotion.bgLight
                     : colors.surfaceSoft,
                   borderColor: selectedEmotion
-                    ? colors.accentDark
+                    ? selectedEmotion.color
                     : colors.cardBorder,
                 },
               ]}
@@ -492,17 +532,17 @@ export default function CreateMomentScreen() {
                 {selectedEmotion?.icon || '✨'}
               </Title>
               <Title level={2} style={[styles.moodHeroLabel, { color: colors.textPrimary }]}>
-                {selectedEmotion ? t(selectedEmotion.labelKey) : t('moments.selectYourMoodPrompt', 'Chọn cảm xúc hôm nay')}
+                {selectedEmotion ? t(selectedEmotion.labelKey) : t('moments.howAreYouFeeling')}
               </Title>
               <Caption color="secondary" align="center" style={styles.moodHeroSubtitle}>
                 {selectedEmotion
                   ? t('moments.moodCheckInDesc', 'Khoảnh khắc cảm xúc này sẽ được ghi vào nhật ký và bản đồ cảm xúc tháng')
-                  : t('moments.howAreYouFeeling')}
+                  : t('moments.selectYourMoodPrompt', 'Chọn một cảm xúc bên dưới để check-in hôm nay')}
               </Caption>
             </View>
           </View>
 
-          {/* Emotion Grid Selector */}
+          {/* Emotion Grid / Scroll Selector */}
           <View style={styles.section}>
             <EmotionSelector
               selectedCode={selectedEmotion?.code}
@@ -510,10 +550,10 @@ export default function CreateMomentScreen() {
             />
           </View>
 
-          {/* Optional Reflection Note */}
+          {/* Reflection Note */}
           <View style={styles.section}>
             <Label color="secondary" style={styles.sectionLabel}>
-              {t('moments.moodReasonLabel')} ({t('common.optional', 'Tùy chọn')})
+              {t('moments.moodReasonLabel')}
             </Label>
             <View
               style={[
@@ -571,24 +611,25 @@ export default function CreateMomentScreen() {
           >
             <Ionicons
               name="lock-closed"
-              size={18}
+              size={15}
               color={
                 visibility === Visibility.CLOSE_FRIENDS
                   ? colors.closeFriends
                   : colors.textSecondary
               }
             />
-            <Body
+            <Caption
               weight={visibility === Visibility.CLOSE_FRIENDS ? 'bold' : 'medium'}
               style={{
                 color:
                   visibility === Visibility.CLOSE_FRIENDS
                     ? colors.closeFriends
                     : colors.textPrimary,
+                fontSize: 12,
               }}
             >
               {t('moments.closeFriends')}
-            </Body>
+            </Caption>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -612,24 +653,25 @@ export default function CreateMomentScreen() {
           >
             <Ionicons
               name="people"
-              size={18}
+              size={15}
               color={
                 visibility === Visibility.FRIENDS
                   ? colors.accentDark
                   : colors.textSecondary
               }
             />
-            <Body
+            <Caption
               weight={visibility === Visibility.FRIENDS ? 'bold' : 'medium'}
               style={{
                 color:
                   visibility === Visibility.FRIENDS
                     ? colors.accentDark
                     : colors.textPrimary,
+                fontSize: 12,
               }}
             >
               {t('moments.friends')}
-            </Body>
+            </Caption>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -653,24 +695,25 @@ export default function CreateMomentScreen() {
           >
             <Ionicons
               name="person"
-              size={18}
+              size={15}
               color={
                 visibility === Visibility.ONLY_ME
                   ? colors.textPrimary
                   : colors.textSecondary
               }
             />
-            <Body
+            <Caption
               weight={visibility === Visibility.ONLY_ME ? 'bold' : 'medium'}
               style={{
                 color:
                   visibility === Visibility.ONLY_ME
                     ? colors.textPrimary
                     : colors.textSecondary,
+                fontSize: 12,
               }}
             >
               {t('moments.onlyMe')}
-            </Body>
+            </Caption>
           </TouchableOpacity>
         </View>
       </View>
@@ -685,8 +728,10 @@ export default function CreateMomentScreen() {
           }
           size="lg"
           variant="primary"
+          disabled={isSubmitDisabled}
           loading={isUploading || createMoment.isPending}
           onPress={handleShareMoment}
+          style={[styles.primaryCta, isSubmitDisabled && styles.primaryCtaDisabled]}
         />
       </View>
     </ScreenContainer>
@@ -696,17 +741,18 @@ export default function CreateMomentScreen() {
 const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xl * 2,
+    paddingTop: Spacing.xs,
+    paddingBottom: Spacing.xl * 2.5,
   },
   topNav: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm + 2,
+    paddingVertical: Spacing.sm,
     borderBottomWidth: 1,
   },
-  closeBtn: {
+  navBtn: {
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -715,73 +761,90 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   navTitle: {
-    fontSize: 18,
+    fontSize: 17,
     letterSpacing: -0.2,
-  },
-  navPlaceholder: {
-    width: 36,
+    fontWeight: '700',
   },
   segmentContainer: {
     flexDirection: 'row',
     borderRadius: BorderRadius.md,
     borderWidth: 1,
-    padding: 4,
-    marginVertical: Spacing.md,
+    padding: 3,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.lg,
+    height: 42,
   },
   segmentBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.sm,
-    gap: Spacing.xs + 2,
+    gap: 6,
+  },
+  segmentBtnActive: {
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
   },
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: BorderRadius.md,
-    padding: Spacing.md,
+    padding: Spacing.sm + 2,
     marginBottom: Spacing.md,
     gap: Spacing.sm,
   },
   errorText: {
     flex: 1,
+    fontSize: 13,
   },
   section: {
     marginBottom: Spacing.lg,
   },
   sectionLabel: {
-    marginBottom: Spacing.xs + 2,
+    marginBottom: 8,
+    fontSize: 13,
   },
   uploadBox: {
     borderRadius: BorderRadius.card,
-    borderWidth: 1.5,
+    borderWidth: 1.2,
     borderStyle: 'dashed',
-    padding: Spacing.lg,
+    paddingVertical: Spacing.md + 4,
+    paddingHorizontal: Spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   uploadIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.xs + 2,
   },
   uploadPromptTitle: {
-    fontSize: 16,
+    fontSize: 15,
     marginBottom: 2,
   },
   uploadPromptSub: {
     textAlign: 'center',
     marginBottom: Spacing.md,
+    fontSize: 12,
   },
   uploadActionRow: {
     flexDirection: 'row',
-    gap: Spacing.md,
+    gap: Spacing.sm + 4,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  heroActionBtn: {
+    paddingHorizontal: Spacing.md,
+    minHeight: 38,
   },
   imagePreviewContainer: {
     width: '100%',
@@ -800,44 +863,44 @@ const styles = StyleSheet.create({
     top: Spacing.sm,
     right: Spacing.sm,
     backgroundColor: 'rgba(0,0,0,0.65)',
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
   textInputContainer: {
     borderRadius: BorderRadius.md,
-    borderWidth: 1.5,
-    padding: Spacing.md,
-    minHeight: 110,
+    borderWidth: 1.2,
+    padding: Spacing.sm + 4,
+    minHeight: 84,
     justifyContent: 'space-between',
   },
   textInput: {
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 14.5,
+    lineHeight: 21,
     textAlignVertical: 'top',
-    minHeight: 70,
+    minHeight: 52,
   },
   charCounter: {
     fontSize: 11,
   },
   memoCardContainer: {
     borderRadius: BorderRadius.card,
-    borderWidth: 1.5,
-    padding: Spacing.lg,
-    minHeight: 180,
+    borderWidth: 1.2,
+    padding: Spacing.md,
+    minHeight: 140,
     shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 10,
-    elevation: 2,
+    shadowOpacity: 0.04,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 6,
+    elevation: 1,
   },
   memoHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.xs + 2,
     paddingBottom: Spacing.xs,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.05)',
@@ -845,13 +908,13 @@ const styles = StyleSheet.create({
   memoPin: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.xs,
+    gap: 4,
   },
   memoTextInput: {
-    fontSize: 17,
-    lineHeight: 26,
+    fontSize: 15.5,
+    lineHeight: 24,
     textAlignVertical: 'top',
-    minHeight: 100,
+    minHeight: 75,
   },
   memoFooter: {
     alignItems: 'flex-end',
@@ -859,41 +922,50 @@ const styles = StyleSheet.create({
   },
   moodHeroBox: {
     borderRadius: BorderRadius.card,
-    borderWidth: 1.5,
-    padding: Spacing.lg,
+    borderWidth: 1.2,
+    paddingVertical: Spacing.md + 2,
+    paddingHorizontal: Spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   moodHeroEmoji: {
-    fontSize: 52,
-    lineHeight: 60,
-    marginBottom: Spacing.xs,
+    fontSize: 44,
+    lineHeight: 50,
+    marginBottom: 4,
   },
   moodHeroLabel: {
-    fontSize: 20,
-    marginBottom: 4,
+    fontSize: 18,
+    marginBottom: 2,
     textAlign: 'center',
   },
   moodHeroSubtitle: {
     paddingHorizontal: Spacing.md,
+    fontSize: 12,
   },
   visibilityRow: {
     flexDirection: 'row',
-    gap: Spacing.sm,
+    gap: Spacing.xs + 3,
   },
   visibilityCard: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.sm + 2,
-    paddingHorizontal: Spacing.xs,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: 4,
     borderRadius: BorderRadius.md,
-    borderWidth: 1.5,
-    gap: Spacing.xs + 2,
+    borderWidth: 1.2,
+    gap: 5,
+    minHeight: 38,
   },
   footerAction: {
-    marginTop: Spacing.md,
-    marginBottom: Spacing.xl,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  primaryCta: {
+    height: 50,
+  },
+  primaryCtaDisabled: {
+    opacity: 0.5,
   },
 });

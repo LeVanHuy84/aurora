@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, ScrollView, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks/use-theme';
 import { PRESET_EMOTIONS, PresetEmotion } from '../../constants/emotions';
@@ -23,6 +23,7 @@ export function EmotionSelector({
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
     >
       {PRESET_EMOTIONS.map((emotion) => {
         const isSelected = selectedCode === emotion.code;
@@ -30,7 +31,7 @@ export function EmotionSelector({
         return (
           <TouchableOpacity
             key={emotion.code}
-            activeOpacity={0.75}
+            activeOpacity={0.7}
             onPress={() => {
               if (isSelected) {
                 onSelectEmotion(null);
@@ -46,7 +47,9 @@ export function EmotionSelector({
                     ? emotion.bgDark
                     : emotion.bgLight
                   : colors.surfaceSoft,
-                borderColor: isSelected ? emotion.color : colors.cardBorder,
+                borderColor: isSelected
+                  ? emotion.color
+                  : colors.cardBorder,
               },
             ]}
           >
@@ -55,6 +58,7 @@ export function EmotionSelector({
               weight={isSelected ? 'bold' : 'medium'}
               style={{
                 color: isSelected ? emotion.color : colors.textSecondary,
+                fontSize: 12.5,
               }}
             >
               {t(emotion.labelKey)}
@@ -68,20 +72,23 @@ export function EmotionSelector({
 
 const styles = StyleSheet.create({
   scrollContent: {
-    paddingVertical: Spacing.xs,
-    gap: Spacing.sm,
+    paddingVertical: 2,
+    paddingRight: Spacing.md,
+    gap: Spacing.xs + 3,
+    alignItems: 'center',
   },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.sm + 4,
+    paddingVertical: 6,
     borderRadius: BorderRadius.full,
-    borderWidth: 1.5,
-    gap: Spacing.xs + 2,
-    minHeight: 40,
+    borderWidth: 1.2,
+    gap: 6,
+    height: 36,
   },
   icon: {
-    fontSize: 16,
+    fontSize: 15,
+    lineHeight: 18,
   },
 });
