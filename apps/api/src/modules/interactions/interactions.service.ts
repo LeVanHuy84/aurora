@@ -1,11 +1,9 @@
 import {
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
 import { CreateReactionDto } from './dto/create-reaction.dto.js';
-import { CreateCommentDto } from './dto/create-comment.dto.js';
 
 @Injectable()
 export class InteractionsService {
@@ -14,6 +12,16 @@ export class InteractionsService {
   private async getActiveMoment(momentId: string) {
     const moment = await this.prisma.moment.findFirst({
       where: { id: momentId, deletedAt: null },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+          },
+        },
+      },
     });
 
     if (!moment) {
@@ -41,6 +49,16 @@ export class InteractionsService {
       },
       update: {
         type: dto.type,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+          },
+        },
       },
     });
   }
@@ -73,77 +91,178 @@ export class InteractionsService {
     return { success: true, message: 'Reaction removed successfully' };
   }
 
-  // --- PRIVATE 1-1 COMMENTS ---
-  async getComments(userId: string, momentId: string) {
+  // --- MOMENT INTERACTIONS SUMMARY & THREADS ---
+  async getMomentInteractions(userId: string, momentId: string) {
     const moment = await this.getActiveMoment(momentId);
-
-    // Rule: Author views all comments. Friends only view their own conversation comments with author.
     const isOwner = moment.userId === userId;
 
-    return this.prisma.comment.findMany({
-      where: {
-        momentId,
-        deletedAt: null,
-        ...(!isOwner && {
-          OR: [{ userId }, { moment: { userId } }],
-        }),
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true,
-            avatarUrl: true,
+    if (isOwner) {
+      // 1. Author: Lấy tất cả Reactions
+      const reactions = await this.prisma.reaction.findMany({
+        where: { momentId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatarUrl: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'asc' },
-    });
-  }
+        orderBy: { createdAt: 'desc' },
+      });
 
-  async addComment(userId: string, momentId: string, dto: CreateCommentDto) {
-    await this.getActiveMoment(momentId);
-
-    return this.prisma.comment.create({
-      data: {
-        momentId,
-        userId,
-        content: dto.content,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true,
-            avatarUrl: true,
+      // 2. Author: Lấy tất cả Messages trích dẫn moment này
+      const messages = await this.prisma.message.findMany({
+        where: {
+          momentId,
+          deletedAt: null,
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatarUrl: true,
+            },
+          },
+          conversation: {
+            include: {
+              members: {
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      username: true,
+                      displayName: true,
+                      avatarUrl: true,
+                    },
+                  },
+                },
+              },
+            },
           },
         },
-      },
-    });
-  }
+        orderBy: { createdAt: 'asc' },
+      });
 
-  async deleteComment(userId: string, commentId: string) {
-    const comment = await this.prisma.comment.findFirst({
-      where: { id: commentId, deletedAt: null },
-      include: { moment: true },
-    });
+      // Gom nhóm tin nhắn theo từng người bạn (Friend Thread)
+      const threadMap = new Map<string, { friend: any; conversationId: string; messages: any[] }>();
 
-    if (!comment) {
-      throw new NotFoundException('COMMENT_NOT_FOUND');
+      for (const msg of messages) {
+        const friendMember = msg.conversation.members.find((m) => m.userId !== userId);
+        if (!friendMember) continue;
+
+        const friendId = friendMember.userId;
+        if (!threadMap.has(friendId)) {
+          threadMap.set(friendId, {
+            friend: friendMember.user,
+            conversationId: msg.conversationId,
+            messages: [],
+          });
+        }
+
+        threadMap.get(friendId)!.messages.push({
+          id: msg.id,
+          conversationId: msg.conversationId,
+          senderId: msg.senderId,
+          content: msg.content,
+          type: msg.type,
+          momentId: msg.momentId,
+          createdAt: msg.createdAt,
+          sender: msg.sender,
+        });
+      }
+
+      const threads = Array.from(threadMap.values()).map((t) => ({
+        friend: t.friend,
+        conversationId: t.conversationId,
+        lastMessage: t.messages[t.messages.length - 1] || null,
+        messages: t.messages,
+      }));
+
+      return {
+        momentId,
+        isOwner: true,
+        reactions,
+        threads,
+      };
+    } else {
+      // Viewer: Lấy reaction của chính mình
+      const myReaction = await this.prisma.reaction.findUnique({
+        where: {
+          momentId_userId: {
+            momentId,
+            userId,
+          },
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatarUrl: true,
+            },
+          },
+        },
+      });
+
+      // Viewer: Lấy các tin nhắn trích dẫn moment này trong cuộc trò chuyện giữa viewer và owner
+      const conversationMembership = await this.prisma.conversationMember.findFirst({
+        where: {
+          userId,
+          conversation: {
+            isGroup: false,
+            members: {
+              some: {
+                userId: moment.userId,
+              },
+            },
+          },
+        },
+      });
+
+      let messages: any[] = [];
+      if (conversationMembership) {
+        messages = await this.prisma.message.findMany({
+          where: {
+            conversationId: conversationMembership.conversationId,
+            momentId,
+            deletedAt: null,
+          },
+          include: {
+            sender: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatarUrl: true,
+              },
+            },
+          },
+          orderBy: { createdAt: 'asc' },
+        });
+      }
+
+      return {
+        momentId,
+        isOwner: false,
+        reactions: [],
+        myReaction: myReaction || null,
+        threads: conversationMembership
+          ? [
+              {
+                friend: moment.user,
+                conversationId: conversationMembership.conversationId,
+                lastMessage: messages[messages.length - 1] || null,
+                messages,
+              },
+            ]
+          : [],
+      };
     }
-
-    // Either author of comment or author of moment can delete
-    if (comment.userId !== userId && comment.moment.userId !== userId) {
-      throw new ForbiddenException('FORBIDDEN');
-    }
-
-    await this.prisma.comment.update({
-      where: { id: commentId },
-      data: { deletedAt: new Date() },
-    });
-
-    return { success: true, message: 'Comment deleted successfully' };
   }
 }

@@ -36,7 +36,7 @@
 - [x] **Task 3.4:** **Tab 3 — `+` Create Moment Interactive Bottom Sheet:** Flow tạo Moment 10–15s (1 ảnh / Note / Mood).
 - [x] **Task 3.5:** **Tab 2 — `Memories` Screen (Calendar & History):** Lịch tháng hiển thị Emoji Mood & "On This Day".
 - [x] **Task 3.6:** **Tab 4 — `Me` Screen (Profile & Monthly Mood):** Profile cá nhân & Biểu đồ Monthly Mood Chart.
-- [ ] **Task 3.7:** **Direct 1-1 Comment UI:** Giao diện xem & phản hồi bình luận riêng tư.
+- [x] **Task 3.7:** **1-1 Direct Messaging & Moment Quoted Reply (Chat 1-1 & Tương tác Locket-style):** Hệ thống tin nhắn 1-1, trích dẫn Moment, màn hình Inbox (`/inbox`), phòng Chat 1-1 (`/chat/[id]`), hiệu ứng pháo hoa cảm xúc (`FloatingEmojiBurst`) & Bottom Sheet xem phản hồi tương tác.
 
 ---
 

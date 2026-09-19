@@ -40,7 +40,13 @@ enum NotificationType {
   FRIEND_ACCEPT
   NEW_MOMENT
   REACTION
-  COMMENT
+  DIRECT_MESSAGE
+}
+
+enum MessageType {
+  TEXT
+  MOMENT_REPLY
+  REACTION_BURST
 }
 
 // ------------------------------------------------------
@@ -64,10 +70,11 @@ model User {
   deletedAt     DateTime?     // Soft delete
 
   // Relations
-  tokens        RefreshToken[]
-  moments       Moment[]
-  reactions     Reaction[]
-  comments      Comment[]
+  tokens               RefreshToken[]
+  moments              Moment[]
+  reactions            Reaction[]
+  conversationMembers  ConversationMember[]
+  sentMessages         Message[]            @relation("SentMessages")
   
   // Friendships
   sentRequests     Friendship[] @relation("SentFriendships")
@@ -129,8 +136,8 @@ model Moment {
   deletedAt   DateTime?   // Soft delete
 
   // Relations
-  reactions   Reaction[]
-  comments    Comment[]
+  reactions       Reaction[]
+  quotedMessages  Message[]
 
   @@map("moments")
   @@index([userId, createdAt])
@@ -165,7 +172,7 @@ model Reaction {
   userId    String   @db.Uuid
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  type      String   // e.g., "LOVE", "FUNNY", "RELATABLE", "NICE", "SUPPORT"
+  type      String   // e.g., "LOVE", "CARE", "FUNNY", "RELATABLE", "PROUD"
 
   createdAt DateTime @default(now())
 
@@ -174,22 +181,60 @@ model Reaction {
   @@index([momentId])
 }
 
-model Comment {
-  id        String    @id @default(uuid()) @db.Uuid
-  momentId  String    @db.Uuid
-  moment    Moment    @relation(fields: [momentId], references: [id], onDelete: Cascade)
+model Conversation {
+  id            String               @id @default(uuid()) @db.Uuid
+  isGroup       Boolean              @default(false)
+  name          String?              // Tên nhóm nếu là group chat
+  lastMessageAt DateTime             @default(now())
 
-  userId    String    @db.Uuid
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
 
-  content   String    @db.Text
-  
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime? // Soft delete
+  members       ConversationMember[]
+  messages      Message[]
 
-  @@map("comments")
-  @@index([momentId, createdAt])
+  @@map("conversations")
+  @@index([lastMessageAt])
+}
+
+model ConversationMember {
+  id             String       @id @default(uuid()) @db.Uuid
+  conversationId String       @db.Uuid
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  userId         String       @db.Uuid
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  lastReadAt     DateTime?
+  joinedAt       DateTime     @default(now())
+
+  @@unique([conversationId, userId])
+  @@map("conversation_members")
+  @@index([userId])
+  @@index([conversationId])
+}
+
+model Message {
+  id             String       @id @default(uuid()) @db.Uuid
+  conversationId String       @db.Uuid
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId       String       @db.Uuid
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  momentId       String?      @db.Uuid
+  moment         Moment?      @relation(fields: [momentId], references: [id], onDelete: SetNull)
+
+  content        String       @db.Text
+  type           MessageType  @default(TEXT)
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+
+  @@map("messages")
+  @@index([conversationId, createdAt])
+  @@index([momentId])
 }
 
 model Notification {

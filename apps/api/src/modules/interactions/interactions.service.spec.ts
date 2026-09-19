@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { InteractionsService } from './interactions.service.js';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
 
@@ -11,6 +11,12 @@ describe('InteractionsService', () => {
     id: 'moment-uuid-1',
     userId: 'user-uuid-1',
     deletedAt: null,
+    user: {
+      id: 'user-uuid-1',
+      username: 'author',
+      displayName: 'Author Name',
+      avatarUrl: null,
+    },
   };
 
   const mockReaction = {
@@ -19,17 +25,6 @@ describe('InteractionsService', () => {
     userId: 'user-uuid-2',
     type: 'LOVE',
     createdAt: new Date(),
-  };
-
-  const mockComment = {
-    id: 'comment-uuid-1',
-    momentId: 'moment-uuid-1',
-    userId: 'user-uuid-2',
-    content: 'Love this moment!',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: null,
-    moment: mockMoment,
     user: {
       id: 'user-uuid-2',
       username: 'friend',
@@ -45,13 +40,14 @@ describe('InteractionsService', () => {
     reaction: {
       upsert: vi.fn(),
       findUnique: vi.fn(),
+      findMany: vi.fn(),
       delete: vi.fn(),
     },
-    comment: {
+    message: {
       findMany: vi.fn(),
+    },
+    conversationMember: {
       findFirst: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
     },
   };
 
@@ -113,65 +109,61 @@ describe('InteractionsService', () => {
     });
   });
 
-  describe('getComments', () => {
-    it('should return comments for moment author', async () => {
+  describe('getMomentInteractions', () => {
+    it('should return reactions and grouped threads for owner', async () => {
       mockPrismaService.moment.findFirst.mockResolvedValue(mockMoment);
-      mockPrismaService.comment.findMany.mockResolvedValue([mockComment]);
+      mockPrismaService.reaction.findMany.mockResolvedValue([mockReaction]);
+      mockPrismaService.message.findMany.mockResolvedValue([
+        {
+          id: 'msg-1',
+          conversationId: 'conv-1',
+          senderId: 'user-uuid-2',
+          content: 'Cool photo!',
+          type: 'MOMENT_REPLY',
+          momentId: 'moment-uuid-1',
+          createdAt: new Date(),
+          sender: { id: 'user-uuid-2', username: 'friend', displayName: 'Friend', avatarUrl: null },
+          conversation: {
+            members: [
+              { userId: 'user-uuid-1', user: mockMoment.user },
+              { userId: 'user-uuid-2', user: { id: 'user-uuid-2', username: 'friend', displayName: 'Friend', avatarUrl: null } },
+            ],
+          },
+        },
+      ]);
 
-      const result = await service.getComments('user-uuid-1', 'moment-uuid-1');
+      const result = await service.getMomentInteractions('user-uuid-1', 'moment-uuid-1');
 
-      expect(result).toHaveLength(1);
+      expect(result.isOwner).toBe(true);
+      expect(result.reactions).toHaveLength(1);
+      expect(result.threads).toHaveLength(1);
+      expect(result.threads[0].friend.id).toBe('user-uuid-2');
     });
-  });
 
-  describe('addComment', () => {
-    it('should create comment on moment', async () => {
+    it('should return viewer reaction and 1-1 thread for viewer', async () => {
       mockPrismaService.moment.findFirst.mockResolvedValue(mockMoment);
-      mockPrismaService.comment.create.mockResolvedValue(mockComment);
-
-      const result = await service.addComment('user-uuid-2', 'moment-uuid-1', {
-        content: 'Love this moment!',
+      mockPrismaService.reaction.findUnique.mockResolvedValue(mockReaction);
+      mockPrismaService.conversationMember.findFirst.mockResolvedValue({
+        conversationId: 'conv-1',
       });
+      mockPrismaService.message.findMany.mockResolvedValue([
+        {
+          id: 'msg-1',
+          conversationId: 'conv-1',
+          senderId: 'user-uuid-2',
+          content: 'Awesome moment',
+          type: 'MOMENT_REPLY',
+          momentId: 'moment-uuid-1',
+          createdAt: new Date(),
+          sender: mockReaction.user,
+        },
+      ]);
 
-      expect(result).toEqual(mockComment);
-    });
-  });
+      const result = await service.getMomentInteractions('user-uuid-2', 'moment-uuid-1');
 
-  describe('deleteComment', () => {
-    it('should throw NotFoundException if comment not found', async () => {
-      mockPrismaService.comment.findFirst.mockResolvedValue(null);
-
-      await expect(
-        service.deleteComment('user-uuid-2', 'invalid-id'),
-      ).rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw ForbiddenException if user is neither comment author nor moment author', async () => {
-      mockPrismaService.comment.findFirst.mockResolvedValue({
-        ...mockComment,
-        userId: 'author-comment',
-        moment: { userId: 'author-moment' },
-      });
-
-      await expect(
-        service.deleteComment('stranger-user', 'comment-uuid-1'),
-      ).rejects.toThrow(ForbiddenException);
-    });
-
-    it('should soft delete comment if user is comment author', async () => {
-      mockPrismaService.comment.findFirst.mockResolvedValue(mockComment);
-      mockPrismaService.comment.update.mockResolvedValue({
-        ...mockComment,
-        deletedAt: new Date(),
-      });
-
-      const result = await service.deleteComment('user-uuid-2', 'comment-uuid-1');
-
-      expect(result.success).toBe(true);
-      expect(mockPrismaService.comment.update).toHaveBeenCalledWith({
-        where: { id: 'comment-uuid-1' },
-        data: { deletedAt: expect.any(Date) },
-      });
+      expect(result.isOwner).toBe(false);
+      expect(result.myReaction).toEqual(mockReaction);
+      expect(result.threads).toHaveLength(1);
     });
   });
 });
