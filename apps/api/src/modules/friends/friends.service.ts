@@ -9,10 +9,14 @@ import { FriendshipStatus } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
 import { SendFriendRequestDto } from './dto/send-friend-request.dto.js';
 import { UpdateCloseFriendDto } from './dto/update-close-friend.dto.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 
 @Injectable()
 export class FriendsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async getFriends(userId: string) {
     const friendships = await this.prisma.friendship.findMany({
@@ -127,7 +131,7 @@ export class FriendsService {
       }
     }
 
-    return this.prisma.friendship.create({
+    const friendship = await this.prisma.friendship.create({
       data: {
         requesterId: userId,
         receiverId: dto.receiverId,
@@ -144,6 +148,11 @@ export class FriendsService {
         },
       },
     });
+
+    // Notify receiver asynchronously
+    this.notificationsService.notifyFriendRequest(userId, dto.receiverId).catch(() => {});
+
+    return friendship;
   }
 
   async acceptRequest(userId: string, friendshipId: string) {

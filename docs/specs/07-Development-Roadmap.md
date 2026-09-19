@@ -44,7 +44,7 @@
 - [x] **Task 4.1:** **CI/CD Pipeline (GitHub Actions):** 
   - Automated Lint, Type-Check & Build test cho cả `apps/api` và `apps/mobile` khi `git push` hoặc `pull_request`.
   - Continuous Deployment (CD) cho Backend API & Expo EAS Build/Preview.
-- [ ] **Task 4.2:** **Push Notifications:** Tích hợp `expo-notifications` và Firebase FCM.
+- [x] **Task 4.2:** **Push Notifications:** Tích hợp `expo-notifications` và Firebase FCM / Expo Push Service.
 - [ ] **Task 4.3:** **Tối ưu hóa hiệu năng Mobile:** Áp dụng `expo-image` để nén và cache ảnh mượt mà.
 - [ ] **Task 4.4:** **Kiểm thử toàn diện:** Test luồng sử dụng thực tế giữa 2 máy iPhone qua Expo Go.
 - [ ] **Task 4.5:** **Deployment Readiness:** Cấu hình Docker cho NestJS Backend & PostgreSQL Database.
@@ -52,6 +52,7 @@
 ---
 
 ## 🔮 Phase 5: Nâng Cấp Tương Lai (Future Enhancements - Post-MVP)
+- [ ] **Native Production Push Credentials Setup (FCM v1 & Apple APNs):** Cấu hình Firebase Cloud Messaging v1 (`service-account.json`) cho Android Standalone APK/AAB và Apple Push Notifications Key (p8) cho iOS TestFlight/App Store trên EAS Credentials để chạy thông báo độc lập hoàn toàn không phụ thuộc Expo Go.
 - [ ] **AI Weekly/Monthly Reflection:** Tích hợp AI phân tích xu hướng cảm xúc hàng tuần/tháng.
 - [ ] **Location & Music Attachment:** Đính kèm vị trí địa lý hoặc bài hát Spotify vào Moment.
 - [ ] **Widgets iOS/Android:** Widget ngoài màn hình chính hiển thị khoảnh khắc mới nhất của Bạn thân.

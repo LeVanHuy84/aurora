@@ -1,0 +1,13 @@
+{
+  "NEW_MOMENT_TITLE": "✨ {name}",
+  "NEW_MOMENT_BODY": "Shared a new moment with you 📸",
+  "NEW_MESSAGE_TITLE": "💬 {name}",
+  "NEW_MESSAGE_DEFAULT": "Sent you a message",
+  "NEW_MESSAGE_MOMENT_REPLY": "Replied to your moment",
+  "REACTION_TITLE": "💖 {name}",
+  "REACTION_BODY": "Reacted {emoji} to your moment",
+  "COMMENT_TITLE": "💬 {name}",
+  "COMMENT_BODY": "Commented: \"{text}\"",
+  "FRIEND_REQUEST_TITLE": "👋 New Friend Request",
+  "FRIEND_REQUEST_BODY": "{name} sent you a friend request"
+}

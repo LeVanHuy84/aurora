@@ -8,12 +8,16 @@ import { FriendshipStatus, MomentType, Visibility } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
 import { CreateMomentDto } from './dto/create-moment.dto.js';
 import { GetCalendarQueryDto, GetHistoryQueryDto } from './dto/query-moment.dto.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 @Injectable()
 export class MomentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async create(userId: string, dto: CreateMomentDto) {
     if (dto.type === MomentType.PHOTO && !dto.imageUrl) {
@@ -40,7 +44,7 @@ export class MomentsService {
       finalEmotionId = emotion.id;
     }
 
-    return this.prisma.moment.create({
+    const moment = await this.prisma.moment.create({
       data: {
         userId,
         type: dto.type,
@@ -61,6 +65,18 @@ export class MomentsService {
         },
       },
     });
+
+    // Asynchronously dispatch push notification to friends
+    this.notificationsService
+      .notifyNewMoment(userId, {
+        id: moment.id,
+        type: moment.type,
+        visibility: moment.visibility,
+        content: moment.content,
+      })
+      .catch(() => {});
+
+    return moment;
   }
 
   async getToday(userId: string) {

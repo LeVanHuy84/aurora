@@ -8,10 +8,14 @@ import { PrismaService } from '../../common/prisma/prisma.service.js';
 import { SendMessageDto } from './dto/send-message.dto.js';
 import { GetMessagesQueryDto } from './dto/get-messages-query.dto.js';
 import { MessageType } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service.js';
 
 @Injectable()
 export class ChatService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   /**
    * Lấy danh sách các cuộc trò chuyện của User
@@ -363,6 +367,29 @@ export class ChatService {
       },
       data: { lastReadAt: now },
     });
+
+    // Gửi Push Notification đến các thành viên khác trong cuộc trò chuyện
+    this.prisma.conversationMember
+      .findMany({
+        where: {
+          conversationId,
+          userId: { not: userId },
+        },
+        select: { userId: true },
+      })
+      .then((otherMembers) => {
+        for (const member of otherMembers) {
+          this.notificationsService
+            .notifyNewMessage(
+              userId,
+              member.userId,
+              dto.content || (dto.momentId ? 'Đã phản hồi một khoảnh khắc' : 'Đã gửi một tin nhắn'),
+              conversationId,
+            )
+            .catch(() => {});
+        }
+      })
+      .catch(() => {});
 
     return message;
   }

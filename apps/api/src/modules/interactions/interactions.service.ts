@@ -4,10 +4,14 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
 import { CreateReactionDto } from './dto/create-reaction.dto.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 
 @Injectable()
 export class InteractionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   private async getActiveMoment(momentId: string) {
     const moment = await this.prisma.moment.findFirst({
@@ -33,9 +37,9 @@ export class InteractionsService {
 
   // --- REACTIONS ---
   async addOrUpdateReaction(userId: string, momentId: string, dto: CreateReactionDto) {
-    await this.getActiveMoment(momentId);
+    const moment = await this.getActiveMoment(momentId);
 
-    return this.prisma.reaction.upsert({
+    const reaction = await this.prisma.reaction.upsert({
       where: {
         momentId_userId: {
           momentId,
@@ -61,6 +65,15 @@ export class InteractionsService {
         },
       },
     });
+
+    // Notify moment owner asynchronously
+    if (moment.userId !== userId) {
+      this.notificationsService
+        .notifyReaction(userId, moment.userId, momentId, dto.type)
+        .catch(() => {});
+    }
+
+    return reaction;
   }
 
   async removeReaction(userId: string, momentId: string) {

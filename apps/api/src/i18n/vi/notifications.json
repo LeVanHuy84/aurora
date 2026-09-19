@@ -1,0 +1,13 @@
+{
+  "NEW_MOMENT_TITLE": "✨ {name}",
+  "NEW_MOMENT_BODY": "Đã chia sẻ một khoảnh khắc mới với bạn 📸",
+  "NEW_MESSAGE_TITLE": "💬 {name}",
+  "NEW_MESSAGE_DEFAULT": "Đã gửi một tin nhắn",
+  "NEW_MESSAGE_MOMENT_REPLY": "Đã phản hồi một khoảnh khắc của bạn",
+  "REACTION_TITLE": "💖 {name}",
+  "REACTION_BODY": "Đã bày tỏ cảm xúc {emoji} vào khoảnh khắc của bạn",
+  "COMMENT_TITLE": "💬 {name}",
+  "COMMENT_BODY": "Đã phản hồi: \"{text}\"",
+  "FRIEND_REQUEST_TITLE": "👋 Lời mời kết bạn mới",
+  "FRIEND_REQUEST_BODY": "{name} đã gửi cho bạn một lời mời kết bạn"
+}
