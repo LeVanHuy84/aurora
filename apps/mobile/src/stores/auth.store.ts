@@ -11,6 +11,7 @@ interface AuthState {
   isInitialized: boolean;
 
   setSession: (user: UserProfile, tokens: AuthTokens) => Promise<void>;
+  updateTokens: (tokens: AuthTokens) => void;
   setUser: (user: UserProfile) => void;
   logout: () => Promise<void>;
   initAuth: () => Promise<void>;
@@ -30,6 +31,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       tokens,
       isAuthenticated: true,
       isLoading: false,
+    });
+  },
+
+  updateTokens: (tokens: AuthTokens) => {
+    set({
+      tokens,
+      isAuthenticated: true,
     });
   },
 
@@ -71,28 +79,41 @@ export const useAuthStore = create<AuthState>((set) => ({
         return;
       }
 
-      // Fetch user profile to verify current session
+      // Fetch user profile to verify current session (will auto-refresh token if accessToken expired)
       const user = await authService.getMe();
+      const latestAccessToken = (await tokenStorage.getAccessToken()) || accessToken || '';
+      const latestRefreshToken = (await tokenStorage.getRefreshToken()) || refreshToken || '';
+
       set({
         user,
         tokens: {
-          accessToken: accessToken || '',
-          refreshToken: refreshToken || '',
+          accessToken: latestAccessToken,
+          refreshToken: latestRefreshToken,
         },
         isAuthenticated: true,
         isLoading: false,
         isInitialized: true,
       });
-    } catch (error) {
-      console.warn('Session verification failed, logging out', error);
-      await tokenStorage.clearTokens();
-      set({
-        user: null,
-        tokens: null,
-        isAuthenticated: false,
-        isLoading: false,
-        isInitialized: true,
-      });
+    } catch (error: any) {
+      console.warn('Session verification failed during initAuth', error);
+      // Only clear tokens if unauthorized (401/403), do NOT log out on temporary network failure
+      const isUnauthorized = error?.statusCode === 401 || error?.statusCode === 403;
+      if (isUnauthorized) {
+        await tokenStorage.clearTokens();
+        set({
+          user: null,
+          tokens: null,
+          isAuthenticated: false,
+          isLoading: false,
+          isInitialized: true,
+        });
+      } else {
+        // Keep authenticated state for offline/network retry
+        set({
+          isLoading: false,
+          isInitialized: true,
+        });
+      }
     }
   },
 }));

@@ -18,9 +18,9 @@ export class CreateMomentDto {
   @IsString()
   imageUrl?: string;
 
-  @ApiPropertyOptional({ example: 'e3b0c442-98fc-1c14-9afbf4c8996fb924', description: 'Emotion UUID' })
+  @ApiPropertyOptional({ example: 'CALM', description: 'Emotion UUID or Code (e.g. CALM, HAPPY, SAD)' })
   @IsOptional()
-  @IsUUID()
+  @IsString()
   emotionId?: string;
 
   @ApiProperty({ enum: Visibility, default: Visibility.ONLY_ME, description: 'Visibility status' })

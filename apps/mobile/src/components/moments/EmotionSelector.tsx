@@ -1,22 +1,32 @@
 import React from 'react';
-import { StyleSheet, ScrollView, TouchableOpacity, View } from 'react-native';
-import { useTranslation } from 'react-i18next';
+import { StyleSheet, ScrollView, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { useAppTheme } from '../../hooks/use-theme';
-import { PRESET_EMOTIONS, PresetEmotion } from '../../constants/emotions';
+import { useEmotions } from '../../hooks/use-emotions';
+import { EmotionItem } from '@aurora/types';
 import { Label, Caption } from '../ui/Typography';
 import { Spacing, BorderRadius } from '../../constants/theme';
 
 export interface EmotionSelectorProps {
+  selectedId?: string | null;
   selectedCode?: string | null;
-  onSelectEmotion: (emotion: PresetEmotion | null) => void;
+  onSelectEmotion: (emotion: EmotionItem | null) => void;
 }
 
 export function EmotionSelector({
+  selectedId,
   selectedCode,
   onSelectEmotion,
 }: EmotionSelectorProps) {
   const { colors, isDark } = useAppTheme();
-  const { t } = useTranslation();
+  const { data: emotions = [], isLoading } = useEmotions();
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="small" color={colors.accent} />
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -25,12 +35,17 @@ export function EmotionSelector({
       contentContainerStyle={styles.scrollContent}
       keyboardShouldPersistTaps="handled"
     >
-      {PRESET_EMOTIONS.map((emotion) => {
-        const isSelected = selectedCode === emotion.code;
+      {emotions.map((emotion) => {
+        const isSelected =
+          (selectedId && emotion.id === selectedId) ||
+          (selectedCode && emotion.code.toUpperCase() === selectedCode.toUpperCase());
+
+        const baseColor = emotion.color || colors.accent;
+        const selectedBg = isDark ? `${baseColor}38` : `${baseColor}1F`;
 
         return (
           <TouchableOpacity
-            key={emotion.code}
+            key={emotion.id || emotion.code}
             activeOpacity={0.7}
             onPress={() => {
               if (isSelected) {
@@ -42,26 +57,20 @@ export function EmotionSelector({
             style={[
               styles.pill,
               {
-                backgroundColor: isSelected
-                  ? isDark
-                    ? emotion.bgDark
-                    : emotion.bgLight
-                  : colors.surfaceSoft,
-                borderColor: isSelected
-                  ? emotion.color
-                  : colors.cardBorder,
+                backgroundColor: isSelected ? selectedBg : colors.surfaceSoft,
+                borderColor: isSelected ? baseColor : colors.cardBorder,
               },
             ]}
           >
-            <Label style={styles.icon}>{emotion.icon}</Label>
+            <Label style={styles.icon}>{emotion.icon || '✨'}</Label>
             <Caption
               weight={isSelected ? 'bold' : 'medium'}
               style={{
-                color: isSelected ? emotion.color : colors.textSecondary,
+                color: isSelected ? baseColor : colors.textSecondary,
                 fontSize: 12.5,
               }}
             >
-              {t(emotion.labelKey)}
+              {emotion.label}
             </Caption>
           </TouchableOpacity>
         );
@@ -71,6 +80,11 @@ export function EmotionSelector({
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   scrollContent: {
     paddingVertical: 2,
     paddingRight: Spacing.md,

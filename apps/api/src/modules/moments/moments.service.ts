@@ -9,6 +9,8 @@ import { PrismaService } from '../../common/prisma/prisma.service.js';
 import { CreateMomentDto } from './dto/create-moment.dto.js';
 import { GetCalendarQueryDto, GetHistoryQueryDto } from './dto/query-moment.dto.js';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 @Injectable()
 export class MomentsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -18,13 +20,24 @@ export class MomentsService {
       throw new BadRequestException('IMAGE_REQUIRED');
     }
 
+    let finalEmotionId: string | null = null;
+
     if (dto.emotionId) {
-      const emotion = await this.prisma.emotion.findUnique({
-        where: { id: dto.emotionId },
-      });
+      const isUuid = UUID_REGEX.test(dto.emotionId);
+
+      const emotion = isUuid
+        ? await this.prisma.emotion.findUnique({
+            where: { id: dto.emotionId },
+          })
+        : await this.prisma.emotion.findUnique({
+            where: { code: dto.emotionId.toUpperCase() },
+          });
+
       if (!emotion) {
         throw new NotFoundException('EMOTION_NOT_FOUND');
       }
+
+      finalEmotionId = emotion.id;
     }
 
     return this.prisma.moment.create({
@@ -33,7 +46,7 @@ export class MomentsService {
         type: dto.type,
         content: dto.content,
         imageUrl: dto.imageUrl,
-        emotionId: dto.emotionId,
+        emotionId: finalEmotionId,
         visibility: dto.visibility || Visibility.ONLY_ME,
       },
       include: {
