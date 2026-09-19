@@ -36,7 +36,13 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port, '0.0.0.0');
-  console.log(`🚀 Aurora API running on: http://0.0.0.0:${port}/api/v1`);
-  console.log(`📚 Swagger Docs available at: http://0.0.0.0:${port}/api/docs`);
+
+  const baseUrl =
+    process.env.BASE_URL ??
+    process.env.RENDER_EXTERNAL_URL ??
+    `http://localhost:${port}`;
+
+  console.log(`🚀 Aurora API running on: ${baseUrl}/api/v1`);
+  console.log(`📚 Swagger Docs available at: ${baseUrl}/api/docs`);
 }
 await bootstrap();
