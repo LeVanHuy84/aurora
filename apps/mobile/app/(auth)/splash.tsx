@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '../../src/components/common/Icon';
@@ -20,26 +21,22 @@ export default function SplashScreen() {
       contentContainerStyle={styles.contentContainer}
     >
       <View style={styles.topSection}>
-        {/* Warm Organic Decorative Sun / Aurora Emblem */}
+        {/* Official Aurora Logo Emblem */}
         <View
           style={[
             styles.emblemContainer,
             {
-              backgroundColor: isDark ? '#2C2926' : '#FDF4EB',
-              borderColor: colors.cardBorder,
+              backgroundColor: isDark ? '#25221F' : '#FFFDF9',
+              borderColor: isDark ? 'rgba(255,255,255,0.1)' : colors.cardBorder,
             },
           ]}
         >
-          <View
-            style={[
-              styles.emblemInner,
-              {
-                backgroundColor: colors.accent,
-              },
-            ]}
-          >
-            <Ionicons name="sparkles" size={40} color="#FFFFFF" />
-          </View>
+          <Image
+            source={require('../../assets/icon.png')}
+            style={styles.emblemLogoImage}
+            contentFit="cover"
+            transition={300}
+          />
         </View>
 
         <Title level={1} style={styles.appName}>
@@ -123,29 +120,23 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.xl,
   },
   emblemContainer: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
+    width: 104,
+    height: 104,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
     marginBottom: Spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  emblemInner: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+    overflow: 'hidden',
     shadowColor: '#E76F51',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
+    elevation: 4,
+  },
+  emblemLogoImage: {
+    width: '100%',
+    height: '100%',
   },
   appName: {
     marginBottom: Spacing.xs,

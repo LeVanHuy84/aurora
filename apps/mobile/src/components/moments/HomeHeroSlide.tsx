@@ -6,13 +6,18 @@ import {
   Animated,
   Easing,
 } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '../common/Icon';
 import { useAppTheme } from '../../hooks/use-theme';
+import { useConversations } from '../../hooks/use-chat';
 import { HeroMoodWidget } from './HeroMoodWidget';
 import { CloseFriendsWidget } from './CloseFriendsWidget';
+import { AuroraDailyBanner } from './AuroraDailyBanner';
 import { Title, Body, Caption } from '../ui/Typography';
 import { Spacing, BorderRadius } from '../../constants/theme';
+import { triggerHapticFeedback } from '../../utils/haptics';
 
 export interface HomeHeroSlideProps {
   height: number;
@@ -23,6 +28,9 @@ export interface HomeHeroSlideProps {
   onAddFriendPress?: () => void;
   onScrollDownPress: () => void;
   momentsCount?: number;
+  myMomentsCount?: number;
+  myEmotionsCount?: number;
+  activeFriendIds?: string[];
 }
 
 export function HomeHeroSlide({
@@ -34,153 +42,161 @@ export function HomeHeroSlide({
   onAddFriendPress,
   onScrollDownPress,
   momentsCount = 0,
+  myMomentsCount = 0,
+  myEmotionsCount = 0,
+  activeFriendIds = [],
 }: HomeHeroSlideProps) {
   const { colors, isDark } = useAppTheme();
   const { t } = useTranslation();
+  const router = useRouter();
 
-  // Animations for scroll down prompt
+  const { data: conversations } = useConversations();
+  const totalUnreadCount = (conversations || []).reduce(
+    (sum, c) => sum + (c.unreadCount || 0),
+    0,
+  );
+
+  // Smooth pulsing & bouncing animation for discovery prompt
   const translateY = React.useRef(new Animated.Value(0)).current;
-  const pulseScale = React.useRef(new Animated.Value(1)).current;
 
   React.useEffect(() => {
     const bounceAnimation = Animated.loop(
       Animated.sequence([
         Animated.timing(translateY, {
-          toValue: 10,
-          duration: 800,
+          toValue: 5,
+          duration: 900,
           easing: Easing.inOut(Easing.quad),
           useNativeDriver: true,
         }),
         Animated.timing(translateY, {
           toValue: 0,
-          duration: 800,
+          duration: 900,
           easing: Easing.inOut(Easing.quad),
           useNativeDriver: true,
         }),
-      ])
-    );
-
-    const pulseAnimation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseScale, {
-          toValue: 1.08,
-          duration: 1100,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseScale, {
-          toValue: 1,
-          duration: 1100,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ])
+      ]),
     );
 
     bounceAnimation.start();
-    pulseAnimation.start();
-
-    return () => {
-      bounceAnimation.stop();
-      pulseAnimation.stop();
-    };
-  }, [translateY, pulseScale]);
+    return () => bounceAnimation.stop();
+  }, [translateY]);
 
   return (
     <View style={[styles.slideContainer, { height }]}>
       {/* 1. TOP BRAND HEADER */}
       <View style={styles.topBrandNav}>
         <View style={styles.brandRow}>
-          <View
-            style={[
-              styles.brandLogo,
-              { backgroundColor: isDark ? '#2C2926' : '#FDF4EB' },
-            ]}
-          >
-            <Ionicons name="sparkles" size={16} color={colors.accentDark} />
-          </View>
+          <Image
+            source={require('../../../assets/icon.png')}
+            style={styles.brandLogo}
+            contentFit="cover"
+          />
           <Title level={2} style={styles.brandTitle}>
             {t('common.appName', 'Aurora')}
           </Title>
         </View>
 
-        {onCreatePress && (
+        <View style={styles.topActionsRow}>
+          {/* Inbox Button with Unread Badge */}
           <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={onCreatePress}
+            activeOpacity={0.75}
+            onPress={() => router.push('/inbox')}
             style={[
               styles.iconBtn,
-              { backgroundColor: colors.surfaceSoft, borderColor: colors.cardBorder },
+              {
+                backgroundColor: isDark ? '#23201D' : '#FFFDF9',
+                borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : colors.cardBorder,
+              },
             ]}
           >
-            <Ionicons name="add" size={20} color={colors.textPrimary} />
+            <Ionicons
+              name="chatbubble-ellipses-outline"
+              size={19}
+              color={colors.textPrimary}
+            />
+            {totalUnreadCount > 0 && (
+              <View
+                style={[
+                  styles.inboxUnreadDot,
+                  { backgroundColor: colors.accentDark },
+                ]}
+              >
+                {totalUnreadCount > 1 ? (
+                  <Caption color="white" weight="bold" style={styles.unreadDotText}>
+                    {totalUnreadCount > 9 ? '9+' : totalUnreadCount}
+                  </Caption>
+                ) : null}
+              </View>
+            )}
           </TouchableOpacity>
-        )}
+        </View>
       </View>
 
-      {/* 2. GREETING & MOOD CHECK-IN */}
-      <View style={styles.middleGroup}>
+      {/* 2. MAIN HUB SECTION (Grouped cleanly) */}
+      <View style={styles.mainHubSection}>
+        {/* Top: Greeting & Check-in */}
         <HeroMoodWidget
           displayName={displayName}
           onCheckInPress={onCheckInPress}
-          style={styles.greetingWidget}
+          style={styles.greetingCard}
         />
 
-        {/* 3. CLOSE FRIENDS STRIP */}
+        {/* Middle: Close Friends Carousel with Active Story Rings */}
         <CloseFriendsWidget
+          activeFriendIds={activeFriendIds}
           onAddFriendPress={onAddFriendPress}
           onFriendPress={onFriendPress}
           style={styles.friendsWidget}
         />
+
+        {/* Bottom of Hub: Aurora Concept Dreamy Daily Banner (~155px) */}
+        <AuroraDailyBanner
+          momentsCount={myMomentsCount}
+          emotionsCount={myEmotionsCount}
+          style={styles.dailyBanner}
+        />
       </View>
 
-      {/* 4. SPECIAL PROMINENT SCROLL DOWN INDICATOR WIDGET */}
+      {/* 3. STREAMLINED DISCOVERY SCROLL BAR */}
       <View style={styles.bottomSection}>
         <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={onScrollDownPress}
+          activeOpacity={0.82}
+          onPress={() => {
+            triggerHapticFeedback();
+            onScrollDownPress();
+          }}
           style={[
-            styles.scrollPromptCard,
+            styles.discoveryBar,
             {
-              backgroundColor: isDark ? '#242220' : '#FFFFFF',
-              borderColor: colors.cardBorder,
+              backgroundColor: isDark ? '#23201D' : '#FFFDF9',
+              borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : colors.cardBorder,
             },
           ]}
         >
-          {/* Big Bouncing Arrow Ring */}
           <Animated.View
             style={[
-              styles.bigArrowRing,
+              styles.arrowCircle,
               {
-                backgroundColor: isDark ? '#2F2B27' : '#FFF3E6',
-                borderColor: colors.accent,
-                transform: [{ translateY }, { scale: pulseScale }],
+                backgroundColor: isDark ? 'rgba(231, 111, 81, 0.18)' : '#FFEEDB',
+                transform: [{ translateY }],
               },
             ]}
           >
-            <View
-              style={[
-                styles.arrowInnerCircle,
-                { backgroundColor: colors.accentDark },
-              ]}
-            >
-              <Ionicons name="arrow-down" size={28} color="#FFFFFF" />
-            </View>
+            <Ionicons name="arrow-down" size={17} color={colors.accentDark} />
           </Animated.View>
 
-          {/* Text Prompt */}
-          <View style={styles.textWrapper}>
-            <Title level={3} color="primary" style={styles.promptTitle}>
+          <View style={styles.discoveryTextGroup}>
+            <Body weight="bold" color="primary" style={styles.discoveryTitle}>
               {t('moments.scrollDownPrompt', 'Lướt xuống để xem khoảnh khắc')}
-            </Title>
-            <Caption color="secondary" style={styles.promptSubtitle}>
+            </Body>
+            <Caption color="secondary" style={styles.discoverySubtitle}>
               {momentsCount > 0
-                ? `${momentsCount} khoảnh khắc hôm nay đang chờ bạn ✨`
+                ? `${momentsCount} khoảnh khắc hôm nay ✨`
                 : t('moments.scrollDownSubtitle', 'Khám phá các khoảnh khắc trong ngày của bạn bè')}
             </Caption>
           </View>
 
-          <Ionicons name="chevron-down" size={24} color={colors.accentDark} />
+          <Ionicons name="chevron-down" size={19} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
     </View>
@@ -190,34 +206,38 @@ export function HomeHeroSlide({
 const styles = StyleSheet.create({
   slideContainer: {
     width: '100%',
-    paddingHorizontal: 12,
-    paddingTop: Spacing.sm,
-    paddingBottom: Spacing.md,
-    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingTop: 2,
+    paddingBottom: Spacing.xs + 2,
+    justifyContent: 'flex-start',
   },
   topBrandNav: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: Spacing.xs + 2,
+    paddingTop: 2,
+    paddingBottom: 6,
     paddingHorizontal: 2,
   },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.xs + 2,
+    gap: 8,
   },
   brandLogo: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 28,
+    height: 28,
+    borderRadius: 8,
   },
   brandTitle: {
-    fontSize: 22,
+    fontSize: 21,
     fontWeight: '800',
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
+  },
+  topActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   iconBtn: {
     width: 36,
@@ -226,64 +246,78 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
-  middleGroup: {
-    marginVertical: Spacing.sm,
+  inboxUnreadDot: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
-  greetingWidget: {
-    marginBottom: Spacing.md + 4,
+  unreadDotText: {
+    fontSize: 9.5,
+    lineHeight: 12,
+  },
+  mainHubSection: {
+    gap: 10,
+    marginTop: 2,
+  },
+  greetingCard: {
+    width: '100%',
   },
   friendsWidget: {
-    marginBottom: Spacing.xs,
+    width: '100%',
+  },
+  dailyBanner: {
+    width: '100%',
   },
   bottomSection: {
-    paddingBottom: Spacing.xs,
+    marginTop: 'auto',
+    paddingTop: 8,
+    paddingBottom: 2,
   },
-  scrollPromptCard: {
+  discoveryBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: Spacing.md + 2,
-    paddingHorizontal: Spacing.md + 2,
-    borderRadius: BorderRadius.card + 4,
-    borderWidth: 1.5,
+    paddingVertical: 9,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.card,
+    borderWidth: 1,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
-    gap: Spacing.md,
-  },
-  bigArrowRing: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#E76F51',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.22,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.04,
     shadowRadius: 8,
-    elevation: 4,
+    elevation: 2,
+    gap: 11,
   },
-  arrowInnerCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  arrowCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  textWrapper: {
+  discoveryTextGroup: {
     flex: 1,
   },
-  promptTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-    marginBottom: 2,
+  discoveryTitle: {
+    fontSize: 13.5,
+    letterSpacing: -0.1,
   },
-  promptSubtitle: {
-    fontSize: 12,
-    lineHeight: 16,
+  discoverySubtitle: {
+    fontSize: 11.5,
+    marginTop: 1,
   },
 });
