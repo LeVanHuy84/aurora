@@ -24,6 +24,21 @@ export enum ReactionType {
   PROUD = 'PROUD',
 }
 
+export enum MediaFolder {
+  MOMENTS = 'moments',
+  AVATARS = 'avatars',
+}
+
+export interface PresignedSignatureResponse {
+  signature: string;
+  timestamp: number;
+  apiKey: string;
+  cloudName: string;
+  folder: string;
+  uploadUrl: string;
+  publicId?: string;
+}
+
 export interface UserProfile {
   id: string;
   email: string;

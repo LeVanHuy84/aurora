@@ -46,17 +46,21 @@ export class FriendsService {
     return friendships.map((f) => {
       const friend = f.requesterId === userId ? f.receiver : f.requester;
       return {
+        id: f.id,
         friendshipId: f.id,
+        requesterId: f.requesterId,
+        receiverId: f.receiverId,
         status: f.status,
         isCloseFriend: f.isCloseFriend,
         createdAt: f.createdAt,
+        friend,
         user: friend,
       };
     });
   }
 
   async getPendingRequests(userId: string) {
-    return this.prisma.friendship.findMany({
+    const requests = await this.prisma.friendship.findMany({
       where: {
         receiverId: userId,
         status: FriendshipStatus.PENDING,
@@ -74,6 +78,19 @@ export class FriendsService {
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    return requests.map((r) => ({
+      id: r.id,
+      friendshipId: r.id,
+      requesterId: r.requesterId,
+      receiverId: r.receiverId,
+      status: r.status,
+      isCloseFriend: r.isCloseFriend,
+      createdAt: r.createdAt,
+      friend: r.requester,
+      requester: r.requester,
+      user: r.requester,
+    }));
   }
 
   async sendRequest(userId: string, dto: SendFriendRequestDto) {

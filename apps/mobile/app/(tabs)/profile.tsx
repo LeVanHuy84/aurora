@@ -1,21 +1,73 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { StyleSheet, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import { Ionicons } from '../../src/components/common/Icon';
-import { useAppTheme } from '../../src/hooks/use-theme';
 import { useAuth } from '../../src/hooks/use-auth';
+import { useUserProfile } from '../../src/hooks/use-user-profile';
+import { useCalendarMoments, useHistoryMoments } from '../../src/hooks/use-moments';
+import { useFriends, usePendingFriendRequests } from '../../src/hooks/use-friends';
 import { ScreenContainer } from '../../src/components/common/ScreenContainer';
-import { Card } from '../../src/components/ui/Card';
-import { Button } from '../../src/components/ui/Button';
-import { Title, Body, Caption } from '../../src/components/ui/Typography';
-import { Spacing, BorderRadius } from '../../src/constants/theme';
+import { ProfileHeaderCard } from '../../src/components/profile/ProfileHeaderCard';
+import { MonthlyMoodChart } from '../../src/components/profile/MonthlyMoodChart';
+import { SettingsSection } from '../../src/components/profile/SettingsSection';
+import { EditProfileModal } from '../../src/components/profile/EditProfileModal';
+import { FriendsManagerModal } from '../../src/components/profile/FriendsManagerModal';
+import { Spacing } from '../../src/constants/theme';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { t } = useTranslation();
-  const { colors, isDark } = useAppTheme();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
+  const { data: user, refetch: refetchUser } = useUserProfile();
+
+  const now = useMemo(() => new Date(), []);
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+  const monthName = `Tháng ${currentMonth}, ${currentYear}`;
+
+  // Queries
+  const {
+    data: calendarMoments = [],
+    refetch: refetchCalendar,
+    isRefetching: isRefetchingCalendar,
+  } = useCalendarMoments(currentMonth, currentYear);
+
+  const {
+    data: historyData,
+    refetch: refetchHistory,
+    isRefetching: isRefetchingHistory,
+  } = useHistoryMoments(100);
+
+  const {
+    data: friends = [],
+    refetch: refetchFriends,
+    isRefetching: isRefetchingFriends,
+  } = useFriends();
+
+  const {
+    data: pendingRequests = [],
+    refetch: refetchPending,
+  } = usePendingFriendRequests();
+
+  // Modals state
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isFriendsModalVisible, setIsFriendsModalVisible] = useState(false);
+
+  // Stats calculation
+  const momentsCount = historyData?.items?.length || 0;
+  const friendsCount = friends.length;
+  const closeFriendsCount = friends.filter((f) => f.isCloseFriend).length;
+
+  const isRefreshing =
+    isRefetchingCalendar || isRefetchingHistory || isRefetchingFriends;
+
+  const handleRefresh = async () => {
+    await Promise.all([
+      refetchUser(),
+      refetchCalendar(),
+      refetchHistory(),
+      refetchFriends(),
+      refetchPending(),
+    ]);
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -24,91 +76,60 @@ export default function ProfileScreen() {
 
   return (
     <ScreenContainer
+      scrollable
+      edges={['top']}
       style={styles.container}
-      contentContainerStyle={styles.contentContainer}
+      contentContainerStyle={styles.scrollContent}
+      refreshControl={
+        <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+      }
     >
-      <View style={styles.header}>
-        <Title level={1}>{t('tabs.me')}</Title>
-      </View>
+      {/* 1. Profile Header Card */}
+      <ProfileHeaderCard
+        user={user}
+        momentsCount={momentsCount}
+        friendsCount={friendsCount}
+        closeFriendsCount={closeFriendsCount}
+        onEditPress={() => setIsEditModalVisible(true)}
+      />
 
-      {/* User Info Card */}
-      <Card style={styles.userCard}>
-        <View
-          style={[
-            styles.avatar,
-            { backgroundColor: colors.accent, borderColor: colors.cardBorder },
-          ]}
-        >
-          <Title level={2} color="white">
-            {(user?.displayName || user?.username || 'U')[0].toUpperCase()}
-          </Title>
-        </View>
+      {/* 2. Monthly Mood Summary Chart */}
+      <MonthlyMoodChart
+        moments={calendarMoments}
+        monthName={monthName}
+      />
 
-        <Title level={2} align="center" style={styles.userName}>
-          {user?.displayName || user?.username}
-        </Title>
-        <Caption color="muted" align="center" style={styles.userHandle}>
-          @{user?.username} • {user?.email}
-        </Caption>
+      {/* 3. Settings & Actions (Friends, Theme, Language, Notifications, Logout) */}
+      <SettingsSection
+        friendsCount={friendsCount}
+        pendingRequestsCount={pendingRequests.length}
+        onOpenFriends={() => setIsFriendsModalVisible(true)}
+        onLogout={handleLogout}
+      />
 
-        {user?.bio && (
-          <Body color="secondary" align="center" style={styles.bio}>
-            {user.bio}
-          </Body>
-        )}
-      </Card>
+      {/* 4. Edit Profile Modal */}
+      <EditProfileModal
+        visible={isEditModalVisible}
+        user={user}
+        onClose={() => setIsEditModalVisible(false)}
+      />
 
-      {/* Logout Action */}
-      <View style={styles.actions}>
-        <Button
-          title={t('auth.logout')}
-          variant="secondary"
-          size="md"
-          leftIcon={<Ionicons name="log-out-outline" size={18} color={colors.danger} />}
-          textStyle={{ color: colors.danger }}
-          onPress={handleLogout}
-        />
-      </View>
+      {/* 5. Friends Manager Modal */}
+      <FriendsManagerModal
+        visible={isFriendsModalVisible}
+        onClose={() => setIsFriendsModalVisible(false)}
+      />
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: 0,
   },
-  contentContainer: {
-    paddingVertical: Spacing.md,
-    justifyContent: 'space-between',
-  },
-  header: {
-    marginBottom: Spacing.md,
-  },
-  userCard: {
-    alignItems: 'center',
-    padding: Spacing.xl,
-    marginBottom: Spacing.xl,
-  },
-  avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.md,
-  },
-  userName: {
-    marginBottom: 2,
-  },
-  userHandle: {
-    marginBottom: Spacing.sm,
-  },
-  bio: {
-    marginTop: Spacing.xs,
-    paddingHorizontal: Spacing.md,
-  },
-  actions: {
-    marginTop: Spacing.lg,
+  scrollContent: {
+    paddingHorizontal: Spacing.sm + 4,
+    paddingTop: Spacing.xs,
+    paddingBottom: Spacing.xl * 2,
   },
 });

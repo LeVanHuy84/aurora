@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../hooks/use-theme';
 import { Title, Body, Caption } from '../ui/Typography';
 import { Ionicons } from '../common/Icon';
@@ -25,6 +26,7 @@ export function MomentDetailModal({
   moment,
   onClose,
 }: MomentDetailModalProps) {
+  const insets = useSafeAreaInsets();
   const { colors, isDark } = useAppTheme();
   const { t } = useTranslation();
 
@@ -61,7 +63,15 @@ export function MomentDetailModal({
     >
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Header Bar */}
-        <View style={[styles.header, { borderBottomColor: colors.divider }]}>
+        <View
+          style={[
+            styles.header,
+            {
+              borderBottomColor: colors.divider,
+              paddingTop: Math.max(insets.top, 24) + Spacing.sm,
+            },
+          ]}
+        >
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={onClose}
