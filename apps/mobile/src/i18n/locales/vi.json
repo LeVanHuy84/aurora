@@ -141,5 +141,22 @@
     "monthlyMoodSummary": "Tổng quan cảm xúc tháng",
     "editProfile": "Sửa hồ sơ",
     "bio": "Tiểu sử"
+  },
+  "memories": {
+    "title": "Kỷ niệm",
+    "subtitle": "Hành trình cảm xúc & khoảnh khắc đã lưu",
+    "calendarTab": "Lịch cảm xúc",
+    "timelineTab": "Dòng thời gian",
+    "todayBtn": "Hôm nay",
+    "dayMomentsTitle": "Khoảnh khắc ngày {{date}}",
+    "noMomentsOnDay": "Không có khoảnh khắc nào được lưu trong ngày này.",
+    "createTodayPrompt": "Ghi lại khoảnh khắc hôm nay nhé!",
+    "noHistoryTitle": "Chưa có ký ức nào",
+    "noHistoryDesc": "Bắt đầu chụp ảnh, viết ghi chú hoặc cập nhật cảm xúc để lưu giữ những kỷ niệm quý giá.",
+    "onThisDayTitle": "Ký ức ngày này ✨",
+    "onThisDaySubtitle": "{{count}} khoảnh khắc bạn đã lưu vào ngày này trong quá khứ",
+    "viewDetail": "Xem chi tiết",
+    "totalRecorded": "Đã lưu {{count}} khoảnh khắc",
+    "momentDetail": "Chi tiết khoảnh khắc"
   }
 }

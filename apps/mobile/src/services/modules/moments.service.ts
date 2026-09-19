@@ -1,5 +1,10 @@
 import { apiClient } from '../api-client';
-import { MomentItem, CreateMomentPayload } from '@aurora/types';
+import {
+  MomentItem,
+  CreateMomentPayload,
+  CalendarMomentItem,
+  HistoryResponse,
+} from '@aurora/types';
 
 export const momentsService = {
   /**
@@ -12,8 +17,8 @@ export const momentsService = {
   /**
    * Fetch monthly calendar mood overview
    */
-  async getCalendar(month: number, year: number): Promise<any[]> {
-    return apiClient.get<any[]>('/moments/calendar', {
+  async getCalendar(month: number, year: number): Promise<CalendarMomentItem[]> {
+    return apiClient.get<CalendarMomentItem[]>('/moments/calendar', {
       params: { month, year },
     });
   },
@@ -21,8 +26,8 @@ export const momentsService = {
   /**
    * Fetch historical moments with cursor pagination
    */
-  async getHistory(cursor?: string, limit = 20): Promise<{ items: MomentItem[]; nextCursor?: string }> {
-    return apiClient.get('/moments/history', {
+  async getHistory(cursor?: string, limit = 20): Promise<HistoryResponse> {
+    return apiClient.get<HistoryResponse>('/moments/history', {
       params: { cursor, limit },
     });
   },

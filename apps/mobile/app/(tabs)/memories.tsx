@@ -1,71 +1,153 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { Ionicons } from '../../src/components/common/Icon';
-import { useAppTheme } from '../../src/hooks/use-theme';
+import React, { useState, useMemo } from 'react';
+import { StyleSheet, RefreshControl } from 'react-native';
+import { useCalendarMoments, useHistoryMoments } from '../../src/hooks/use-moments';
 import { ScreenContainer } from '../../src/components/common/ScreenContainer';
-import { Card } from '../../src/components/ui/Card';
-import { Title, Body } from '../../src/components/ui/Typography';
+import { MemoriesHeader, MemoriesTabMode } from '../../src/components/memories/MemoriesHeader';
+import { MoodCalendar } from '../../src/components/memories/MoodCalendar';
+import { OnThisDayCard } from '../../src/components/memories/OnThisDayCard';
+import { DayMomentsList } from '../../src/components/memories/DayMomentsList';
+import { HistoryTimeline } from '../../src/components/memories/HistoryTimeline';
+import { MomentDetailModal } from '../../src/components/memories/MomentDetailModal';
+import { MomentItem } from '@aurora/types';
 import { Spacing } from '../../src/constants/theme';
 
 export default function MemoriesScreen() {
-  const { t } = useTranslation();
-  const { colors, isDark } = useAppTheme();
+  const today = useMemo(() => new Date(), []);
+
+  // UI States
+  const [activeMode, setActiveMode] = useState<MemoriesTabMode>('CALENDAR');
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth() + 1);
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [selectedDate, setSelectedDate] = useState<Date>(today);
+  const [selectedMomentDetail, setSelectedMomentDetail] = useState<MomentItem | null>(null);
+
+  // Queries
+  const {
+    data: calendarMoments = [],
+    isLoading: isLoadingCalendar,
+    refetch: refetchCalendar,
+    isRefetching: isRefetchingCalendar,
+  } = useCalendarMoments(currentMonth, currentYear);
+
+  const {
+    data: historyData,
+    isLoading: isLoadingHistory,
+    refetch: refetchHistory,
+    isRefetching: isRefetchingHistory,
+  } = useHistoryMoments(100);
+
+  const historyMoments = useMemo(
+    () => historyData?.items || [],
+    [historyData?.items],
+  );
+
+  // Filter moments for the selected calendar day
+  const selectedDayMoments = useMemo(() => {
+    return historyMoments.filter((m) => {
+      const d = new Date(m.createdAt);
+      return (
+        d.getDate() === selectedDate.getDate() &&
+        d.getMonth() === selectedDate.getMonth() &&
+        d.getFullYear() === selectedDate.getFullYear()
+      );
+    });
+  }, [historyMoments, selectedDate]);
+
+  // Find "On This Day" memory (moment from previous year on same date, or previous month)
+  const onThisDayMoment = useMemo(() => {
+    return (
+      historyMoments.find((m) => {
+        const d = new Date(m.createdAt);
+        const isSameDayAndMonth =
+          d.getDate() === today.getDate() && d.getMonth() === today.getMonth();
+        const isPastYear = d.getFullYear() < today.getFullYear();
+        return isSameDayAndMonth && isPastYear;
+      }) || null
+    );
+  }, [historyMoments, today]);
+
+  // Pull to refresh handler
+  const isRefreshing = isRefetchingCalendar || isRefetchingHistory;
+  const handleRefresh = async () => {
+    await Promise.all([refetchCalendar(), refetchHistory()]);
+  };
+
+  const handleChangeMonth = (month: number, year: number) => {
+    setCurrentMonth(month);
+    setCurrentYear(year);
+  };
 
   return (
     <ScreenContainer
+      scrollable
+      edges={['top']}
       style={styles.container}
-      contentContainerStyle={styles.contentContainer}
+      contentContainerStyle={styles.scrollContent}
+      refreshControl={
+        <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+      }
     >
-      <View style={styles.header}>
-        <Title level={1}>{t('tabs.memories')}</Title>
-        <Body color="secondary">{t('moments.onThisDay')}</Body>
-      </View>
+      {/* 1. Header with Mode Segment Switcher */}
+      <MemoriesHeader
+        activeMode={activeMode}
+        onSelectMode={setActiveMode}
+        totalMoments={historyMoments.length}
+      />
 
-      <Card style={styles.card}>
-        <View
-          style={[
-            styles.iconWrapper,
-            { backgroundColor: isDark ? '#2C2926' : '#FDF4EB' },
-          ]}
-        >
-          <Ionicons name="calendar-outline" size={32} color={colors.accentDark} />
-        </View>
-        <Title level={3} align="center" style={styles.cardTitle}>
-          Memories & Calendar View
-        </Title>
-        <Body color="secondary" align="center">
-          Monthly Mood Calendar & "On This Day" feature will be available in Task 3.5.
-        </Body>
-      </Card>
+      {activeMode === 'CALENDAR' ? (
+        <>
+          {/* 2. "On This Day" Highlight Card (if any) */}
+          {onThisDayMoment && (
+            <OnThisDayCard
+              moment={onThisDayMoment}
+              onPress={(m) => setSelectedMomentDetail(m)}
+            />
+          )}
+
+          {/* 3. Monthly Mood Calendar Grid */}
+          <MoodCalendar
+            currentMonth={currentMonth}
+            currentYear={currentYear}
+            selectedDate={selectedDate}
+            moments={calendarMoments}
+            isLoading={isLoadingCalendar}
+            onSelectDate={setSelectedDate}
+            onChangeMonth={handleChangeMonth}
+          />
+
+          {/* 4. Filtered Day Moments List */}
+          <DayMomentsList
+            selectedDate={selectedDate}
+            moments={selectedDayMoments}
+            onSelectMoment={(m) => setSelectedMomentDetail(m)}
+          />
+        </>
+      ) : (
+        /* 5. Full History Timeline View */
+        <HistoryTimeline
+          moments={historyMoments}
+          isLoading={isLoadingHistory}
+          onSelectMoment={(m) => setSelectedMomentDetail(m)}
+        />
+      )}
+
+      {/* 6. Moment Detail Modal */}
+      <MomentDetailModal
+        visible={!!selectedMomentDetail}
+        moment={selectedMomentDetail}
+        onClose={() => setSelectedMomentDetail(null)}
+      />
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: 0,
   },
-  contentContainer: {
-    paddingVertical: Spacing.md,
-  },
-  header: {
-    marginBottom: Spacing.lg,
-  },
-  card: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.xl,
-  },
-  iconWrapper: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.md,
-  },
-  cardTitle: {
-    marginBottom: Spacing.xs,
+  scrollContent: {
+    paddingHorizontal: Spacing.sm + 4,
+    paddingTop: Spacing.xs,
+    paddingBottom: Spacing.xl * 2,
   },
 });

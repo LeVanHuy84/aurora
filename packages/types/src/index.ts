@@ -124,3 +124,22 @@ export interface CreateMomentPayload {
   emotionId?: string;
   visibility?: Visibility;
 }
+
+export interface CalendarMomentItem {
+  id: string;
+  type: MomentType;
+  createdAt: string;
+  emotion?: EmotionItem | null;
+}
+
+export interface HistoryMeta {
+  hasMore: boolean;
+  nextCursor: string | null;
+  limit: number;
+}
+
+export interface HistoryResponse {
+  items: MomentItem[];
+  meta: HistoryMeta;
+}
+
