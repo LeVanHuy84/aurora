@@ -78,3 +78,25 @@ export function useToggleReaction() {
     },
   });
 }
+
+/**
+ * Hook to create a new moment
+ */
+export function useCreateMoment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: {
+      type: any;
+      content?: string;
+      imageUrl?: string;
+      emotionId?: string;
+      visibility?: any;
+    }) => momentsService.create(payload),
+    onSuccess: (newMoment) => {
+      queryClient.invalidateQueries({ queryKey: momentKeys.today() });
+      queryClient.invalidateQueries({ queryKey: momentKeys.all });
+    },
+  });
+}
+

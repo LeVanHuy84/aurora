@@ -150,14 +150,56 @@ export function PolaroidCard({ moment, onPress, onCommentPress }: PolaroidCardPr
         </View>
       )}
 
+      {/* 2.1 MOOD Showcase Banner (If Type === MOOD) */}
+      {moment.type === MomentType.MOOD && (
+        <View
+          style={[
+            styles.moodShowcaseBanner,
+            {
+              backgroundColor: isDark ? '#262320' : '#FFF8F0',
+              borderColor: emotion?.color || colors.accent,
+            },
+          ]}
+        >
+          <Label style={styles.moodShowcaseEmoji}>{emotion?.icon || '✨'}</Label>
+          <View style={styles.moodShowcaseContent}>
+            <Body weight="bold" style={{ color: colors.textPrimary }}>
+              {emotion?.label || t('moments.mood')}
+            </Body>
+            <Caption color="secondary">
+              {t('moments.moodCheckInDesc', 'Khoảnh khắc cảm xúc')}
+            </Caption>
+          </View>
+        </View>
+      )}
+
       {/* 3. Note / Caption Content */}
       {moment.content ? (
-        <View style={styles.contentSection}>
+        <View
+          style={[
+            styles.contentSection,
+            moment.type === MomentType.NOTE && [
+              styles.noteBoxWrapper,
+              {
+                backgroundColor: isDark ? '#242220' : '#FAF7F2',
+                borderColor: colors.cardBorder,
+              },
+            ],
+          ]}
+        >
+          {moment.type === MomentType.NOTE && (
+            <View style={styles.notePinRow}>
+              <Ionicons name="document-text-outline" size={14} color={colors.accentDark} />
+              <Caption color="primary" weight="bold">
+                {t('moments.note')}
+              </Caption>
+            </View>
+          )}
           <Body
             color="primary"
             style={[
               styles.contentText,
-              moment.type === MomentType.NOTE ? styles.noteSpecialText : undefined,
+              moment.type === MomentType.NOTE && styles.noteSpecialText,
             ]}
           >
             {moment.content}
@@ -282,8 +324,36 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  moodShowcaseBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1.5,
+    marginBottom: Spacing.md,
+    gap: Spacing.md,
+  },
+  moodShowcaseEmoji: {
+    fontSize: 34,
+    lineHeight: 40,
+  },
+  moodShowcaseContent: {
+    flex: 1,
+    gap: 2,
+  },
   contentSection: {
     marginBottom: Spacing.md,
+  },
+  noteBoxWrapper: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+  },
+  notePinRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: Spacing.xs,
   },
   contentText: {
     fontSize: 15,

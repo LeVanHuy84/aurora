@@ -70,6 +70,16 @@
     "create": "Tạo mới",
     "me": "Tôi"
   },
+  "emotions": {
+    "happy": "Vui vẻ",
+    "calm": "Bình yên",
+    "excited": "Hào hứng",
+    "loved": "Được yêu thương",
+    "tired": "Mệt mỏi",
+    "sad": "Buồn bã",
+    "stressed": "Áp lực",
+    "grateful": "Biết ơn"
+  },
   "moments": {
     "whatsHappening": "Đang có chuyện gì thế?",
     "photo": "Ảnh",
@@ -91,7 +101,28 @@
     "noMomentsTodayTitle": "Hôm nay thật yên ả",
     "noMomentsToday": "Hôm nay chưa có khoảnh khắc nào. Chụp một bức ảnh, chọn cảm xúc hoặc viết một dòng nhật ký nhé!",
     "shareFirstMomentBtn": "Lưu khoảnh khắc",
-    "onThisDay": "Ngày này năm xưa"
+    "createMomentTitle": "Tạo Khoảnh Khắc",
+    "addPhotoPrompt": "Thêm một bức ảnh",
+    "addPhotoDesc": "Chụp 1 khoảnh khắc chân thực trong ngày",
+    "takePhoto": "Chụp ảnh",
+    "pickFromGallery": "Thư viện",
+    "captionLabel": "Lời tựa bức ảnh",
+    "captionPlaceholder": "Thêm vài dòng cảm nghĩ về bức ảnh này...",
+    "noteContentLabel": "Nhật ký / Ghi chú hôm nay",
+    "notePlaceholder": "Ghi lại những suy nghĩ hoặc cảm xúc của bạn hôm nay...",
+    "moodReasonLabel": "Ghi chú cảm xúc (Tùy chọn)",
+    "moodPlaceholder": "Chia sẻ thêm vì sao bạn lại cảm thấy như vậy...",
+    "shareMomentBtn": "Chia sẻ khoảnh khắc",
+    "sharingProgress": "Đang đăng tải...",
+    "galleryPermissionDenied": "Vui lòng cấp quyền truy cập thư viện ảnh trong cài đặt thiết bị.",
+    "cameraPermissionDenied": "Vui lòng cấp quyền truy cập camera trong cài đặt thiết bị.",
+    "onThisDay": "Ngày này năm xưa",
+    "errors": {
+      "photoRequired": "Vui lòng chụp hoặc chọn một bức ảnh.",
+      "contentRequired": "Vui lòng nhập nội dung ghi chú.",
+      "emotionRequired": "Vui lòng chọn một cảm xúc.",
+      "createFailed": "Không thể chia sẻ khoảnh khắc. Vui lòng thử lại."
+    }
   },
   "profile": {
     "totalMoments": "Khoảnh khắc",
