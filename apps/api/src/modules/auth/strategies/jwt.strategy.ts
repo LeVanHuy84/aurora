@@ -14,10 +14,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: JwtPayload) {
+  async validate(payload: { sub?: string; userId?: string; email: string }) {
+    const userId = payload.userId || payload.sub;
+    if (!userId) {
+      throw new UnauthorizedException('Invalid token payload');
+    }
+
     const user = await this.prisma.user.findFirst({
       where: {
-        id: payload.userId,
+        id: userId,
         deletedAt: null,
       },
       select: {
