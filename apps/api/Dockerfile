@@ -63,4 +63,4 @@ USER nestjs
 EXPOSE 3000
 
 WORKDIR /app/apps/api
-CMD ["node", "dist/main"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]

@@ -1,5 +1,5 @@
 services:
-  # Aurora NestJS API Web Service
+  # Aurora NestJS API Web Service (Connected to Neon Postgres)
   - type: web
     name: aurora-api
     runtime: docker
@@ -13,9 +13,7 @@ services:
       - key: PORT
         value: 3000
       - key: DATABASE_URL
-        fromDatabase:
-          name: aurora-db
-          property: connectionString
+        sync: false # Paste your Neon Postgres connection string here (e.g., postgresql://user:pass@ep-xyz.neon.tech/aurora?sslmode=require)
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
@@ -28,11 +26,3 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
-
-databases:
-  # Aurora PostgreSQL Database
-  - name: aurora-db
-    plan: free
-    databaseName: aurora
-    user: aurora_user
-    ipAllowList: [] # allow all connections with valid credentials
