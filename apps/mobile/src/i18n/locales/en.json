@@ -8,6 +8,7 @@
     "delete": "Delete",
     "confirm": "Confirm",
     "share": "Share",
+    "add": "Add",
     "error": "An error occurred",
     "or": "or"
   },
@@ -79,7 +80,17 @@
     "onlyMe": "Only Me",
     "friends": "Friends",
     "closeFriends": "Close Friends",
-    "noMomentsToday": "No moments recorded today yet. Tap + to share one!",
+    "todayTimelineTitle": "Today's Timeline",
+    "closeFriendsWidgetTitle": "Close Friends",
+    "noFriendsYetPrompt": "Connect with close friends to see their daily moments",
+    "greetingMorning": "Good morning, {{name}} ☕",
+    "greetingAfternoon": "Good afternoon, {{name}} ☀️",
+    "greetingEvening": "Good evening, {{name}} 🌙",
+    "heroMoodPrompt": "How is your day going so far?",
+    "checkInMoodAction": "Check in today's mood",
+    "noMomentsTodayTitle": "Quiet Today",
+    "noMomentsToday": "No moments recorded today yet. Capture a photo, mood, or note to remember this day!",
+    "shareFirstMomentBtn": "Share Moment",
     "onThisDay": "On This Day"
   },
   "profile": {

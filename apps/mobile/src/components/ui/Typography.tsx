@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text as RNText, TextProps as RNTextProps, StyleSheet, TextStyle } from 'react-native';
+import { Text as RNText, TextProps as RNTextProps, StyleSheet, TextStyle, StyleProp } from 'react-native';
 import { useAppTheme } from '../../hooks/use-theme';
 
 export type TypographyVariant =
@@ -26,7 +26,7 @@ export interface TypographyProps extends RNTextProps {
   color?: TypographyColor | string;
   align?: 'left' | 'center' | 'right';
   weight?: 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold';
-  style?: TextStyle | (TextStyle | undefined)[];
+  style?: StyleProp<TextStyle>;
   children: React.ReactNode;
 }
 

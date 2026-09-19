@@ -8,6 +8,7 @@
     "delete": "Xóa",
     "confirm": "Xác nhận",
     "share": "Chia sẻ",
+    "add": "Thêm",
     "error": "Có lỗi xảy ra",
     "or": "hoặc"
   },
@@ -79,7 +80,17 @@
     "onlyMe": "Chỉ mình tôi",
     "friends": "Bạn bè",
     "closeFriends": "Bạn thân",
-    "noMomentsToday": "Hôm nay chưa có khoảnh khắc nào. Chạm + để lưu lại nhé!",
+    "todayTimelineTitle": "Khoảnh khắc hôm nay",
+    "closeFriendsWidgetTitle": "Bạn thân",
+    "noFriendsYetPrompt": "Kết nối bạn thân để xem khoảnh khắc mỗi ngày của nhau",
+    "greetingMorning": "Chào buổi sáng, {{name}} ☕",
+    "greetingAfternoon": "Chào buổi chiều, {{name}} ☀️",
+    "greetingEvening": "Chào buổi tối, {{name}} 🌙",
+    "heroMoodPrompt": "Hôm nay của bạn đang thế nào?",
+    "checkInMoodAction": "Ghi lại cảm xúc hôm nay",
+    "noMomentsTodayTitle": "Hôm nay thật yên ả",
+    "noMomentsToday": "Hôm nay chưa có khoảnh khắc nào. Chụp một bức ảnh, chọn cảm xúc hoặc viết một dòng nhật ký nhé!",
+    "shareFirstMomentBtn": "Lưu khoảnh khắc",
     "onThisDay": "Ngày này năm xưa"
   },
   "profile": {
