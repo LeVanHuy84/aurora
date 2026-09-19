@@ -7,6 +7,7 @@ import {
   ViewStyle,
   TextStyle,
   View,
+  StyleProp,
 } from 'react-native';
 import { useAppTheme } from '../../hooks/use-theme';
 import { BorderRadius, Spacing } from '../../constants/theme';
@@ -23,7 +24,7 @@ export interface ButtonProps {
   disabled?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   textStyle?: TextStyle;
   fullWidth?: boolean;
 }
