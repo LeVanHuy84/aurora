@@ -83,17 +83,31 @@ export function OnThisDayCard({ moment, onPress }: OnThisDayCardProps) {
             </View>
           )}
 
-          <Body
-            numberOfLines={2}
-            color="primary"
-            style={styles.contentText}
-          >
-            {moment.content || (moment.type === MomentType.PHOTO ? 'Khoảnh khắc đáng nhớ' : '')}
-          </Body>
+          {moment.content ? (
+            <Body
+              numberOfLines={2}
+              color="primary"
+              style={styles.contentText}
+            >
+              {moment.content}
+            </Body>
+          ) : null}
 
-          <Caption color="muted" style={styles.viewMoreText}>
-            {t('memories.viewDetail', 'Xem chi tiết')} →
-          </Caption>
+          <View style={styles.footerRow}>
+            {(moment.reactionsCount || moment._count?.reactions || moment.messagesCount || moment._count?.messages) ? (
+              <View style={styles.statsGroup}>
+                <Caption color="muted" style={{ fontSize: 11.5 }}>
+                  ❤️ {moment.reactionsCount ?? moment._count?.reactions ?? 0}
+                </Caption>
+                <Caption color="muted" style={{ fontSize: 11.5 }}>
+                  💬 {moment.messagesCount ?? moment._count?.messages ?? 0}
+                </Caption>
+              </View>
+            ) : <View />}
+            <Caption color="muted" style={styles.viewMoreText}>
+              {t('memories.viewDetail', 'Xem chi tiết')} →
+            </Caption>
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -158,5 +172,16 @@ const styles = StyleSheet.create({
   viewMoreText: {
     fontSize: 11.5,
     fontWeight: '600',
+  },
+  footerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 2,
+  },
+  statsGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
 });

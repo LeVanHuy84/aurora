@@ -161,12 +161,18 @@ export function DayMomentsList({
 
                   <View style={styles.footerRow}>
                     <View style={styles.statsGroup}>
-                      <Caption color="muted" style={{ fontSize: 12 }}>
-                        ❤️ {item._count?.reactions || item.reactionsCount || 0}
-                      </Caption>
-                      <Caption color="muted" style={{ fontSize: 12 }}>
-                        💬 {item._count?.comments || item.commentsCount || 0}
-                      </Caption>
+                      <View style={styles.statItem}>
+                        <Caption style={{ fontSize: 12, lineHeight: 14 }}>❤️</Caption>
+                        <Caption color="muted" style={{ fontSize: 12 }}>
+                          {item.reactionsCount ?? item._count?.reactions ?? 0}
+                        </Caption>
+                      </View>
+                      <View style={styles.statItem}>
+                        <Caption style={{ fontSize: 12, lineHeight: 14 }}>💬</Caption>
+                        <Caption color="muted" style={{ fontSize: 12 }}>
+                          {item.messagesCount ?? item._count?.messages ?? 0}
+                        </Caption>
+                      </View>
                     </View>
                     <Caption color="muted" style={{ fontSize: 11.5 }}>
                       {t('memories.viewDetail', 'Chi tiết')} →
@@ -273,6 +279,11 @@ const styles = StyleSheet.create({
   },
   statsGroup: {
     flexDirection: 'row',
-    gap: Spacing.sm,
+    gap: Spacing.sm + 2,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
 });
