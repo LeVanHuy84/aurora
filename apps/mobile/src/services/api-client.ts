@@ -105,6 +105,42 @@ function addRefreshSubscriber(callback: (token: string | null) => void) {
   refreshSubscribers.push(callback);
 }
 
+async function sendFetch(
+  url: string,
+  options: RequestInit,
+  timeoutMs: number,
+): Promise<{ response: Response; data: any }> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+
+    let data: any;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
+    } else {
+      try {
+        data = await response.text();
+      } catch {
+        data = null;
+      }
+    }
+
+    return { response, data };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 async function executeRequest<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const {
     body,
@@ -145,28 +181,22 @@ async function executeRequest<T>(endpoint: string, options: RequestOptions = {})
     }
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
   const fetchOptions: RequestInit = {
     ...customOptions,
     headers,
-    signal: controller.signal,
+    body: body !== undefined ? (typeof body === 'string' ? body : JSON.stringify(body)) : undefined,
   };
 
-  if (body !== undefined) {
-    fetchOptions.body = typeof body === 'string' ? body : JSON.stringify(body);
-  }
-
   let response: Response;
+  let responseData: any;
+
   try {
-    response = await fetch(url, fetchOptions);
+    const result = await sendFetch(url, fetchOptions, timeoutMs);
+    response = result.response;
+    responseData = result.data;
   } catch (err: any) {
-    clearTimeout(timeoutId);
     const friendlyMessage = normalizeErrorMessage(err, 0);
     throw new ApiError(friendlyMessage, 0, 'NetworkError', err);
-  } finally {
-    clearTimeout(timeoutId);
   }
 
   // Handle 401 Unauthorized with automatic refresh token flow
@@ -187,43 +217,71 @@ async function executeRequest<T>(endpoint: string, options: RequestOptions = {})
       }
 
       try {
-        const refreshResponse = await fetch(`${BASE_URL}/auth/refresh`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept-Language': i18n.language || 'vi',
+        const refreshResult = await sendFetch(
+          `${BASE_URL}/auth/refresh`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept-Language': i18n.language || 'vi',
+            },
+            body: JSON.stringify({ refreshToken }),
           },
-          body: JSON.stringify({ refreshToken }),
-        });
+          10000,
+        );
 
-        const refreshJson: ApiResponse<{ accessToken: string; refreshToken: string }> =
-          await refreshResponse.json();
+        const refreshResponse = refreshResult.response;
+        const refreshJson = refreshResult.data;
+        const tokenPayload = refreshJson?.data || (refreshJson?.accessToken ? refreshJson : null);
 
-        if (refreshResponse.ok && refreshJson.data) {
-          await tokenStorage.setTokens(refreshJson.data);
+        if (refreshResponse.ok && tokenPayload?.accessToken) {
+          await tokenStorage.setTokens(tokenPayload);
           isRefreshing = false;
-          onRefreshed(refreshJson.data.accessToken);
+          onRefreshed(tokenPayload.accessToken);
 
-          // Retry current request with new token
-          headers['Authorization'] = `Bearer ${refreshJson.data.accessToken}`;
-          const retryResponse = await fetch(url, { ...fetchOptions, headers });
-          const retryJson: ApiResponse<T> = await retryResponse.json();
-          if (!retryResponse.ok) {
-            const errorMsg = normalizeErrorMessage(null, retryResponse.status, retryJson);
-            throw new ApiError(errorMsg, retryResponse.status);
+          // Retry current request with fresh token and fresh timeout
+          const retryHeaders = {
+            ...headers,
+            Authorization: `Bearer ${tokenPayload.accessToken}`,
+          };
+          const retryResult = await sendFetch(
+            url,
+            { ...fetchOptions, headers: retryHeaders },
+            timeoutMs,
+          );
+
+          if (!retryResult.response.ok) {
+            const errorMsg = normalizeErrorMessage(null, retryResult.response.status, retryResult.data);
+            throw new ApiError(errorMsg, retryResult.response.status, retryResult.data?.error, retryResult.data);
           }
-          return retryJson.data;
+
+          if (retryResult.data && typeof retryResult.data === 'object' && 'data' in retryResult.data) {
+            return retryResult.data.data as T;
+          }
+          return retryResult.data as T;
         } else {
           isRefreshing = false;
+          // Only wipe tokens if the server explicitly rejected the refresh token (401 / 403)
+          if (refreshResponse.status === 401 || refreshResponse.status === 403) {
+            await tokenStorage.clearTokens();
+            onRefreshed(null);
+            throw new ApiError(i18n.t('errors.unauthorized'), 401);
+          } else {
+            onRefreshed(null);
+            const errorMsg = normalizeErrorMessage(null, refreshResponse.status, refreshJson);
+            throw new ApiError(errorMsg, refreshResponse.status);
+          }
+        }
+      } catch (refreshErr: any) {
+        isRefreshing = false;
+        if (refreshErr?.statusCode === 401 || refreshErr?.statusCode === 403) {
           await tokenStorage.clearTokens();
           onRefreshed(null);
           throw new ApiError(i18n.t('errors.unauthorized'), 401);
+        } else {
+          onRefreshed(null);
+          throw refreshErr;
         }
-      } catch (refreshErr) {
-        isRefreshing = false;
-        await tokenStorage.clearTokens();
-        onRefreshed(null);
-        throw new ApiError(i18n.t('errors.unauthorized'), 401);
       }
     } else {
       // Another request is currently refreshing the token; wait for it
@@ -233,14 +291,26 @@ async function executeRequest<T>(endpoint: string, options: RequestOptions = {})
             return reject(new ApiError(i18n.t('errors.unauthorized'), 401));
           }
           try {
-            headers['Authorization'] = `Bearer ${newToken}`;
-            const retryResponse = await fetch(url, { ...fetchOptions, headers });
-            const retryJson: ApiResponse<T> = await retryResponse.json();
-            if (!retryResponse.ok) {
-              const errorMsg = normalizeErrorMessage(null, retryResponse.status, retryJson);
-              return reject(new ApiError(errorMsg, retryResponse.status));
+            const retryHeaders = {
+              ...headers,
+              Authorization: `Bearer ${newToken}`,
+            };
+            const retryResult = await sendFetch(
+              url,
+              { ...fetchOptions, headers: retryHeaders },
+              timeoutMs,
+            );
+
+            if (!retryResult.response.ok) {
+              const errorMsg = normalizeErrorMessage(null, retryResult.response.status, retryResult.data);
+              return reject(new ApiError(errorMsg, retryResult.response.status));
             }
-            resolve(retryJson.data);
+
+            if (retryResult.data && typeof retryResult.data === 'object' && 'data' in retryResult.data) {
+              resolve(retryResult.data.data as T);
+            } else {
+              resolve(retryResult.data as T);
+            }
           } catch (e: any) {
             const errorMsg = normalizeErrorMessage(e, 0);
             reject(new ApiError(errorMsg, 0));
@@ -248,18 +318,6 @@ async function executeRequest<T>(endpoint: string, options: RequestOptions = {})
         });
       });
     }
-  }
-
-  let responseData: any;
-  const contentType = response.headers.get('content-type');
-  if (contentType && contentType.includes('application/json')) {
-    try {
-      responseData = await response.json();
-    } catch {
-      responseData = null;
-    }
-  } else {
-    responseData = await response.text();
   }
 
   if (!response.ok) {

@@ -43,6 +43,9 @@ describe('MomentsService', () => {
     },
     emotion: {
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
+      upsert: vi.fn(),
+      create: vi.fn(),
     },
     friendship: {
       findMany: vi.fn(),
@@ -76,19 +79,35 @@ describe('MomentsService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw NotFoundException if emotionId does not exist', async () => {
+    it('should throw NotFoundException if emotion does not exist in DB', async () => {
       mockPrismaService.emotion.findUnique.mockResolvedValue(null);
 
       await expect(
         service.create('user-uuid-1', {
           type: MomentType.NOTE,
           content: 'Note',
-          emotionId: 'invalid-emotion',
+          emotionId: 'UNKNOWN_CODE',
         }),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should create moment successfully', async () => {
+    it('should create moment successfully with emotion code', async () => {
+      mockPrismaService.emotion.findUnique.mockResolvedValue(mockMoment.emotion);
+      mockPrismaService.moment.create.mockResolvedValue(mockMoment);
+
+      const result = await service.create('user-uuid-1', {
+        type: MomentType.NOTE,
+        content: 'Note',
+        emotionId: 'HAPPY',
+      });
+
+      expect(mockPrismaService.emotion.findUnique).toHaveBeenCalledWith({
+        where: { code: 'HAPPY' },
+      });
+      expect(result).toEqual(mockMoment);
+    });
+
+    it('should create moment successfully with UUID emotionId', async () => {
       mockPrismaService.emotion.findUnique.mockResolvedValue(mockMoment.emotion);
       mockPrismaService.moment.create.mockResolvedValue(mockMoment);
 
@@ -96,10 +115,13 @@ describe('MomentsService', () => {
         type: MomentType.PHOTO,
         content: 'Great view!',
         imageUrl: 'https://example.com/img.jpg',
-        emotionId: 'emotion-uuid-1',
+        emotionId: '123e4567-e89b-12d3-a456-426614174000',
         visibility: Visibility.ONLY_ME,
       });
 
+      expect(mockPrismaService.emotion.findUnique).toHaveBeenCalledWith({
+        where: { id: '123e4567-e89b-12d3-a456-426614174000' },
+      });
       expect(result).toEqual(mockMoment);
       expect(mockPrismaService.moment.create).toHaveBeenCalled();
     });

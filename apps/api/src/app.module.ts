@@ -19,6 +19,7 @@ import {
 } from 'nestjs-i18n';
 import { FriendsModule } from './modules/friends/friends.module.js';
 import { InteractionsModule } from './modules/interactions/interactions.module.js';
+import { EmotionsModule } from './modules/emotions/emotions.module.js';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -45,6 +46,7 @@ const __dirname = path.dirname(__filename);
     MomentsModule,
     FriendsModule,
     InteractionsModule,
+    EmotionsModule,
   ],
   controllers: [AppController],
   providers: [
