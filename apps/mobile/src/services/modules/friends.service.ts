@@ -10,6 +10,13 @@ export const friendsService = {
   },
 
   /**
+   * Fetch incoming pending friend requests
+   */
+  async getPendingRequests(): Promise<FriendshipItem[]> {
+    return apiClient.get<FriendshipItem[]>('/friends/requests/pending');
+  },
+
+  /**
    * Send a friend request to another user
    */
   async sendRequest(receiverId: string): Promise<FriendshipItem> {
