@@ -41,7 +41,7 @@
 ---
 
 ## 🚀 Phase 4: Integration, CI/CD, Push Notification & Polishing
-- [ ] **Task 4.1:** **CI/CD Pipeline (GitHub Actions):** 
+- [x] **Task 4.1:** **CI/CD Pipeline (GitHub Actions):** 
   - Automated Lint, Type-Check & Build test cho cả `apps/api` và `apps/mobile` khi `git push` hoặc `pull_request`.
   - Continuous Deployment (CD) cho Backend API & Expo EAS Build/Preview.
 - [ ] **Task 4.2:** **Push Notifications:** Tích hợp `expo-notifications` và Firebase FCM.
