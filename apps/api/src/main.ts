@@ -6,8 +6,13 @@ import { AppModule } from './app.module.js';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Global Prefix
-  app.setGlobalPrefix('api/v1');
+  // Enable CORS
+  app.enableCors();
+
+  // Global Prefix (exclude health check & root)
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['/', 'health'],
+  });
 
   // Global Validation Pipe
   app.useGlobalPipes(
@@ -30,8 +35,8 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = process.env.PORT ?? 3000;
-  await app.listen(port);
-  console.log(`🚀 Aurora API running on: http://localhost:${port}/api/v1`);
-  console.log(`📚 Swagger Docs available at: http://localhost:${port}/api/docs`);
+  await app.listen(port, '0.0.0.0');
+  console.log(`🚀 Aurora API running on: http://0.0.0.0:${port}/api/v1`);
+  console.log(`📚 Swagger Docs available at: http://0.0.0.0:${port}/api/docs`);
 }
 await bootstrap();
