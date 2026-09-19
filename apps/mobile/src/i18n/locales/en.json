@@ -141,5 +141,22 @@
     "monthlyMoodSummary": "Monthly Mood Summary",
     "editProfile": "Edit Profile",
     "bio": "Bio"
+  },
+  "memories": {
+    "title": "Memories",
+    "subtitle": "Your mood journey & saved moments",
+    "calendarTab": "Mood Calendar",
+    "timelineTab": "Timeline",
+    "todayBtn": "Today",
+    "dayMomentsTitle": "Moments on {{date}}",
+    "noMomentsOnDay": "No moments recorded on this day.",
+    "createTodayPrompt": "Capture a moment today!",
+    "noHistoryTitle": "No Memories Yet",
+    "noHistoryDesc": "Start taking photos, writing notes, or tracking moods to build your daily memory collection.",
+    "onThisDayTitle": "On This Day ✨",
+    "onThisDaySubtitle": "{{count}} moments you recorded on this day in previous times",
+    "viewDetail": "View Detail",
+    "totalRecorded": "{{count}} moments recorded",
+    "momentDetail": "Moment Details"
   }
 }

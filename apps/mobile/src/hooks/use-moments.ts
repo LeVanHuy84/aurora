@@ -93,10 +93,32 @@ export function useCreateMoment() {
       emotionId?: string;
       visibility?: any;
     }) => momentsService.create(payload),
-    onSuccess: (newMoment) => {
-      queryClient.invalidateQueries({ queryKey: momentKeys.today() });
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: momentKeys.all });
     },
   });
 }
+
+/**
+ * Hook to fetch monthly calendar mood overview
+ */
+export function useCalendarMoments(month: number, year: number) {
+  return useQuery({
+    queryKey: momentKeys.calendar(month, year),
+    queryFn: () => momentsService.getCalendar(month, year),
+    staleTime: 1000 * 60 * 5, // 5 mins
+  });
+}
+
+/**
+ * Hook to fetch historical moments of the user
+ */
+export function useHistoryMoments(limit = 50) {
+  return useQuery({
+    queryKey: momentKeys.history(),
+    queryFn: () => momentsService.getHistory(undefined, limit),
+    staleTime: 1000 * 60 * 2, // 2 mins
+  });
+}
+
 

@@ -34,7 +34,7 @@
 - [x] **Task 3.2:** **Auth Flow Screens:** Màn hình Splash, Login, Register, Google/Apple OAuth Button.
 - [x] **Task 3.3:** **Tab 1 — `Today` Screen (Home):** Timeline hiển thị các Moment dưới dạng Polaroid Card & Close Friends Widget.
 - [x] **Task 3.4:** **Tab 3 — `+` Create Moment Interactive Bottom Sheet:** Flow tạo Moment 10–15s (1 ảnh / Note / Mood).
-- [ ] **Task 3.5:** **Tab 2 — `Memories` Screen (Calendar & History):** Lịch tháng hiển thị Emoji Mood & "On This Day".
+- [x] **Task 3.5:** **Tab 2 — `Memories` Screen (Calendar & History):** Lịch tháng hiển thị Emoji Mood & "On This Day".
 - [ ] **Task 3.6:** **Tab 4 — `Me` Screen (Profile & Monthly Mood):** Profile cá nhân & Biểu đồ Monthly Mood Chart.
 - [ ] **Task 3.7:** **Direct 1-1 Comment UI:** Giao diện xem & phản hồi bình luận riêng tư.
 

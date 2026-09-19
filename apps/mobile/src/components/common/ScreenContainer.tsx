@@ -54,6 +54,10 @@ export interface ScreenContainerProps {
    * @default false
    */
   showsVerticalScrollIndicator?: boolean;
+  /**
+   * RefreshControl element for pull to refresh
+   */
+  refreshControl?: React.ReactElement<any>;
 }
 
 export function ScreenContainer({
@@ -67,6 +71,7 @@ export function ScreenContainer({
   footer,
   keyboardShouldPersistTaps = 'handled',
   showsVerticalScrollIndicator = false,
+  refreshControl,
 }: ScreenContainerProps) {
   const { colors } = useAppTheme();
   const insets = useSafeAreaInsets();
@@ -97,6 +102,7 @@ export function ScreenContainer({
           ]}
           keyboardShouldPersistTaps={keyboardShouldPersistTaps}
           showsVerticalScrollIndicator={showsVerticalScrollIndicator}
+          refreshControl={refreshControl}
         >
           {children}
         </ScrollView>
