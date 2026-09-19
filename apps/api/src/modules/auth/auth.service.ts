@@ -195,7 +195,7 @@ export class AuthService {
   }
 
   async refreshToken(dto: RefreshTokenDto) {
-    let payload: { sub: string; email: string };
+    let payload: { sub?: string; userId?: string; email: string };
     try {
       payload = this.jwtService.verify(dto.refreshToken, {
         secret: process.env.JWT_SECRET || 'aurora_super_secret_jwt_key_change_me_in_production',
@@ -204,8 +204,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
+    const userId = payload.userId || payload.sub;
+    if (!userId) {
+      throw new UnauthorizedException('Invalid token payload');
+    }
+
     const user = await this.prisma.user.findFirst({
-      where: { id: payload.sub, deletedAt: null },
+      where: { id: userId, deletedAt: null },
     });
 
     if (!user) {
@@ -250,14 +255,14 @@ export class AuthService {
   private async generateTokens(userId: string, email: string) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
-        { sub: userId, email },
+        { sub: userId, userId, email },
         {
           secret: process.env.JWT_SECRET || 'aurora_super_secret_jwt_key_change_me_in_production',
           expiresIn: '15m',
         },
       ),
       this.jwtService.signAsync(
-        { sub: userId, email },
+        { sub: userId, userId, email },
         {
           secret: process.env.JWT_SECRET || 'aurora_super_secret_jwt_key_change_me_in_production',
           expiresIn: '30d',

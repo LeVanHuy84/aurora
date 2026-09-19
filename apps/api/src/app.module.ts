@@ -29,8 +29,8 @@ const __dirname = path.dirname(__filename);
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {
-        path: path.join(__dirname, '/i18n/'),
-        watch: true,
+        path: path.join(__dirname, 'i18n'),
+        watch: false,
       },
       resolvers: [
         new HeaderResolver(['x-custom-lang']),
