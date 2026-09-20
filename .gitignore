@@ -23,6 +23,13 @@ docs/prompts/
 .env.development.local
 .env.test.local
 .env.production.local
+*.keystore
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+service-account*.json
+google-services.json
 
 # Expo & Mobile Build Files
 .expo/
@@ -31,6 +38,7 @@ web-build/
 *.app
 *.ipa
 *.apk
+*.aab
 
 # IDE & OS Files
 .DS_Store
