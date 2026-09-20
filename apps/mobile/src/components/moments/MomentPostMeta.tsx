@@ -7,6 +7,7 @@ import { useAppTheme } from '../../hooks/use-theme';
 import { Body, Caption } from '../ui/Typography';
 import { Spacing, BorderRadius } from '../../constants/theme';
 import { MomentVisibilityBadge } from './MomentVisibilityBadge';
+import { getEmotionLabel } from '../../utils/emotion';
 
 export interface MomentPostMetaProps {
   user?: UserProfile | FriendUser;
@@ -106,7 +107,7 @@ export function MomentPostMeta({
               weight="semibold"
               style={{ fontSize: 11.5 }}
             >
-              {emotion.label}
+              {getEmotionLabel(emotion, t)}
             </Caption>
           </View>
         )}

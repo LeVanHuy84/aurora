@@ -9,6 +9,7 @@ import { Button } from '../ui/Button';
 import { Ionicons } from '../common/Icon';
 import { MomentItem, MomentType } from '@aurora/types';
 import { Spacing, BorderRadius } from '../../constants/theme';
+import { getEmotionLabel } from '../../utils/emotion';
 
 export interface DayMomentsListProps {
   selectedDate: Date;
@@ -145,7 +146,7 @@ export function DayMomentsList({
                             color: item.emotion.color || colors.accentDark,
                           }}
                         >
-                          {item.emotion.label}
+                          {getEmotionLabel(item.emotion, t)}
                         </Caption>
                       </View>
                     )}

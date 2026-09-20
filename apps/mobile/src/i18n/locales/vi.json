@@ -72,16 +72,6 @@
     "create": "Tạo mới",
     "me": "Tôi"
   },
-  "emotions": {
-    "happy": "Vui vẻ",
-    "calm": "Bình yên",
-    "excited": "Hào hứng",
-    "loved": "Được yêu thương",
-    "tired": "Mệt mỏi",
-    "sad": "Buồn bã",
-    "stressed": "Áp lực",
-    "grateful": "Biết ơn"
-  },
   "moments": {
     "whatsHappening": "Đang có chuyện gì thế?",
     "photo": "Ảnh",
@@ -222,5 +212,21 @@
     "sentMomentReply": "Đã phản hồi khoảnh khắc này",
     "reply": "Trả lời",
     "noRepliesYet": "Chưa có tin nhắn riêng nào cho khoảnh khắc này"
+  },
+  "emotions": {
+    "HAPPY": "Vui vẻ",
+    "CALM": "Bình yên",
+    "PEACEFUL": "Bình yên",
+    "EXCITED": "Hào hứng",
+    "LOVED": "Yêu thương",
+    "TIRED": "Mệt mỏi",
+    "SAD": "Buồn bã",
+    "STRESSED": "Căng thẳng",
+    "ANXIOUS": "Lo âu",
+    "GRATEFUL": "Biết ơn",
+    "PROUD": "Tự hào",
+    "CONFUSED": "Bối rối",
+    "ANGRY": "Tức giận",
+    "BORED": "Nhàm chán"
   }
 }

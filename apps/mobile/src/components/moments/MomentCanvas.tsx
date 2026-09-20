@@ -8,6 +8,7 @@ import { Body, Label, Title } from '../ui/Typography';
 import { Spacing, BorderRadius } from '../../constants/theme';
 import { Ionicons } from '../common/Icon';
 import { FloatingEmojiBurst } from './FloatingEmojiBurst';
+import { getEmotionLabel } from '../../utils/emotion';
 
 export interface MomentCanvasProps {
   moment: MomentItem;
@@ -78,7 +79,7 @@ export function MomentCanvas({ moment, burstEmoji, burstKey }: MomentCanvasProps
         >
           <Label style={styles.moodEmoji}>{emotion?.icon || '✨'}</Label>
           <Title level={2} style={styles.moodTitle}>
-            {emotion?.label || t('moments.mood', 'Cảm xúc')}
+            {getEmotionLabel(emotion, t) || t('moments.mood', 'Cảm xúc')}
           </Title>
           {moment.content ? (
             <Body color="secondary" style={styles.moodContentText}>

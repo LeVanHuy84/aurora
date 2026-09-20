@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks/use-theme';
 import { Title, Body, Caption } from '../ui/Typography';
 import { Ionicons } from '../common/Icon';
+import { getEmotionLabel } from '../../utils/emotion';
 import { CalendarMomentItem } from '@aurora/types';
 import { Spacing, BorderRadius } from '../../constants/theme';
 
@@ -131,7 +132,7 @@ export function MonthlyMoodChart({ moments, monthName }: MonthlyMoodChartProps) 
                 <View style={styles.pillLeft}>
                   <Caption style={styles.pillIcon}>{stat.icon}</Caption>
                   <Body weight="bold" color="primary" style={styles.pillLabel}>
-                    {stat.label}
+                    {getEmotionLabel(stat, t)}
                   </Body>
                 </View>
                 <View style={styles.pillRight}>

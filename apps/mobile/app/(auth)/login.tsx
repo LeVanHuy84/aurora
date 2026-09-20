@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '../../src/components/common/Icon';
 import { useAppTheme } from '../../src/hooks/use-theme';
 import { useAuth } from '../../src/hooks/use-auth';
+import { useOAuth } from '../../src/hooks/use-oauth';
 import { ScreenContainer } from '../../src/components/common/ScreenContainer';
 import { Button } from '../../src/components/ui/Button';
 import { Input } from '../../src/components/ui/Input';
@@ -16,7 +17,8 @@ export default function LoginScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { colors } = useAppTheme();
-  const { login, googleLogin, appleLogin, isLoading, resetErrors } = useAuth();
+  const { login, isLoading, resetErrors } = useAuth();
+  const { signInWithGoogle, signInWithApple, isOAuthLoading, oauthError } = useOAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -59,27 +61,7 @@ export default function LoginScreen() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      setGeneralError('');
-      const mockIdToken = 'google_id_token_' + Date.now();
-      await googleLogin({ idToken: mockIdToken });
-      router.replace('/');
-    } catch (err: any) {
-      setGeneralError(err?.message || t('auth.errors.oauthFailed'));
-    }
-  };
-
-  const handleAppleLogin = async () => {
-    try {
-      setGeneralError('');
-      const mockIdToken = 'apple_id_token_' + Date.now();
-      await appleLogin({ idToken: mockIdToken });
-      router.replace('/');
-    } catch (err: any) {
-      setGeneralError(err?.message || t('auth.errors.oauthFailed'));
-    }
-  };
+  const errorMessage = generalError || oauthError;
 
   return (
     <ScreenContainer
@@ -108,7 +90,7 @@ export default function LoginScreen() {
       </View>
 
       {/* General Error Banner */}
-      {generalError ? (
+      {errorMessage ? (
         <View
           style={[
             styles.errorBanner,
@@ -117,7 +99,7 @@ export default function LoginScreen() {
         >
           <Ionicons name="alert-circle" size={18} color={colors.danger} />
           <Body color="danger" weight="medium" style={styles.errorBannerText}>
-            {generalError}
+            {errorMessage}
           </Body>
         </View>
       ) : null}
@@ -174,13 +156,13 @@ export default function LoginScreen() {
       <View style={styles.socialContainer}>
         <SocialButton
           provider="google"
-          onPress={handleGoogleLogin}
-          loading={isLoading}
+          onPress={signInWithGoogle}
+          loading={isOAuthLoading}
         />
         <SocialButton
           provider="apple"
-          onPress={handleAppleLogin}
-          loading={isLoading}
+          onPress={signInWithApple}
+          loading={isOAuthLoading}
         />
       </View>
 

@@ -7,6 +7,7 @@ import { useAppTheme } from '../../hooks/use-theme';
 import { Title, Body, Caption } from '../ui/Typography';
 import { Ionicons } from '../common/Icon';
 import { MomentItem, MomentType, Visibility } from '@aurora/types';
+import { getEmotionLabel } from '../../utils/emotion';
 import { Spacing, BorderRadius } from '../../constants/theme';
 
 export interface HistoryTimelineProps {
@@ -218,7 +219,7 @@ export function HistoryTimeline({
                     color: isDark ? '#F2E8DC' : colors.accentDark,
                   }}
                 >
-                  {section.topEmotion.label}
+                  {getEmotionLabel(section.topEmotion, t)}
                 </Caption>
               </View>
             )}
@@ -308,7 +309,7 @@ export function HistoryTimeline({
                                 color: isDark ? '#F5EFEB' : colors.accentDark,
                               }}
                             >
-                              {item.emotion.label}
+                              {getEmotionLabel(item.emotion, t)}
                             </Caption>
                           </View>
                         )}
@@ -393,7 +394,7 @@ export function HistoryTimeline({
                           level={3}
                           style={[styles.moodTitle, { color: colors.textPrimary }]}
                         >
-                          {item.emotion?.label || 'Cảm xúc'}
+                          {getEmotionLabel(item.emotion, t) || t('moments.mood', 'Cảm xúc')}
                         </Title>
                         {item.content ? (
                           <Body

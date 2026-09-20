@@ -7,6 +7,7 @@ import { Title, Body, Caption } from '../ui/Typography';
 import { Ionicons } from '../common/Icon';
 import { MomentItem, MomentType } from '@aurora/types';
 import { Spacing, BorderRadius } from '../../constants/theme';
+import { getEmotionLabel } from '../../utils/emotion';
 
 export interface OnThisDayCardProps {
   moment: MomentItem | null;
@@ -78,7 +79,7 @@ export function OnThisDayCard({ moment, onPress }: OnThisDayCardProps) {
             <View style={styles.emotionPill}>
               <Caption style={{ fontSize: 13, lineHeight: 16 }}>{moment.emotion.icon}</Caption>
               <Caption weight="bold" color="primary" style={{ fontSize: 12 }}>
-                {moment.emotion.label}
+                {getEmotionLabel(moment.emotion, t)}
               </Caption>
             </View>
           )}

@@ -72,16 +72,6 @@
     "create": "Create",
     "me": "Me"
   },
-  "emotions": {
-    "happy": "Happy",
-    "calm": "Calm",
-    "excited": "Excited",
-    "loved": "Loved",
-    "tired": "Tired",
-    "sad": "Sad",
-    "stressed": "Stressed",
-    "grateful": "Grateful"
-  },
   "moments": {
     "whatsHappening": "What's happening?",
     "photo": "Photo",
@@ -222,5 +212,21 @@
     "sentMomentReply": "Replied to this moment",
     "reply": "Reply",
     "noRepliesYet": "No private replies for this moment yet"
+  },
+  "emotions": {
+    "HAPPY": "Happy",
+    "CALM": "Calm",
+    "PEACEFUL": "Peaceful",
+    "EXCITED": "Excited",
+    "LOVED": "Loved",
+    "TIRED": "Tired",
+    "SAD": "Sad",
+    "STRESSED": "Stressed",
+    "ANXIOUS": "Anxious",
+    "GRATEFUL": "Grateful",
+    "PROUD": "Proud",
+    "CONFUSED": "Confused",
+    "ANGRY": "Angry",
+    "BORED": "Bored"
   }
 }
