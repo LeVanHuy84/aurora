@@ -7,12 +7,13 @@ import {
   ActivityIndicator,
   LayoutChangeEvent,
   useWindowDimensions,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../src/hooks/use-theme';
 import { useAuth } from '../../src/hooks/use-auth';
-import { useTodayMoments } from '../../src/hooks/use-moments';
+import { useHomeFeed } from '../../src/hooks/use-moments';
 import { useFriends } from '../../src/hooks/use-friends';
 import { ScreenContainer } from '../../src/components/common/ScreenContainer';
 import { HomeHeroSlide } from '../../src/components/moments/HomeHeroSlide';
@@ -30,13 +31,22 @@ type FeedItem =
   | { type: 'MOMENT'; data: MomentItem; id: string }
   | { type: 'EMPTY'; id: string };
 
-export default function TodayScreen() {
+export default function HomeScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { height: windowHeight } = useWindowDimensions();
   const { colors, isDark } = useAppTheme();
   const { user } = useAuth();
-  const { data: moments, isLoading, refetch, isRefetching } = useTodayMoments();
+  const {
+    moments,
+    todayStats,
+    isLoading,
+    refetch,
+    isRefetching,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useHomeFeed();
   const { data: friendships } = useFriends();
 
   const flatListRef = useRef<FlatList<FeedItem>>(null);
@@ -107,22 +117,6 @@ export default function TodayScreen() {
     return t('moments.everyone', 'Tất cả mọi người');
   };
 
-  // Calculate current user's today moments and emotions
-  const myMoments = (moments || []).filter((m: MomentItem) => m.userId === user?.id);
-  const myMomentsCount = myMoments.length;
-  const myEmotionsCount = new Set(
-    myMoments.map((m: MomentItem) => m.emotion?.id || m.emotion?.code).filter(Boolean),
-  ).size;
-
-  // Active friends who posted moments today
-  const activeFriendIds = Array.from(
-    new Set(
-      (moments || [])
-        .filter((m: MomentItem) => m.userId !== user?.id)
-        .map((m: MomentItem) => m.userId),
-    ),
-  );
-
   // Build the list of full-screen snap items
   const feedItems: FeedItem[] = [
     { type: 'HERO', id: 'hero-header' },
@@ -133,75 +127,91 @@ export default function TodayScreen() {
       : []),
   ];
 
-  const renderItem = ({ item }: { item: FeedItem }) => {
-    if (item.type === 'HERO') {
-      return (
-        <HomeHeroSlide
-          height={containerHeight}
-          displayName={user?.displayName || user?.username}
-          momentsCount={filteredMoments.length}
-          myMomentsCount={myMomentsCount}
-          myEmotionsCount={myEmotionsCount}
-          activeFriendIds={activeFriendIds}
-          onCheckInPress={handleCreateMoment}
-          onCreatePress={handleCreateMoment}
-          onFriendPress={(friendId) => {
-            const matchedFriend = friendships?.find((f: any) => f.friend.id === friendId);
-            if (matchedFriend) {
-              setSelectedFilter({
-                type: 'FRIEND',
-                friendId: matchedFriend.friend.id,
-                displayName: matchedFriend.friend.displayName || matchedFriend.friend.username,
-                avatarUrl: matchedFriend.friend.avatarUrl,
-              });
-              handleScrollToFirstMoment();
-            }
-          }}
-          onScrollDownPress={handleScrollToFirstMoment}
-        />
-      );
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    if (item.type === 'MOMENT') {
-      return (
-        <MomentSlide
-          height={containerHeight}
-          moment={item.data}
-          onUserPress={(userId) => {
-            const matchedFriend = friendships?.find((f: any) => f.friend.id === userId);
-            if (matchedFriend) {
-              setSelectedFilter({
-                type: 'FRIEND',
-                friendId: matchedFriend.friend.id,
-                displayName: matchedFriend.friend.displayName || matchedFriend.friend.username,
-                avatarUrl: matchedFriend.friend.avatarUrl,
-              });
-            }
-          }}
-        />
-      );
-    }
-
-    if (item.type === 'EMPTY') {
-      const isFiltered = selectedFilter.type !== 'ALL';
-      return (
-        <View style={[styles.emptySlide, { height: containerHeight }]}>
-          <EmptyTodayState
-            title={isFiltered ? `Chưa có bài viết từ ${getFilterLabel()}` : undefined}
-            subtitle={
-              isFiltered
-                ? 'Không tìm thấy khoảnh khắc nào phù hợp với bộ lọc hiện tại. Hãy thử đổi bộ lọc hoặc xem tất cả khoảnh khắc!'
-                : undefined
-            }
-            onResetFilterPress={isFiltered ? () => setSelectedFilter({ type: 'ALL' }) : undefined}
+  const renderItem = useCallback(
+    ({ item }: { item: FeedItem }) => {
+      if (item.type === 'HERO') {
+        return (
+          <HomeHeroSlide
+            height={containerHeight}
+            displayName={user?.displayName || user?.username}
+            momentsCount={todayStats.todayMomentsCount}
+            myMomentsCount={todayStats.myMomentsTodayCount}
+            myEmotionsCount={todayStats.myEmotionsCount}
+            activeFriendIds={todayStats.activeFriendIdsToday}
+            onCheckInPress={handleCreateMoment}
             onCreatePress={handleCreateMoment}
+            onFriendPress={(friendId) => {
+              const matchedFriend = friendships?.find((f: any) => f.friend.id === friendId);
+              if (matchedFriend) {
+                setSelectedFilter({
+                  type: 'FRIEND',
+                  friendId: matchedFriend.friend.id,
+                  displayName: matchedFriend.friend.displayName || matchedFriend.friend.username,
+                  avatarUrl: matchedFriend.friend.avatarUrl,
+                });
+                handleScrollToFirstMoment();
+              }
+            }}
+            onScrollDownPress={handleScrollToFirstMoment}
           />
-        </View>
-      );
-    }
+        );
+      }
 
-    return null;
-  };
+      if (item.type === 'MOMENT') {
+        return (
+          <MomentSlide
+            height={containerHeight}
+            moment={item.data}
+            onUserPress={(userId) => {
+              const matchedFriend = friendships?.find((f: any) => f.friend.id === userId);
+              if (matchedFriend) {
+                setSelectedFilter({
+                  type: 'FRIEND',
+                  friendId: matchedFriend.friend.id,
+                  displayName: matchedFriend.friend.displayName || matchedFriend.friend.username,
+                  avatarUrl: matchedFriend.friend.avatarUrl,
+                });
+              }
+            }}
+          />
+        );
+      }
+
+      if (item.type === 'EMPTY') {
+        const isFiltered = selectedFilter.type !== 'ALL';
+        return (
+          <View style={[styles.emptySlide, { height: containerHeight }]}>
+            <EmptyTodayState
+              title={isFiltered ? `Chưa có bài viết từ ${getFilterLabel()}` : undefined}
+              subtitle={
+                isFiltered
+                  ? 'Không tìm thấy khoảnh khắc nào phù hợp với bộ lọc hiện tại. Hãy thử đổi bộ lọc hoặc xem tất cả khoảnh khắc!'
+                  : undefined
+              }
+              onResetFilterPress={isFiltered ? () => setSelectedFilter({ type: 'ALL' }) : undefined}
+              onCreatePress={handleCreateMoment}
+            />
+          </View>
+        );
+      }
+
+      return null;
+    },
+    [
+      containerHeight,
+      user,
+      todayStats,
+      friendships,
+      selectedFilter,
+      getFilterLabel,
+    ],
+  );
 
   return (
     <ScreenContainer style={styles.container} edges={['top']}>
@@ -229,6 +239,12 @@ export default function TodayScreen() {
             showsVerticalScrollIndicator={false}
             onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={viewabilityConfig}
+            initialNumToRender={2}
+            maxToRenderPerBatch={2}
+            windowSize={3}
+            removeClippedSubviews={Platform.OS === 'android'}
+            onEndReached={handleEndReached}
+            onEndReachedThreshold={0.5}
             getItemLayout={(_, index) => ({
               length: containerHeight,
               offset: containerHeight * index,

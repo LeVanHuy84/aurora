@@ -10,6 +10,7 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScreenContainer } from '../src/components/common/ScreenContainer';
 import { Ionicons } from '../src/components/common/Icon';
 import { useAppTheme } from '../src/hooks/use-theme';
 import { Body, Caption, Title } from '../src/components/ui/Typography';
@@ -44,109 +45,121 @@ export default function InboxScreen() {
     }
   };
 
-  const renderItem = ({ item }: { item: ConversationItem }) => {
-    const friend = item.friend;
-    const hasUnread = (item.unreadCount || 0) > 0;
+  const getFriendInfo = (item: ConversationItem) => item.friend;
 
-    return (
-      <TouchableOpacity
-        style={[
-          styles.conversationItem,
-          {
-            backgroundColor: isDark ? '#242220' : '#FFFFFF',
-            borderColor: colors.cardBorder,
-          },
-        ]}
-        activeOpacity={0.7}
-        onPress={() => {
-          router.push({
-            pathname: '/chat/[id]',
-            params: {
-              id: item.id,
-              friendName: friend?.displayName || friend?.username,
-              friendAvatar: friend?.avatarUrl || '',
+  const renderItem = React.useCallback(
+    ({ item }: { item: ConversationItem }) => {
+      const friend = getFriendInfo(item);
+      const hasUnread = (item.unreadCount || 0) > 0;
+
+      return (
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={[
+            styles.conversationItem,
+            {
+              backgroundColor: hasUnread
+                ? isDark
+                  ? '#2B2620'
+                  : '#FFFDF9'
+                : colors.card,
+              borderColor: hasUnread ? colors.accent : colors.cardBorder,
             },
-          });
-        }}
-      >
-        <View style={styles.avatarContainer}>
-          {friend?.avatarUrl ? (
-            <Image
-              source={{ uri: friend.avatarUrl }}
-              style={styles.avatar}
-              contentFit="cover"
-            />
-          ) : (
-            <View
-              style={[
-                styles.avatarFallback,
-                { backgroundColor: colors.accent },
-              ]}
-            >
-              <Caption color="white" weight="bold" style={{ fontSize: 16 }}>
-                {(friend?.displayName || friend?.username || 'U')[0].toUpperCase()}
-              </Caption>
-            </View>
-          )}
-          {hasUnread && <View style={styles.unreadDot} />}
-        </View>
-
-        <View style={styles.contentContainer}>
-          <View style={styles.topRow}>
-            <Body
-              weight={hasUnread ? 'bold' : 'semibold'}
-              color="primary"
-              numberOfLines={1}
-              style={styles.nameText}
-            >
-              {friend?.displayName || friend?.username || t('chat.friend', 'Bạn bè')}
-            </Body>
-            <Caption color="muted" style={styles.timeText}>
-              {formatTimeAgo(item.lastMessageAt || item.updatedAt)}
-            </Caption>
-          </View>
-
-          <View style={styles.bottomRow}>
-            <Caption
-              numberOfLines={1}
-              color={hasUnread ? 'primary' : 'secondary'}
-              weight={hasUnread ? 'semibold' : 'normal'}
-              style={styles.lastMessageText}
-            >
-              {item.lastMessage?.content || t('chat.startedConversation', 'Bắt đầu cuộc trò chuyện')}
-            </Caption>
-
-            {hasUnread && (
+          ]}
+          onPress={() => {
+            router.push({
+              pathname: '/chat/[id]',
+              params: {
+                id: item.id,
+                friendName: friend?.displayName || friend?.username,
+                friendAvatar: friend?.avatarUrl || '',
+              },
+            });
+          }}
+        >
+          <View style={styles.avatarContainer}>
+            {friend?.avatarUrl ? (
+              <Image
+                source={{ uri: friend.avatarUrl }}
+                style={styles.avatar}
+                contentFit="cover"
+                transition={150}
+                cachePolicy="memory-disk"
+              />
+            ) : (
               <View
                 style={[
-                  styles.unreadBadge,
-                  { backgroundColor: colors.accentDark },
+                  styles.avatarFallback,
+                  { backgroundColor: colors.accent },
                 ]}
               >
-                <Caption color="white" weight="bold" style={{ fontSize: 11 }}>
-                  {item.unreadCount}
+                <Caption color="white" weight="bold" style={{ fontSize: 16 }}>
+                  {(friend?.displayName || friend?.username || 'U')[0].toUpperCase()}
                 </Caption>
               </View>
             )}
+            {hasUnread && <View style={styles.unreadDot} />}
           </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+
+          <View style={styles.contentContainer}>
+            <View style={styles.topRow}>
+              <Body
+                weight={hasUnread ? 'bold' : 'semibold'}
+                color="primary"
+                numberOfLines={1}
+                style={styles.nameText}
+              >
+                {friend?.displayName || friend?.username || t('chat.friend', 'Bạn bè')}
+              </Body>
+              <Caption color="muted" style={styles.timeText}>
+                {formatTimeAgo(item.lastMessageAt || item.updatedAt)}
+              </Caption>
+            </View>
+
+            <View style={styles.bottomRow}>
+              <Caption
+                color={hasUnread ? 'primary' : 'secondary'}
+                weight={hasUnread ? 'semibold' : 'normal'}
+                numberOfLines={1}
+                style={styles.lastMessageText}
+              >
+                {item.lastMessage?.content || t('chat.startedConversation', 'Bắt đầu cuộc trò chuyện')}
+              </Caption>
+
+              {hasUnread && (
+                <View
+                  style={[
+                    styles.unreadBadge,
+                    { backgroundColor: colors.accentDark },
+                  ]}
+                >
+                  <Caption color="white" weight="bold" style={{ fontSize: 11 }}>
+                    {item.unreadCount}
+                  </Caption>
+                </View>
+              )}
+            </View>
+          </View>
+        </TouchableOpacity>
+      );
+    },
+    [colors, isDark, t, router],
+  );
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: colors.background,
-          paddingTop: insets.top,
-        },
-      ]}
-    >
+    <ScreenContainer style={styles.container} edges={['top']}>
       {/* Header */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          {
+            borderBottomColor: colors.divider,
+            backgroundColor: colors.background,
+          },
+        ]}
+      >
         <TouchableOpacity
+          activeOpacity={0.7}
           onPress={() => router.back()}
           style={styles.backButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -166,6 +179,9 @@ export default function InboxScreen() {
         data={conversations || []}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
+        initialNumToRender={8}
+        maxToRenderPerBatch={10}
+        windowSize={5}
         contentContainerStyle={[
           styles.listContent,
           (!conversations || conversations.length === 0) && styles.emptyListContent,
@@ -205,7 +221,7 @@ export default function InboxScreen() {
           ) : null
         }
       />
-    </View>
+    </ScreenContainer>
   );
 }
 

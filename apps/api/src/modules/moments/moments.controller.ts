@@ -30,6 +30,16 @@ export class MomentsController {
     return this.momentsService.create(userId, dto);
   }
 
+  @Get('feed')
+  @ApiOperation({ summary: 'Get cursor-paginated Home feed with today stats' })
+  @ApiResponse({ status: 200, description: 'Feed moments and today stats returned' })
+  async getFeed(
+    @CurrentUser('userId') userId: string,
+    @Query() query: GetHistoryQueryDto,
+  ) {
+    return this.momentsService.getFeed(userId, query);
+  }
+
   @Get('today')
   @ApiOperation({ summary: 'Get today timeline moments for user and friends' })
   @ApiResponse({ status: 200, description: 'List of today moments returned' })

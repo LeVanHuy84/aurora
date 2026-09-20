@@ -45,8 +45,8 @@
   - Automated Lint, Type-Check & Build test cho cả `apps/api` và `apps/mobile` khi `git push` hoặc `pull_request`.
   - Continuous Deployment (CD) cho Backend API & Expo EAS Build/Preview.
 - [x] **Task 4.2:** **Push Notifications Service Base:** Tích hợp `expo-notifications` và cấu hình logic gửi push qua Expo Push Service.
-- [ ] **Task 4.3:** **Tối ưu hóa hiệu năng Mobile:** Áp dụng `expo-image` để nén và cache ảnh mượt mà, tối ưu re-render và trải nghiệm người dùng.
-- [ ] **Task 4.4:** **Backend Production Deployment:** 
+- [x] **Task 4.3:** **Tối ưu hóa hiệu năng Mobile:** Áp dụng `expo-image` để nén và cache ảnh mượt mà, tối ưu re-render và trải nghiệm người dùng.
+- [x] **Task 4.4:** **Backend Production Deployment:** 
   - Deploy NestJS API lên môi trường Production (Render / Docker / VPS).
   - Kết nối cơ sở dữ liệu PostgreSQL Cloud (Supabase / Neon / Render Postgres) & cấu hình biến môi trường production.
 - [ ] **Task 4.5:** **EAS Build & Native OAuth Verification (Google & Apple):**

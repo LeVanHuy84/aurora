@@ -79,7 +79,10 @@ export class MomentsService {
     return moment;
   }
 
-  async getToday(userId: string) {
+  async getFeed(userId: string, query: GetHistoryQueryDto) {
+    const limit = query.limit ? Math.min(parseInt(query.limit, 10), 50) : 10;
+    const cursor = query.cursor;
+
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
@@ -105,13 +108,55 @@ export class MomentsService {
       }
     }
 
-    const moments = await this.prisma.moment.findMany({
+    // 1. Calculate Today Stats (for Hero Banner and Widgets)
+    const todayMoments = await this.prisma.moment.findMany({
       where: {
         deletedAt: null,
         createdAt: {
           gte: startOfDay,
           lte: endOfDay,
         },
+        OR: [
+          { userId },
+          {
+            userId: { in: friendIds },
+            visibility: Visibility.FRIENDS,
+          },
+          {
+            userId: { in: closeFriendIds },
+            visibility: Visibility.CLOSE_FRIENDS,
+          },
+        ],
+      },
+      select: {
+        userId: true,
+        emotionId: true,
+      },
+    });
+
+    const myMomentsToday = todayMoments.filter((m) => m.userId === userId);
+    const activeFriendIdsToday = Array.from(
+      new Set(
+        todayMoments
+          .filter((m) => m.userId !== userId)
+          .map((m) => m.userId),
+      ),
+    );
+    const myEmotionsSet = new Set(
+      myMomentsToday.map((m) => m.emotionId).filter(Boolean),
+    );
+
+    const todayStats = {
+      myMomentsTodayCount: myMomentsToday.length,
+      todayMomentsCount: todayMoments.length,
+      myEmotionsCount: myEmotionsSet.size,
+      activeFriendIdsToday,
+    };
+
+    // 2. Cursor Paginated Time-Based Feed
+    const moments = await this.prisma.moment.findMany({
+      where: {
+        deletedAt: null,
         OR: [
           // 1. My own moments
           { userId },
@@ -127,6 +172,9 @@ export class MomentsService {
           },
         ],
       },
+      take: limit + 1,
+      cursor: cursor ? { id: cursor } : undefined,
+      skip: cursor ? 1 : 0,
       orderBy: { createdAt: 'desc' },
       include: {
         emotion: true,
@@ -151,7 +199,11 @@ export class MomentsService {
       },
     });
 
-    return moments.map((m) => {
+    const hasMore = moments.length > limit;
+    const items = hasMore ? moments.slice(0, limit) : moments;
+    const nextCursor = hasMore ? items[items.length - 1].id : null;
+
+    const mappedItems = items.map((m) => {
       const userReaction = m.reactions?.[0];
       const { reactions: _reactions, ...rest } = m;
       return {
@@ -162,6 +214,21 @@ export class MomentsService {
         messagesCount: m._count?.quotedMessages ?? 0,
       };
     });
+
+    return {
+      items: mappedItems,
+      todayStats,
+      meta: {
+        hasMore,
+        nextCursor,
+        limit,
+      },
+    };
+  }
+
+  async getToday(userId: string) {
+    const feed = await this.getFeed(userId, { limit: '20' });
+    return feed.items;
   }
 
   async getCalendar(userId: string, query: GetCalendarQueryDto) {

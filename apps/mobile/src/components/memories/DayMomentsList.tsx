@@ -17,7 +17,7 @@ export interface DayMomentsListProps {
   onSelectMoment: (moment: MomentItem) => void;
 }
 
-export function DayMomentsList({
+export const DayMomentsList = React.memo(function DayMomentsList({
   selectedDate,
   moments,
   onSelectMoment,
@@ -44,14 +44,16 @@ export function DayMomentsList({
     <View style={styles.container}>
       <View style={styles.header}>
         <Title level={3} style={styles.title}>
-          {t('memories.dayMomentsTitle', {
-            date: formattedDate,
-            defaultValue: `Khoảnh khắc ngày ${formattedDate}`,
-          })}
+          {isToday
+            ? t('moments.today', 'Hôm nay')
+            : t('memories.dayMomentsTitle', {
+                date: formattedDate,
+                defaultValue: `Khoảnh khắc ngày ${formattedDate}`,
+              })}
         </Title>
         {moments.length > 0 && (
           <Caption color="muted">
-            {moments.length} {moments.length === 1 ? 'mục' : 'mục'}
+            {moments.length} {t('moments.momentsCount', 'khoảnh khắc')}
           </Caption>
         )}
       </View>
@@ -61,22 +63,20 @@ export function DayMomentsList({
           style={[
             styles.emptyCard,
             {
-              backgroundColor: colors.surfaceSoft,
+              backgroundColor: colors.card,
               borderColor: colors.cardBorder,
             },
           ]}
         >
-          <Caption style={styles.emptyIcon}>🍃</Caption>
-          <Body color="secondary" align="center" style={styles.emptyText}>
-            {t(
-              'memories.noMomentsOnDay',
-              'Không có khoảnh khắc nào được lưu trong ngày này.',
-            )}
+          <Caption style={{ fontSize: 32, marginBottom: 8 }}>🌱</Caption>
+          <Body color="secondary" style={styles.emptyText}>
+            {isToday
+              ? t('memories.emptyToday', 'Bạn chưa lưu khoảnh khắc nào trong ngày hôm nay.')
+              : t('memories.emptyDay', 'Không có khoảnh khắc nào được ghi lại vào ngày này.')}
           </Body>
           {isToday && (
             <Button
-              title={t('memories.createTodayPrompt', 'Ghi lại khoảnh khắc hôm nay nhé!')}
-              variant="primary"
+              title={t('moments.createFirst', 'Tạo khoảnh khắc ngay')}
               size="sm"
               leftIcon={<Ionicons name="add" size={16} color="#FFFFFF" />}
               onPress={() => router.push('/(tabs)/create')}
@@ -106,6 +106,8 @@ export function DayMomentsList({
                     source={{ uri: item.imageUrl }}
                     style={styles.thumbnail}
                     contentFit="cover"
+                    transition={150}
+                    cachePolicy="memory-disk"
                   />
                 ) : (
                   <View
@@ -187,7 +189,7 @@ export function DayMomentsList({
       )}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

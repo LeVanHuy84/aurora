@@ -1,10 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { momentsService } from '../services/modules/moments.service';
 import { interactionsService } from '../services/modules/interactions.service';
-import { MomentItem, ReactionType } from '@aurora/types';
+import { MomentItem, ReactionType, HomeFeedResponse, HomeFeedTodayStats } from '@aurora/types';
 
 export const momentKeys = {
   all: ['moments'] as const,
+  feed: () => [...momentKeys.all, 'feed'] as const,
   today: () => [...momentKeys.all, 'today'] as const,
   calendar: (month: number, year: number) => [...momentKeys.all, 'calendar', month, year] as const,
   history: (cursor?: string) => [...momentKeys.all, 'history', cursor] as const,
@@ -12,7 +13,33 @@ export const momentKeys = {
 };
 
 /**
- * Hook to fetch today's timeline moments
+ * Hook to fetch cursor-paginated Home feed with today's stats
+ */
+export function useHomeFeed() {
+  const query = useInfiniteQuery({
+    queryKey: momentKeys.feed(),
+    queryFn: ({ pageParam }) => momentsService.getHomeFeed(pageParam, 10),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage: HomeFeedResponse) => lastPage.meta?.nextCursor ?? undefined,
+  });
+
+  const moments: MomentItem[] = query.data?.pages.flatMap((page) => page.items) || [];
+  const todayStats: HomeFeedTodayStats = query.data?.pages[0]?.todayStats || {
+    myMomentsTodayCount: 0,
+    todayMomentsCount: 0,
+    myEmotionsCount: 0,
+    activeFriendIdsToday: [],
+  };
+
+  return {
+    ...query,
+    moments,
+    todayStats,
+  };
+}
+
+/**
+ * Hook to fetch today's timeline moments (Legacy wrapper)
  */
 export function useTodayMoments() {
   return useQuery({

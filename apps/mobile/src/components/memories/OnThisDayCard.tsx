@@ -14,7 +14,10 @@ export interface OnThisDayCardProps {
   onPress: (moment: MomentItem) => void;
 }
 
-export function OnThisDayCard({ moment, onPress }: OnThisDayCardProps) {
+export const OnThisDayCard = React.memo(function OnThisDayCard({
+  moment,
+  onPress,
+}: OnThisDayCardProps) {
   const { colors, isDark } = useAppTheme();
   const { t } = useTranslation();
 
@@ -60,6 +63,8 @@ export function OnThisDayCard({ moment, onPress }: OnThisDayCardProps) {
             source={{ uri: moment.imageUrl }}
             style={styles.thumbnail}
             contentFit="cover"
+            transition={150}
+            cachePolicy="memory-disk"
           />
         ) : (
           <View
@@ -113,7 +118,7 @@ export function OnThisDayCard({ moment, onPress }: OnThisDayCardProps) {
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

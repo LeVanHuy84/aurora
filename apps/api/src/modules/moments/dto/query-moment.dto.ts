@@ -24,3 +24,5 @@ export class GetHistoryQueryDto {
   @IsString()
   limit?: string;
 }
+
+export class GetHomeFeedQueryDto extends GetHistoryQueryDto {}

@@ -16,7 +16,7 @@ export interface CloseFriendsWidgetProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function CloseFriendsWidget({
+export const CloseFriendsWidget = React.memo(function CloseFriendsWidget({
   activeFriendIds = [],
   onFriendPress,
   onAddFriendPress,
@@ -48,9 +48,9 @@ export function CloseFriendsWidget({
     <View style={[styles.container, style]}>
       <View style={styles.header}>
         <View style={styles.headerTitleGroup}>
-          <Ionicons name="people" size={16} color={colors.accentDark} />
+          <Ionicons name="sparkles" size={14} color={colors.accentDark} />
           <Body weight="bold" color="primary" style={styles.title}>
-            {t('moments.closeFriendsWidgetTitle', 'Bạn bè')}
+            {t('moments.closeFriends', 'Bạn Thân')}
           </Body>
           {friends.length > 0 && (
             <View
@@ -60,7 +60,7 @@ export function CloseFriendsWidget({
               ]}
             >
               <Caption color="muted" weight="bold" style={styles.countText}>
-                {friends.length}
+                {friends.filter((f) => f.hasPostedToday).length}/{friends.length}
               </Caption>
             </View>
           )}
@@ -72,7 +72,7 @@ export function CloseFriendsWidget({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* 1. Add / Invite Friend Button */}
+        {/* Add Friend Button */}
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={handleAddPress}
@@ -82,32 +82,32 @@ export function CloseFriendsWidget({
             style={[
               styles.addAvatar,
               {
-                backgroundColor: isDark ? '#23201D' : '#FFFDF9',
-                borderColor: colors.accentDark,
+                borderColor: colors.cardBorder,
+                backgroundColor: isDark ? '#23201D' : '#F9F6F0',
               },
             ]}
           >
-            <Ionicons name="person-add-outline" size={19} color={colors.accentDark} />
+            <Ionicons name="person-add-outline" size={18} color={colors.textSecondary} />
           </View>
-          <Caption color="accent" weight="semibold" style={styles.nameText} numberOfLines={1}>
+          <Caption color="tertiary" style={styles.nameText} numberOfLines={1}>
             {t('common.add', 'Thêm')}
           </Caption>
         </TouchableOpacity>
 
-        {/* 2. Friends Avatars List */}
+        {/* Friend Avatars */}
         {friends.map((item) => {
           const hasPosted = item.hasPostedToday;
           const isClose = item.isCloseFriend;
 
-          // Border styling based on status
-          const borderColor = hasPosted
-            ? isClose ? '#38A169' : colors.accentDark
-            : isClose ? 'rgba(56, 161, 105, 0.4)' : isDark ? 'rgba(255,255,255,0.12)' : colors.cardBorder;
+          let borderColor = colors.cardBorder;
+          if (hasPosted) {
+            borderColor = isClose ? '#48BB78' : colors.accentDark;
+          }
 
           return (
             <TouchableOpacity
               key={item.id}
-              activeOpacity={0.8}
+              activeOpacity={0.75}
               onPress={() => handleFriendPress(item.id)}
               style={styles.itemWrapper}
             >
@@ -126,13 +126,14 @@ export function CloseFriendsWidget({
                     source={{ uri: item.avatarUrl }}
                     style={styles.avatarImage}
                     contentFit="cover"
-                    transition={200}
+                    transition={150}
+                    cachePolicy="memory-disk"
                   />
                 ) : (
                   <View
                     style={[
                       styles.avatarFallback,
-                      { backgroundColor: isClose ? '#38A169' : colors.accent },
+                      { backgroundColor: isClose ? '#48BB78' : colors.accent },
                     ]}
                   >
                     <Body weight="bold" color="white" style={{ fontSize: 15 }}>
@@ -179,7 +180,7 @@ export function CloseFriendsWidget({
       </ScrollView>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

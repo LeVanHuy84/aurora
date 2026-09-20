@@ -67,6 +67,7 @@
     }
   },
   "tabs": {
+    "home": "Home",
     "today": "Today",
     "memories": "Memories",
     "create": "Create",

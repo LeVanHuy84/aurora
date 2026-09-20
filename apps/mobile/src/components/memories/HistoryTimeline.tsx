@@ -22,7 +22,7 @@ interface MonthSection {
   topEmotion?: { icon: string; label: string; color?: string } | null;
 }
 
-export function HistoryTimeline({
+export const HistoryTimeline = React.memo(function HistoryTimeline({
   moments,
   isLoading = false,
   onSelectMoment,
@@ -324,6 +324,8 @@ export function HistoryTimeline({
                           style={styles.photoImage}
                           contentFit="cover"
                           transition={200}
+                          cachePolicy="memory-disk"
+                          placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
                         />
                         {item.content ? (
                           <View
@@ -486,7 +488,7 @@ export function HistoryTimeline({
       ))}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

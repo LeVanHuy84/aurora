@@ -18,7 +18,7 @@ export interface MomentSlideProps {
   onUserPress?: (userId: string) => void;
 }
 
-export function MomentSlide({
+export const MomentSlide = React.memo(function MomentSlide({
   height,
   moment,
   onUserPress,
@@ -39,27 +39,30 @@ export function MomentSlide({
   const hasReacted = moment.hasReacted ?? false;
   const userReactionType = moment.userReactionType;
 
-  const handleQuickReaction = (emoji: string, targetType: ReactionType) => {
-    const isAlreadyThisReaction = hasReacted && userReactionType === targetType;
+  const handleQuickReaction = React.useCallback(
+    (emoji: string, targetType: ReactionType) => {
+      const isAlreadyThisReaction = hasReacted && userReactionType === targetType;
 
-    if (isAlreadyThisReaction) {
-      reactMomentMutation.mutate({
-        momentId: moment.id,
-        remove: true,
-      });
-    } else {
-      setBurstEmoji(emoji);
-      setBurstKey((prev) => prev + 1);
+      if (isAlreadyThisReaction) {
+        reactMomentMutation.mutate({
+          momentId: moment.id,
+          remove: true,
+        });
+      } else {
+        setBurstEmoji(emoji);
+        setBurstKey((prev) => prev + 1);
 
-      reactMomentMutation.mutate({
-        momentId: moment.id,
-        type: targetType,
-        remove: false,
-      });
-    }
-  };
+        reactMomentMutation.mutate({
+          momentId: moment.id,
+          type: targetType,
+          remove: false,
+        });
+      }
+    },
+    [hasReacted, userReactionType, reactMomentMutation, moment.id],
+  );
 
-  const handleOpenDirectChat = async () => {
+  const handleOpenDirectChat = React.useCallback(async () => {
     if (isOwner || !moment.userId || isOpeningChat) return;
 
     try {
@@ -82,22 +85,25 @@ export function MomentSlide({
     } finally {
       setIsOpeningChat(false);
     }
-  };
+  }, [isOwner, moment, isOpeningChat, router]);
 
-  const handleOpenChatWithFriend = (conversationId: string, friend: any) => {
-    router.push({
-      pathname: '/chat/[id]',
-      params: {
-        id: conversationId,
-        friendName: friend?.displayName || friend?.username,
-        friendAvatar: friend?.avatarUrl || '',
-        quotedMomentId: moment.id,
-        quotedMomentType: moment.type,
-        quotedMomentImage: moment.imageUrl || '',
-        quotedMomentContent: moment.content || '',
-      },
-    });
-  };
+  const handleOpenChatWithFriend = React.useCallback(
+    (conversationId: string, friend: any) => {
+      router.push({
+        pathname: '/chat/[id]',
+        params: {
+          id: conversationId,
+          friendName: friend?.displayName || friend?.username,
+          friendAvatar: friend?.avatarUrl || '',
+          quotedMomentId: moment.id,
+          quotedMomentType: moment.type,
+          quotedMomentImage: moment.imageUrl || '',
+          quotedMomentContent: moment.content || '',
+        },
+      });
+    },
+    [moment, router],
+  );
 
   return (
     <View style={[styles.slideContainer, { height }]}>
@@ -152,7 +158,7 @@ export function MomentSlide({
       />
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   slideContainer: {
