@@ -32,6 +32,13 @@ export const usersService = {
   },
 
   /**
+   * Update FCM / Expo Push Token for notifications
+   */
+  async updatePushToken(fcmToken: string): Promise<{ success: boolean }> {
+    return apiClient.patch<{ success: boolean }>('/users/me/fcm-token', { fcmToken });
+  },
+
+  /**
    * Soft delete current account
    */
   async deleteAccount(): Promise<void> {

@@ -4,9 +4,19 @@ import {
   CreateMomentPayload,
   CalendarMomentItem,
   HistoryResponse,
+  HomeFeedResponse,
 } from '@aurora/types';
 
 export const momentsService = {
+  /**
+   * Fetch home cursor-paginated timeline moments and today stats
+   */
+  async getHomeFeed(cursor?: string, limit = 10): Promise<HomeFeedResponse> {
+    return apiClient.get<HomeFeedResponse>('/moments/feed', {
+      params: { cursor, limit },
+    });
+  },
+
   /**
    * Fetch today's timeline moments for the current user and their friends
    */

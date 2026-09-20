@@ -17,6 +17,7 @@ import { Title, Body, Caption } from '../ui/Typography';
 import { Ionicons } from '../common/Icon';
 import { MomentItem, MomentType, ReactionType, Visibility } from '@aurora/types';
 import { Spacing, BorderRadius } from '../../constants/theme';
+import { getEmotionLabel } from '../../utils/emotion';
 import { useAuth } from '../../hooks/use-auth';
 import { useMomentInteractions, useReactMoment } from '../../hooks/use-interactions';
 import { chatService } from '../../services/modules/chat.service';
@@ -303,7 +304,7 @@ export function MomentDetailModal({
                   {moment.emotion?.icon || '✨'}
                 </Caption>
                 <Title level={1} style={[styles.moodLargeTitle, { color: colors.textPrimary }]}>
-                  {moment.emotion?.label || 'Cảm xúc'}
+                  {getEmotionLabel(moment.emotion, t) || t('moments.mood', 'Cảm xúc')}
                 </Title>
               </View>
             ) : (
@@ -347,7 +348,7 @@ export function MomentDetailModal({
                       color: baseEmotionColor,
                     }}
                   >
-                    {moment.emotion.label}
+                    {getEmotionLabel(moment.emotion, t)}
                   </Body>
                 </View>
               )}

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '../../src/components/common/Icon';
 import { useAppTheme } from '../../src/hooks/use-theme';
 import { useAuth } from '../../src/hooks/use-auth';
+import { useOAuth } from '../../src/hooks/use-oauth';
 import { ScreenContainer } from '../../src/components/common/ScreenContainer';
 import { Button } from '../../src/components/ui/Button';
 import { Input } from '../../src/components/ui/Input';
@@ -16,7 +17,8 @@ export default function RegisterScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { colors } = useAppTheme();
-  const { register, googleLogin, appleLogin, isLoading, resetErrors } = useAuth();
+  const { register, isLoading, resetErrors } = useAuth();
+  const { signInWithGoogle, signInWithApple, isOAuthLoading, oauthError } = useOAuth();
 
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
@@ -39,14 +41,14 @@ export default function RegisterScreen() {
     resetErrors();
 
     if (!displayName.trim()) {
-      setDisplayNameError(t('auth.errors.displayNameRequired'));
+      setDisplayNameError(t('auth.errors.displayNameRequired', 'Vui lòng nhập tên hiển thị'));
       isValid = false;
     }
 
-    const usernameRegex = /^[a-z0-9_]{3,20}$/;
+    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
     const cleanUsername = username.trim().toLowerCase();
     if (!cleanUsername || !usernameRegex.test(cleanUsername)) {
-      setUsernameError(t('auth.errors.usernameInvalid'));
+      setUsernameError(t('auth.errors.invalidUsername', 'Tên đăng nhập từ 3-20 ký tự, chỉ gồm chữ, số và dấu gạch dưới'));
       isValid = false;
     }
 
@@ -80,27 +82,7 @@ export default function RegisterScreen() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      setGeneralError('');
-      const mockIdToken = 'google_id_token_' + Date.now();
-      await googleLogin({ idToken: mockIdToken });
-      router.replace('/');
-    } catch (err: any) {
-      setGeneralError(err?.message || t('auth.errors.oauthFailed'));
-    }
-  };
-
-  const handleAppleLogin = async () => {
-    try {
-      setGeneralError('');
-      const mockIdToken = 'apple_id_token_' + Date.now();
-      await appleLogin({ idToken: mockIdToken });
-      router.replace('/');
-    } catch (err: any) {
-      setGeneralError(err?.message || t('auth.errors.oauthFailed'));
-    }
-  };
+  const errorMessage = generalError || oauthError;
 
   return (
     <ScreenContainer
@@ -129,7 +111,7 @@ export default function RegisterScreen() {
       </View>
 
       {/* General Error Banner */}
-      {generalError ? (
+      {errorMessage ? (
         <View
           style={[
             styles.errorBanner,
@@ -138,7 +120,7 @@ export default function RegisterScreen() {
         >
           <Ionicons name="alert-circle" size={18} color={colors.danger} />
           <Body color="danger" weight="medium" style={styles.errorBannerText}>
-            {generalError}
+            {errorMessage}
           </Body>
         </View>
       ) : null}
@@ -222,13 +204,13 @@ export default function RegisterScreen() {
       <View style={styles.socialContainer}>
         <SocialButton
           provider="google"
-          onPress={handleGoogleLogin}
-          loading={isLoading}
+          onPress={signInWithGoogle}
+          loading={isOAuthLoading}
         />
         <SocialButton
           provider="apple"
-          onPress={handleAppleLogin}
-          loading={isLoading}
+          onPress={signInWithApple}
+          loading={isOAuthLoading}
         />
       </View>
 

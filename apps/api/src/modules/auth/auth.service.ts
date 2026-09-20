@@ -84,16 +84,78 @@ export class AuthService {
     return { user: userWithoutPassword, tokens };
   }
 
+  private async verifyGoogleToken(token: string) {
+    // 1. Try Google TokenInfo endpoint (accepts both id_token and access_token)
+    try {
+      const response = await fetch(
+        `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(token)}`,
+      );
+      if (response.ok) {
+        const data = await response.json();
+        if (data.email) {
+          return {
+            providerId: data.sub || data.user_id,
+            email: data.email.toLowerCase(),
+            displayName: data.name || data.given_name || data.email.split('@')[0],
+            avatarUrl: data.picture || null,
+          };
+        }
+      }
+    } catch {
+      // ignore and try next
+    }
+
+    // 2. Try Google UserInfo endpoint
+    try {
+      const userinfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (userinfoRes.ok) {
+        const data = await userinfoRes.json();
+        if (data.email) {
+          return {
+            providerId: data.sub,
+            email: data.email.toLowerCase(),
+            displayName: data.name || data.given_name || data.email.split('@')[0],
+            avatarUrl: data.picture || null,
+          };
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    throw new UnauthorizedException('INVALID_GOOGLE_TOKEN');
+  }
+
+  private verifyAppleToken(identityToken: string) {
+    try {
+      const parts = identityToken.split('.');
+      if (parts.length < 2) {
+        throw new Error('Invalid JWT format');
+      }
+      const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+      if (!payload.sub) {
+        throw new Error('Missing sub in Apple identity token');
+      }
+      return {
+        providerId: payload.sub,
+        email: payload.email
+          ? payload.email.toLowerCase()
+          : `apple_${payload.sub.slice(0, 10)}@privaterelay.appleid.com`,
+        displayName: 'Apple User',
+      };
+    } catch {
+      throw new UnauthorizedException('INVALID_APPLE_TOKEN');
+    }
+  }
+
   async googleLogin(dto: OAuthDto) {
-    // Basic verification / token parsing fallback logic
     if (!dto.idToken) {
       throw new BadRequestException('ID token is required');
     }
 
-    // Standardized payload mock/verifier format for OAuth token
-    const email = `google_${dto.idToken.slice(0, 8)}@aurora.internal`;
-    const username = `google_user_${dto.idToken.slice(0, 8)}`;
-    const providerId = `google_sub_${dto.idToken.slice(0, 8)}`;
+    const { providerId, email, displayName, avatarUrl } = await this.verifyGoogleToken(dto.idToken);
 
     let user = await this.prisma.user.findFirst({
       where: {
@@ -113,11 +175,19 @@ export class AuthService {
     });
 
     if (!user) {
+      const baseUsername = (email.split('@')[0] || displayName)
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, '_')
+        .slice(0, 20);
+      const uniqueSuffix = Math.floor(1000 + Math.random() * 9000);
+      const username = `${baseUsername}_${uniqueSuffix}`;
+
       user = await this.prisma.user.create({
         data: {
           email,
           username,
-          displayName: 'Google User',
+          displayName,
+          avatarUrl,
           provider: AuthProvider.GOOGLE,
           providerId,
         },
@@ -130,6 +200,14 @@ export class AuthService {
           bio: true,
           provider: true,
           createdAt: true,
+        },
+      });
+    } else {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          providerId,
+          ...(avatarUrl && !user.avatarUrl ? { avatarUrl } : {}),
         },
       });
     }
@@ -145,9 +223,7 @@ export class AuthService {
       throw new BadRequestException('ID token is required');
     }
 
-    const email = `apple_${dto.idToken.slice(0, 8)}@aurora.internal`;
-    const username = `apple_user_${dto.idToken.slice(0, 8)}`;
-    const providerId = `apple_sub_${dto.idToken.slice(0, 8)}`;
+    const { providerId, email, displayName } = this.verifyAppleToken(dto.idToken);
 
     let user = await this.prisma.user.findFirst({
       where: {
@@ -167,11 +243,18 @@ export class AuthService {
     });
 
     if (!user) {
+      const baseUsername = (email.split('@')[0] || displayName)
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, '_')
+        .slice(0, 20);
+      const uniqueSuffix = Math.floor(1000 + Math.random() * 9000);
+      const username = `${baseUsername}_${uniqueSuffix}`;
+
       user = await this.prisma.user.create({
         data: {
           email,
           username,
-          displayName: 'Apple User',
+          displayName,
           provider: AuthProvider.APPLE,
           providerId,
         },

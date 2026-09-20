@@ -7,13 +7,17 @@ import { Title, Body, Caption } from '../ui/Typography';
 import { Ionicons } from '../common/Icon';
 import { MomentItem, MomentType } from '@aurora/types';
 import { Spacing, BorderRadius } from '../../constants/theme';
+import { getEmotionLabel } from '../../utils/emotion';
 
 export interface OnThisDayCardProps {
   moment: MomentItem | null;
   onPress: (moment: MomentItem) => void;
 }
 
-export function OnThisDayCard({ moment, onPress }: OnThisDayCardProps) {
+export const OnThisDayCard = React.memo(function OnThisDayCard({
+  moment,
+  onPress,
+}: OnThisDayCardProps) {
   const { colors, isDark } = useAppTheme();
   const { t } = useTranslation();
 
@@ -59,6 +63,8 @@ export function OnThisDayCard({ moment, onPress }: OnThisDayCardProps) {
             source={{ uri: moment.imageUrl }}
             style={styles.thumbnail}
             contentFit="cover"
+            transition={150}
+            cachePolicy="memory-disk"
           />
         ) : (
           <View
@@ -78,7 +84,7 @@ export function OnThisDayCard({ moment, onPress }: OnThisDayCardProps) {
             <View style={styles.emotionPill}>
               <Caption style={{ fontSize: 13, lineHeight: 16 }}>{moment.emotion.icon}</Caption>
               <Caption weight="bold" color="primary" style={{ fontSize: 12 }}>
-                {moment.emotion.label}
+                {getEmotionLabel(moment.emotion, t)}
               </Caption>
             </View>
           )}
@@ -112,7 +118,7 @@ export function OnThisDayCard({ moment, onPress }: OnThisDayCardProps) {
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

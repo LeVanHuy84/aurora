@@ -7,10 +7,14 @@ import { queryClient } from '../src/services/query-client';
 import '../src/i18n';
 import { useAppTheme } from '../src/hooks/use-theme';
 import { useAuthStore } from '../src/stores/auth.store';
+import { usePushNotifications } from '../src/hooks/use-push-notifications';
 
 function AppNavigation() {
   const { colors, isDark } = useAppTheme();
   const initAuth = useAuthStore((state) => state.initAuth);
+
+  // Khởi tạo và lắng nghe Push Notifications
+  usePushNotifications();
 
   useEffect(() => {
     initAuth();

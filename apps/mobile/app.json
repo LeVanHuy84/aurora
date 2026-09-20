@@ -42,7 +42,14 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#FDFBF7"
+        }
+      ]
     ],
     "extra": {
       "router": {},

@@ -30,14 +30,14 @@ export default function TabsLayout() {
         },
       }}
     >
-      {/* Tab 1: Today */}
+      {/* Tab 1: Home */}
       <Tabs.Screen
         name="index"
         options={{
-          title: t('tabs.today'),
+          title: t('tabs.home', 'Trang chủ'),
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? 'sunny' : 'sunny-outline'}
+              name={focused ? 'home' : 'home-outline'}
               size={24}
               color={color}
             />

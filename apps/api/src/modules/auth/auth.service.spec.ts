@@ -155,6 +155,12 @@ describe('AuthService', () => {
     });
 
     it('should login or create user with google oauth idToken', async () => {
+      vi.spyOn(service as any, 'verifyGoogleToken').mockResolvedValue({
+        providerId: 'google-sub-123',
+        email: 'googleuser@example.com',
+        displayName: 'Google User',
+        avatarUrl: 'https://example.com/avatar.jpg',
+      });
       mockPrismaService.user.findFirst.mockResolvedValue(null);
       mockPrismaService.user.create.mockResolvedValue(mockUser);
 
@@ -171,6 +177,11 @@ describe('AuthService', () => {
     });
 
     it('should login or create user with apple oauth idToken', async () => {
+      vi.spyOn(service as any, 'verifyAppleToken').mockReturnValue({
+        providerId: 'apple-sub-123',
+        email: 'appleuser@example.com',
+        displayName: 'Apple User',
+      });
       mockPrismaService.user.findFirst.mockResolvedValue(mockUser);
 
       const result = await service.appleLogin({ idToken: 'apple-mock-token-12345' });

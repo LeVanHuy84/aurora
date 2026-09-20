@@ -67,20 +67,11 @@
     }
   },
   "tabs": {
+    "home": "Home",
     "today": "Today",
     "memories": "Memories",
     "create": "Create",
     "me": "Me"
-  },
-  "emotions": {
-    "happy": "Happy",
-    "calm": "Calm",
-    "excited": "Excited",
-    "loved": "Loved",
-    "tired": "Tired",
-    "sad": "Sad",
-    "stressed": "Stressed",
-    "grateful": "Grateful"
   },
   "moments": {
     "whatsHappening": "What's happening?",
@@ -161,9 +152,10 @@
     "languageSetting": "Language",
     "langVi": "Tiếng Việt 🇻🇳",
     "langEn": "English 🇬🇧",
-    "notificationSetting": "Notifications",
+    "notificationSetting": "Notifications & Reminders",
     "dailyReminder": "Daily Diary Reminder (8:00 PM)",
     "friendActivity": "New moments from Close Friends",
+    "allFriendsActivity": "New moments from all friends",
     "logoutConfirmTitle": "Log Out",
     "logoutConfirmMessage": "Are you sure you want to log out of Aurora?",
     "friendsManagerTitle": "Manage Friends",
@@ -222,5 +214,21 @@
     "sentMomentReply": "Replied to this moment",
     "reply": "Reply",
     "noRepliesYet": "No private replies for this moment yet"
+  },
+  "emotions": {
+    "HAPPY": "Happy",
+    "CALM": "Calm",
+    "PEACEFUL": "Peaceful",
+    "EXCITED": "Excited",
+    "LOVED": "Loved",
+    "TIRED": "Tired",
+    "SAD": "Sad",
+    "STRESSED": "Stressed",
+    "ANXIOUS": "Anxious",
+    "GRATEFUL": "Grateful",
+    "PROUD": "Proud",
+    "CONFUSED": "Confused",
+    "ANGRY": "Angry",
+    "BORED": "Bored"
   }
 }

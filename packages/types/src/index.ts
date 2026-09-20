@@ -167,6 +167,19 @@ export interface HistoryResponse {
   meta: HistoryMeta;
 }
 
+export interface HomeFeedTodayStats {
+  myMomentsTodayCount: number;
+  todayMomentsCount: number;
+  myEmotionsCount: number;
+  activeFriendIdsToday: string[];
+}
+
+export interface HomeFeedResponse {
+  items: MomentItem[];
+  todayStats: HomeFeedTodayStats;
+  meta: HistoryMeta;
+}
+
 // ------------------------------------------------------
 // CHAT & INTERACTIONS TYPES
 // ------------------------------------------------------

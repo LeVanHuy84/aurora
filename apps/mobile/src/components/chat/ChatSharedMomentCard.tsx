@@ -12,7 +12,10 @@ export interface ChatSharedMomentCardProps {
   isMe: boolean;
 }
 
-export function ChatSharedMomentCard({ moment, isMe }: ChatSharedMomentCardProps) {
+export const ChatSharedMomentCard = React.memo(function ChatSharedMomentCard({
+  moment,
+  isMe,
+}: ChatSharedMomentCardProps) {
   const { colors, isDark } = useAppTheme();
 
   if (!moment) return null;
@@ -38,6 +41,7 @@ export function ChatSharedMomentCard({ moment, isMe }: ChatSharedMomentCardProps
           style={styles.photo}
           contentFit="cover"
           transition={200}
+          cachePolicy="memory-disk"
           placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
         />
 
@@ -138,7 +142,7 @@ export function ChatSharedMomentCard({ moment, isMe }: ChatSharedMomentCardProps
       ) : null}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

@@ -8,6 +8,7 @@ import { Body, Label, Title } from '../ui/Typography';
 import { Spacing, BorderRadius } from '../../constants/theme';
 import { Ionicons } from '../common/Icon';
 import { FloatingEmojiBurst } from './FloatingEmojiBurst';
+import { getEmotionLabel } from '../../utils/emotion';
 
 export interface MomentCanvasProps {
   moment: MomentItem;
@@ -15,7 +16,11 @@ export interface MomentCanvasProps {
   burstKey: number;
 }
 
-export function MomentCanvas({ moment, burstEmoji, burstKey }: MomentCanvasProps) {
+export const MomentCanvas = React.memo(function MomentCanvas({
+  moment,
+  burstEmoji,
+  burstKey,
+}: MomentCanvasProps) {
   const { colors, isDark } = useAppTheme();
   const { t } = useTranslation();
 
@@ -30,7 +35,8 @@ export function MomentCanvas({ moment, burstEmoji, burstKey }: MomentCanvasProps
             source={{ uri: moment.imageUrl }}
             style={styles.photo}
             contentFit="cover"
-            transition={300}
+            transition={250}
+            cachePolicy="memory-disk"
             placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
           />
           <FloatingEmojiBurst emoji={burstEmoji} triggerKey={burstKey} />
@@ -78,7 +84,7 @@ export function MomentCanvas({ moment, burstEmoji, burstKey }: MomentCanvasProps
         >
           <Label style={styles.moodEmoji}>{emotion?.icon || '✨'}</Label>
           <Title level={2} style={styles.moodTitle}>
-            {emotion?.label || t('moments.mood', 'Cảm xúc')}
+            {getEmotionLabel(emotion, t) || t('moments.mood', 'Cảm xúc')}
           </Title>
           {moment.content ? (
             <Body color="secondary" style={styles.moodContentText}>
@@ -90,7 +96,7 @@ export function MomentCanvas({ moment, burstEmoji, burstKey }: MomentCanvasProps
       ) : null}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   canvasWrapper: {

@@ -1,15 +1,16 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '../src/components/common/Icon';
 import { useAuth } from '../src/hooks/use-auth';
 import { useAppTheme } from '../src/hooks/use-theme';
-import { Spacing } from '../src/constants/theme';
+import { Title, Subtitle } from '../src/components/ui/Typography';
+import { Spacing, BorderRadius } from '../src/constants/theme';
 
 export default function EntryScreen() {
   const router = useRouter();
   const { colors, isDark } = useAppTheme();
-  const { isAuthenticated, isInitialized, isLoading } = useAuth();
+  const { isAuthenticated, isInitialized } = useAuth();
 
   useEffect(() => {
     if (isInitialized) {
@@ -23,18 +24,36 @@ export default function EntryScreen() {
 
   return (
     <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+      {/* App Favicon / Official Emblem */}
       <View
         style={[
-          styles.logoContainer,
+          styles.emblemContainer,
           {
-            backgroundColor: isDark ? '#2C2926' : '#FDF4EB',
-            borderColor: colors.cardBorder,
+            backgroundColor: isDark ? '#25221F' : '#FFFDF9',
+            borderColor: isDark ? 'rgba(255,255,255,0.1)' : colors.cardBorder,
           },
         ]}
       >
-        <Ionicons name="sparkles" size={36} color={colors.accentDark} />
+        <Image
+          source={require('../assets/icon.png')}
+          style={styles.emblemImage}
+          contentFit="cover"
+          transition={300}
+        />
       </View>
-      <ActivityIndicator size="large" color={colors.accentDark} style={styles.spinner} />
+
+      <Title level={2} style={styles.brandTitle}>
+        Aurora
+      </Title>
+      <Subtitle color="accent" style={styles.brandTagline}>
+        Private Social Diary
+      </Subtitle>
+
+      <ActivityIndicator
+        size="small"
+        color={colors.accentDark}
+        style={styles.spinner}
+      />
     </View>
   );
 }
@@ -44,15 +63,32 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: Spacing.xl,
   },
-  logoContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  emblemContainer: {
+    width: 88,
+    height: 88,
+    borderRadius: 24,
+    overflow: 'hidden',
     borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: Spacing.md,
+    shadowColor: '#E76F51',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  emblemImage: {
+    width: '100%',
+    height: '100%',
+  },
+  brandTitle: {
+    marginBottom: 2,
+    letterSpacing: 0.5,
+  },
+  brandTagline: {
+    fontSize: 13,
+    marginBottom: Spacing.lg,
   },
   spinner: {
     marginTop: Spacing.sm,

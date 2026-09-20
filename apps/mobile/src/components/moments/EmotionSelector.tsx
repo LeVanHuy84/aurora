@@ -1,10 +1,12 @@
 import React from 'react';
 import { StyleSheet, ScrollView, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks/use-theme';
 import { useEmotions } from '../../hooks/use-emotions';
 import { EmotionItem } from '@aurora/types';
 import { Label, Caption } from '../ui/Typography';
 import { Spacing, BorderRadius } from '../../constants/theme';
+import { getEmotionLabel } from '../../utils/emotion';
 
 export interface EmotionSelectorProps {
   selectedId?: string | null;
@@ -17,6 +19,7 @@ export function EmotionSelector({
   selectedCode,
   onSelectEmotion,
 }: EmotionSelectorProps) {
+  const { t } = useTranslation();
   const { colors, isDark } = useAppTheme();
   const { data: emotions = [], isLoading } = useEmotions();
 
@@ -70,7 +73,7 @@ export function EmotionSelector({
                 fontSize: 12.5,
               }}
             >
-              {emotion.label}
+              {getEmotionLabel(emotion, t)}
             </Caption>
           </TouchableOpacity>
         );
