@@ -22,11 +22,14 @@ export function useOAuth() {
   const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_IOS;
   const androidClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_ANDROID;
 
+  const hasGoogleClientId = Boolean(webClientId || iosClientId || androidClientId);
+  const fallbackClientId = '1234567890-aurora.apps.googleusercontent.com';
+
   const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: webClientId || iosClientId || androidClientId,
-    webClientId,
-    iosClientId,
-    androidClientId,
+    clientId: (Platform.OS === 'android' ? androidClientId : iosClientId) || webClientId || fallbackClientId,
+    webClientId: webClientId || fallbackClientId,
+    iosClientId: iosClientId || fallbackClientId,
+    androidClientId: androidClientId || fallbackClientId,
     scopes: ['openid', 'profile', 'email'],
   });
 
@@ -61,11 +64,15 @@ export function useOAuth() {
 
   const signInWithGoogle = async () => {
     try {
-      setOauthError(null);
+      if (!hasGoogleClientId) {
+        setOauthError('Vui lòng cấu hình Google Client ID trên EAS/môi trường để đăng nhập Google.');
+        return;
+      }
       setIsOAuthLoading(true);
+      setOauthError(null);
       await promptAsync();
     } catch (err: any) {
-      console.warn('[GoogleOAuth] Failed to launch prompt:', err);
+      console.warn('[GoogleOAuth] Prompt error:', err);
       setOauthError(err?.message || t('auth.errors.oauthFailed'));
     } finally {
       setIsOAuthLoading(false);
