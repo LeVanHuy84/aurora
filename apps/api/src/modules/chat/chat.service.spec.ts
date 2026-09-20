@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ChatService } from './chat.service.js';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 
 describe('ChatService', () => {
   let service: ChatService;
@@ -46,7 +47,7 @@ describe('ChatService', () => {
       update: vi.fn(),
     },
     conversationMember: {
-      findMany: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
       findFirst: vi.fn(),
       findUnique: vi.fn(),
       update: vi.fn(),
@@ -61,6 +62,15 @@ describe('ChatService', () => {
     },
   };
 
+  const mockNotificationsService = {
+    notifyNewMoment: vi.fn().mockResolvedValue(undefined),
+    notifyMomentReaction: vi.fn().mockResolvedValue(undefined),
+    notifyReaction: vi.fn().mockResolvedValue(undefined),
+    notifyNewMessage: vi.fn().mockResolvedValue(undefined),
+    notifyFriendRequest: vi.fn().mockResolvedValue(undefined),
+    notifyFriendAccepted: vi.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     vi.clearAllMocks();
 
@@ -68,6 +78,7 @@ describe('ChatService', () => {
       providers: [
         ChatService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: NotificationsService, useValue: mockNotificationsService },
       ],
     }).compile();
 

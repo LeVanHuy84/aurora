@@ -4,6 +4,7 @@ import { BadRequestException, ForbiddenException, NotFoundException } from '@nes
 import { FriendshipStatus, MomentType, Visibility } from '@prisma/client';
 import { MomentsService } from './moments.service.js';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 
 describe('MomentsService', () => {
   let service: MomentsService;
@@ -52,6 +53,15 @@ describe('MomentsService', () => {
     },
   };
 
+  const mockNotificationsService = {
+    notifyNewMoment: vi.fn().mockResolvedValue(undefined),
+    notifyMomentReaction: vi.fn().mockResolvedValue(undefined),
+    notifyReaction: vi.fn().mockResolvedValue(undefined),
+    notifyNewMessage: vi.fn().mockResolvedValue(undefined),
+    notifyFriendRequest: vi.fn().mockResolvedValue(undefined),
+    notifyFriendAccepted: vi.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     vi.clearAllMocks();
 
@@ -59,6 +69,7 @@ describe('MomentsService', () => {
       providers: [
         MomentsService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: NotificationsService, useValue: mockNotificationsService },
       ],
     }).compile();
 

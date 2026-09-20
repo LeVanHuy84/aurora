@@ -108,6 +108,9 @@ export function usePushNotifications() {
               router.push('/inbox');
             }
             break;
+          case 'DAILY_REMINDER':
+            router.push('/(tabs)/create');
+            break;
           case 'MOMENT_REACTION':
           case 'MOMENT_COMMENT':
             router.push('/(tabs)');
@@ -201,3 +204,68 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
     return null;
   }
 }
+
+export const DAILY_REMINDER_NOTIFICATION_ID = 'aurora-daily-reminder-20h';
+
+/**
+ * Đặt lịch thông báo nhắc nhở nhật ký hàng ngày (Local Notification)
+ */
+export async function scheduleDailyReminderNotification(hour = 20, minute = 0): Promise<boolean> {
+  const notif = getNotificationsModule();
+  if (!notif || Platform.OS === 'web') return false;
+
+  try {
+    // 1. Hủy lịch cũ nếu có
+    await cancelDailyReminderNotification();
+
+    // 2. Đảm bảo quyền thông báo
+    const { status } = await notif.getPermissionsAsync();
+    if (status !== 'granted') {
+      const requestRes = await notif.requestPermissionsAsync();
+      if (requestRes.status !== 'granted') {
+        return false;
+      }
+    }
+
+    // 3. Đặt lịch hàng ngày (repeats = true)
+    await notif.scheduleNotificationAsync({
+      identifier: DAILY_REMINDER_NOTIFICATION_ID,
+      content: {
+        title: '✨ Hôm nay của bạn thế nào?',
+        body: 'Dành 1 phút ghi lại khoảnh khắc và cảm xúc của bạn cùng Aurora nhé 📸',
+        sound: 'default',
+        priority: notif.AndroidNotificationPriority?.HIGH ?? 'high',
+        data: {
+          type: 'DAILY_REMINDER',
+        },
+      },
+      trigger: {
+        hour,
+        minute,
+        repeats: true,
+      } as any,
+    });
+
+    console.log(`[PushNotification] Daily reminder scheduled at ${hour}:${minute < 10 ? '0' : ''}${minute}`);
+    return true;
+  } catch (err) {
+    console.warn('[PushNotification] Failed to schedule daily reminder:', err);
+    return false;
+  }
+}
+
+/**
+ * Hủy lịch nhắc nhở nhật ký hàng ngày
+ */
+export async function cancelDailyReminderNotification(): Promise<void> {
+  const notif = getNotificationsModule();
+  if (!notif || Platform.OS === 'web') return;
+
+  try {
+    await notif.cancelScheduledNotificationAsync(DAILY_REMINDER_NOTIFICATION_ID);
+    console.log('[PushNotification] Daily reminder cancelled');
+  } catch (err) {
+    console.warn('[PushNotification] Failed to cancel daily reminder:', err);
+  }
+}
+

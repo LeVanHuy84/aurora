@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { InteractionsService } from './interactions.service.js';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 
 describe('InteractionsService', () => {
   let service: InteractionsService;
@@ -51,6 +52,15 @@ describe('InteractionsService', () => {
     },
   };
 
+  const mockNotificationsService = {
+    notifyNewMoment: vi.fn().mockResolvedValue(undefined),
+    notifyMomentReaction: vi.fn().mockResolvedValue(undefined),
+    notifyReaction: vi.fn().mockResolvedValue(undefined),
+    notifyNewMessage: vi.fn().mockResolvedValue(undefined),
+    notifyFriendRequest: vi.fn().mockResolvedValue(undefined),
+    notifyFriendAccepted: vi.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     vi.clearAllMocks();
 
@@ -58,6 +68,7 @@ describe('InteractionsService', () => {
       providers: [
         InteractionsService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: NotificationsService, useValue: mockNotificationsService },
       ],
     }).compile();
 

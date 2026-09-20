@@ -155,6 +155,7 @@
     "notificationSetting": "Thông báo nhắc nhở",
     "dailyReminder": "Nhắc nhở nhật ký hàng ngày (20:00)",
     "friendActivity": "Khoảnh khắc mới từ bạn thân",
+    "allFriendsActivity": "Khoảnh khắc mới từ tất cả bạn bè",
     "logoutConfirmTitle": "Đăng xuất tài khoản",
     "logoutConfirmMessage": "Bạn có chắc chắn muốn đăng xuất khỏi Aurora không?",
     "friendsManagerTitle": "Quản lý Bạn bè",

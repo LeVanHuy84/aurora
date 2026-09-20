@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme, ThemeMode } from '../../hooks/use-theme';
+import { useSettingsStore } from '../../stores/settings.store';
 import { Title, Body, Caption } from '../ui/Typography';
 import { Ionicons } from '../common/Icon';
 import { Spacing, BorderRadius } from '../../constants/theme';
@@ -28,9 +29,22 @@ export function SettingsSection({
   const { colors, isDark, mode, setMode } = useAppTheme();
   const { t, i18n } = useTranslation();
 
-  // Notification toggles state (persisted locally / UI state)
-  const [dailyReminder, setDailyReminder] = useState(true);
-  const [friendActivity, setFriendActivity] = useState(true);
+  const {
+    dailyReminder,
+    closeFriendsMoments,
+    allFriendsMoments,
+    isLoaded,
+    setDailyReminder,
+    setCloseFriendsMoments,
+    setAllFriendsMoments,
+    initSettings,
+  } = useSettingsStore();
+
+  useEffect(() => {
+    if (!isLoaded) {
+      initSettings();
+    }
+  }, [isLoaded, initSettings]);
 
   const currentLang = i18n.language.startsWith('vi') ? 'vi' : 'en';
 
@@ -312,10 +326,24 @@ export function SettingsSection({
             {t('profile.friendActivity', 'Khoảnh khắc mới từ bạn thân')}
           </Caption>
           <Switch
-            value={friendActivity}
-            onValueChange={setFriendActivity}
+            value={closeFriendsMoments}
+            onValueChange={setCloseFriendsMoments}
             trackColor={{ false: colors.surfaceSoft, true: colors.accent }}
-            thumbColor={friendActivity ? '#FFFFFF' : '#F4F3F0'}
+            thumbColor={closeFriendsMoments ? '#FFFFFF' : '#F4F3F0'}
+          />
+        </View>
+
+        <View style={[styles.innerDivider, { backgroundColor: colors.divider }]} />
+
+        <View style={styles.switchRow}>
+          <Caption color="primary" style={styles.switchLabel}>
+            {t('profile.allFriendsActivity', 'Khoảnh khắc mới từ tất cả bạn bè')}
+          </Caption>
+          <Switch
+            value={allFriendsMoments}
+            onValueChange={setAllFriendsMoments}
+            trackColor={{ false: colors.surfaceSoft, true: colors.accent }}
+            thumbColor={allFriendsMoments ? '#FFFFFF' : '#F4F3F0'}
           />
         </View>
       </View>

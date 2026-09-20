@@ -14,6 +14,14 @@ export interface ExpoPushMessage {
   channelId?: string;
 }
 
+export const REACTION_EMOJI_MAP: Record<string, string> = {
+  LOVE: '❤️',
+  CARE: '🫂',
+  FUNNY: '😂',
+  RELATABLE: '🥹',
+  PROUD: '✨',
+};
+
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
@@ -201,7 +209,7 @@ export class NotificationsService {
     actorId: string,
     momentOwnerId: string,
     momentId: string,
-    emoji: string,
+    reactionType: string,
     lang = 'vi',
   ): Promise<void> {
     if (actorId === momentOwnerId) return;
@@ -221,6 +229,8 @@ export class NotificationsService {
       if (!actor || !owner || !owner.fcmToken) return;
 
       const actorName = actor.displayName || actor.username;
+      const emoji = REACTION_EMOJI_MAP[reactionType.toUpperCase()] || reactionType;
+
       const title = this.i18n.t('notifications.REACTION_TITLE', {
         lang,
         args: { name: actorName },
