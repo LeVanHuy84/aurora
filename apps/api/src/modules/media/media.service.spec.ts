@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { v2 as cloudinary } from 'cloudinary';
 import { MediaService } from './media.service.js';
 import { MediaFolder } from './dto/generate-presigned-url.dto.js';
@@ -7,14 +8,28 @@ import { MediaFolder } from './dto/generate-presigned-url.dto.js';
 describe('MediaService', () => {
   let service: MediaService;
 
+  const mockConfigService = {
+    get: vi.fn((key: string, defaultVal?: string) => {
+      const map: Record<string, string> = {
+        CLOUDINARY_CLOUD_NAME: 'test_cloud',
+        CLOUDINARY_API_KEY: 'test_key',
+        CLOUDINARY_API_SECRET: 'test_secret',
+      };
+      return map[key] ?? defaultVal;
+    }),
+  };
+
   beforeEach(async () => {
     vi.clearAllMocks();
-    process.env.CLOUDINARY_CLOUD_NAME = 'test_cloud';
-    process.env.CLOUDINARY_API_KEY = 'test_key';
-    process.env.CLOUDINARY_API_SECRET = 'test_secret';
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [MediaService],
+      providers: [
+        MediaService,
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
+        },
+      ],
     }).compile();
 
     service = module.get<MediaService>(MediaService);
