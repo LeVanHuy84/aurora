@@ -53,8 +53,8 @@ describe('HttpExceptionFilter', () => {
     );
   });
 
-  it('should catch generic Error and return 500 status', async () => {
-    const exception = new Error('Database connection crashed');
+  it('should catch generic Error and return 500 status with localized message', async () => {
+    const exception = new Error('Unexpected crash');
 
     await filter.catch(exception, mockArgumentsHost);
 
@@ -63,8 +63,26 @@ describe('HttpExceptionFilter', () => {
       expect.objectContaining({
         success: false,
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Database connection crashed',
+        message: 'translated_errors.INTERNAL_SERVER_ERROR',
         error: 'Internal Server Error',
+      }),
+    );
+  });
+
+  it('should catch Prisma known error (P2002) and return 409 Conflict', async () => {
+    const prismaError = new Error('Unique constraint failed') as any;
+    prismaError.name = 'PrismaClientKnownRequestError';
+    prismaError.code = 'P2002';
+
+    await filter.catch(prismaError, mockArgumentsHost);
+
+    expect(mockStatus).toHaveBeenCalledWith(HttpStatus.CONFLICT);
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        statusCode: HttpStatus.CONFLICT,
+        message: 'translated_errors.RESOURCE_ALREADY_EXISTS',
+        error: 'Conflict',
       }),
     );
   });
