@@ -443,7 +443,7 @@ export function FriendsManagerModal({
                   returnKeyType="search"
                   placeholder={t(
                     'profile.searchPlaceholder',
-                    'Tìm theo username hoặc tên...',
+                    'Tìm chính xác theo username hoặc email...',
                   )}
                   placeholderTextColor={colors.textMuted}
                   autoCapitalize="none"

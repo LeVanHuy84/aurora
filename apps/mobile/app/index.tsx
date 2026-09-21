@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../src/hooks/use-auth';
 import { useAppTheme } from '../src/hooks/use-theme';
 import { Title, Subtitle } from '../src/components/ui/Typography';
@@ -9,6 +10,7 @@ import { Spacing, BorderRadius } from '../src/constants/theme';
 
 export default function EntryScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { colors, isDark } = useAppTheme();
   const { isAuthenticated, isInitialized } = useAuth();
 
@@ -43,10 +45,10 @@ export default function EntryScreen() {
       </View>
 
       <Title level={2} style={styles.brandTitle}>
-        Aurora
+        {t('common.appName')}
       </Title>
       <Subtitle color="accent" style={styles.brandTagline}>
-        Private Social Diary
+        {t('common.tagline')}
       </Subtitle>
 
       <ActivityIndicator

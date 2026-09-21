@@ -55,6 +55,12 @@
       "privateSharing": "Private 1-on-1 sharing with Close Friends",
       "moodTracking": "Daily Mood Track & Monthly Reflections"
     },
+    "verifyOtpTitle": "Verify Your Email",
+    "verifyOtpSubtitle": "We have sent a 6-digit verification code to:",
+    "verifyButton": "Verify & Get Started",
+    "resendCode": "Resend code",
+    "resendCodeIn": "Resend in ({{seconds}}s)",
+    "otpResentSuccess": "A new verification code has been sent to your email.",
     "errors": {
       "invalidEmail": "Please enter a valid email address.",
       "passwordTooShort": "Password must be at least 6 characters.",
@@ -63,7 +69,9 @@
       "displayNameRequired": "Display name is required.",
       "loginFailed": "Invalid email or password. Please try again.",
       "registerFailed": "Could not create account. Please try again.",
-      "oauthFailed": "Social login failed. Please try again."
+      "oauthFailed": "Social login failed. Please try again.",
+      "invalidOtp": "Invalid or expired verification code. Please try again.",
+      "emailNotVerified": "Email not verified. Please enter the OTP to continue."
     }
   },
   "tabs": {
@@ -119,14 +127,17 @@
     "moodPlaceholder": "Why are you feeling this way today?...",
     "shareMomentBtn": "Share Moment",
     "sharingProgress": "Sharing Moment...",
-    "galleryPermissionDenied": "Please enable photo gallery access in settings.",
-    "cameraPermissionDenied": "Please enable camera access in settings.",
     "onThisDay": "On This Day",
+    "attachEmotion": "Attach mood (Optional)",
+    "deleteConfirmTitle": "Delete Moment",
+    "deleteConfirmDesc": "Are you sure you want to delete this moment? This action cannot be undone.",
+    "deleteSuccess": "Moment deleted successfully.",
     "errors": {
       "photoRequired": "Please take or select a photo.",
       "contentRequired": "Please enter your note text.",
       "emotionRequired": "Please select a mood.",
-      "createFailed": "Failed to create moment. Please try again."
+      "createFailed": "Failed to create moment. Please try again.",
+      "deleteFailed": "Failed to delete moment. Please try again."
     }
   },
   "profile": {
@@ -162,7 +173,7 @@
     "friendsTab": "Friends",
     "requestsTab": "Requests",
     "addFriendTab": "Add Friend",
-    "searchPlaceholder": "Search by username or name...",
+    "searchPlaceholder": "Search exact username or email...",
     "noFriendsYet": "You don't have any friends yet. Search and connect now!",
     "noPendingRequests": "No pending friend requests.",
     "sendRequestBtn": "Add Friend",
@@ -217,18 +228,18 @@
   },
   "emotions": {
     "HAPPY": "Happy",
-    "CALM": "Calm",
-    "PEACEFUL": "Peaceful",
     "EXCITED": "Excited",
     "LOVED": "Loved",
-    "TIRED": "Tired",
-    "SAD": "Sad",
-    "STRESSED": "Stressed",
-    "ANXIOUS": "Anxious",
     "GRATEFUL": "Grateful",
     "PROUD": "Proud",
+    "CALM": "Calm",
+    "PEACEFUL": "Peaceful",
+    "TIRED": "Tired",
+    "BORED": "Bored",
     "CONFUSED": "Confused",
-    "ANGRY": "Angry",
-    "BORED": "Bored"
+    "ANXIOUS": "Anxious",
+    "SAD": "Sad",
+    "STRESSED": "Stressed",
+    "ANGRY": "Angry"
   }
 }

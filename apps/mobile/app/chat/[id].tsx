@@ -23,6 +23,123 @@ import { ChatMessageItem, MessageType } from '@aurora/types';
 import { triggerHapticFeedback } from '../../src/utils/haptics';
 import { ChatSharedMomentCard } from '../../src/components/chat/ChatSharedMomentCard';
 
+interface ChatMessageRowProps {
+  item: ChatMessageItem;
+  isMe: boolean;
+  colors: any;
+  isDark: boolean;
+  formattedTime: string;
+}
+
+const ChatMessageRow = React.memo(
+  function ChatMessageRow({
+    item,
+    isMe,
+    colors,
+    isDark,
+    formattedTime,
+  }: ChatMessageRowProps) {
+    const hasMomentQuote = Boolean(item.moment || item.momentId);
+    const isBurstReaction = item.type === MessageType.REACTION_BURST;
+
+    // 1. REACTION BURST (Large Floating Emoji)
+    if (isBurstReaction) {
+      return (
+        <View
+          style={[
+            styles.messageRow,
+            isMe ? styles.myMessageRow : styles.friendMessageRow,
+          ]}
+        >
+          <View style={styles.burstEmojiContainer}>
+            <Body style={styles.burstEmojiText}>{item.content}</Body>
+            <Caption color="muted" style={styles.burstTimestamp}>
+              {formattedTime}
+            </Caption>
+          </View>
+        </View>
+      );
+    }
+
+    // 2. STANDARD / MOMENT REPLY MESSAGE
+    return (
+      <View
+        style={[
+          styles.messageRow,
+          isMe ? styles.myMessageRow : styles.friendMessageRow,
+        ]}
+      >
+        <View
+          style={[
+            styles.messageStack,
+            isMe ? styles.myMessageStack : styles.friendMessageStack,
+          ]}
+        >
+          {/* LOCKET-STYLE STANDALONE MOMENT CARD */}
+          {hasMomentQuote && item.moment ? (
+            <ChatSharedMomentCard moment={item.moment} isMe={isMe} />
+          ) : null}
+
+          {/* DEDICATED TEXT REPLY BUBBLE */}
+          <View
+            style={[
+              styles.bubbleContainer,
+              isMe
+                ? [
+                    styles.myBubble,
+                    { backgroundColor: colors.accentDark },
+                  ]
+                : [
+                    styles.friendBubble,
+                    {
+                      backgroundColor: isDark ? '#25221F' : '#F7F4EE',
+                      borderColor: isDark
+                        ? 'rgba(255,255,255,0.08)'
+                        : colors.cardBorder,
+                    },
+                  ],
+            ]}
+          >
+            <Body
+              color={isMe ? 'white' : 'primary'}
+              style={styles.messageText}
+            >
+              {item.content}
+            </Body>
+
+            <View style={styles.timestampRow}>
+              <Caption
+                color={isMe ? 'white' : 'muted'}
+                style={[styles.timestamp, { opacity: isMe ? 0.75 : 0.85 }]}
+              >
+                {formattedTime}
+              </Caption>
+              {isMe && (
+                <Ionicons
+                  name="checkmark-done"
+                  size={13}
+                  color="rgba(255,255,255,0.75)"
+                  style={{ marginLeft: 3 }}
+                />
+              )}
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  },
+  (prevProps, nextProps) => {
+    return (
+      prevProps.item.id === nextProps.item.id &&
+      prevProps.item.content === nextProps.item.content &&
+      prevProps.item.createdAt === nextProps.item.createdAt &&
+      prevProps.isMe === nextProps.isMe &&
+      prevProps.isDark === nextProps.isDark &&
+      prevProps.formattedTime === nextProps.formattedTime
+    );
+  },
+);
+
 export default function ChatScreen() {
   const { colors, isDark } = useAppTheme();
   const { t } = useTranslation();
@@ -115,97 +232,21 @@ export default function ChatScreen() {
     }
   };
 
-  const renderMessageItem = ({ item }: { item: ChatMessageItem }) => {
-    const isMe = item.senderId === user?.id || item.senderId === 'me';
-    const hasMomentQuote = Boolean(item.moment || item.momentId);
-    const isBurstReaction = item.type === MessageType.REACTION_BURST;
-
-    // 1. REACTION BURST (Large Floating Emoji)
-    if (isBurstReaction) {
+  const renderMessageItem = React.useCallback(
+    ({ item }: { item: ChatMessageItem }) => {
+      const isMe = item.senderId === user?.id || item.senderId === 'me';
       return (
-        <View
-          style={[
-            styles.messageRow,
-            isMe ? styles.myMessageRow : styles.friendMessageRow,
-          ]}
-        >
-          <View style={styles.burstEmojiContainer}>
-            <Body style={styles.burstEmojiText}>{item.content}</Body>
-            <Caption color="muted" style={styles.burstTimestamp}>
-              {formatMessageTime(item.createdAt)}
-            </Caption>
-          </View>
-        </View>
+        <ChatMessageRow
+          item={item}
+          isMe={isMe}
+          colors={colors}
+          isDark={isDark}
+          formattedTime={formatMessageTime(item.createdAt)}
+        />
       );
-    }
-
-    // 2. STANDARD / MOMENT REPLY MESSAGE
-    return (
-      <View
-        style={[
-          styles.messageRow,
-          isMe ? styles.myMessageRow : styles.friendMessageRow,
-        ]}
-      >
-        <View
-          style={[
-            styles.messageStack,
-            isMe ? styles.myMessageStack : styles.friendMessageStack,
-          ]}
-        >
-          {/* LOCKET-STYLE STANDALONE MOMENT CARD (Rendered separately ABOVE the text bubble) */}
-          {hasMomentQuote && item.moment ? (
-            <ChatSharedMomentCard moment={item.moment} isMe={isMe} />
-          ) : null}
-
-          {/* DEDICATED TEXT REPLY BUBBLE */}
-          <View
-            style={[
-              styles.bubbleContainer,
-              isMe
-                ? [
-                    styles.myBubble,
-                    { backgroundColor: colors.accentDark },
-                  ]
-                : [
-                    styles.friendBubble,
-                    {
-                      backgroundColor: isDark ? '#25221F' : '#F7F4EE',
-                      borderColor: isDark
-                        ? 'rgba(255,255,255,0.08)'
-                        : colors.cardBorder,
-                    },
-                  ],
-            ]}
-          >
-            <Body
-              color={isMe ? 'white' : 'primary'}
-              style={styles.messageText}
-            >
-              {item.content}
-            </Body>
-
-            <View style={styles.timestampRow}>
-              <Caption
-                color={isMe ? 'white' : 'muted'}
-                style={[styles.timestamp, { opacity: isMe ? 0.75 : 0.85 }]}
-              >
-                {formatMessageTime(item.createdAt)}
-              </Caption>
-              {isMe && (
-                <Ionicons
-                  name="checkmark-done"
-                  size={13}
-                  color="rgba(255,255,255,0.75)"
-                  style={{ marginLeft: 3 }}
-                />
-              )}
-            </View>
-          </View>
-        </View>
-      </View>
-    );
-  };
+    },
+    [user?.id, colors, isDark],
+  );
 
   return (
     <View
@@ -292,6 +333,13 @@ export default function ChatScreen() {
             inverted
             contentContainerStyle={styles.messagesList}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            maxToRenderPerBatch={15}
+            windowSize={11}
+            initialNumToRender={20}
+            maintainVisibleContentPosition={{
+              minIndexForVisible: 0,
+            }}
           />
         )}
 

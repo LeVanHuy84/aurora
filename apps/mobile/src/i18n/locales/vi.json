@@ -55,6 +55,12 @@
       "privateSharing": "Chia sẻ riêng tư 1-1 cùng nhóm Bạn thân",
       "moodTracking": "Theo dõi cảm xúc mỗi ngày & Chiêm nghiệm tháng"
     },
+    "verifyOtpTitle": "Xác Thực Email",
+    "verifyOtpSubtitle": "Chúng tôi đã gửi mã xác thực 6 chữ số đến:",
+    "verifyButton": "Xác Nhận & Bắt Đầu",
+    "resendCode": "Gửi lại mã",
+    "resendCodeIn": "Gửi lại sau ({{seconds}}s)",
+    "otpResentSuccess": "Đã gửi lại mã xác thực mới vào email.",
     "errors": {
       "invalidEmail": "Vui lòng nhập địa chỉ email hợp lệ.",
       "passwordTooShort": "Mật khẩu phải có ít nhất 6 ký tự.",
@@ -63,7 +69,9 @@
       "displayNameRequired": "Vui lòng nhập tên hiển thị.",
       "loginFailed": "Email hoặc mật khẩu không chính xác. Vui lòng thử lại.",
       "registerFailed": "Không thể tạo tài khoản. Vui lòng kiểm tra lại thông tin.",
-      "oauthFailed": "Đăng nhập mạng xã hội thất bại. Vui lòng thử lại."
+      "oauthFailed": "Đăng nhập mạng xã hội thất bại. Vui lòng thử lại.",
+      "invalidOtp": "Mã xác thực không đúng hoặc đã hết hạn. Vui lòng thử lại.",
+      "emailNotVerified": "Tài khoản chưa được xác thực email. Vui lòng nhập mã OTP để tiếp tục."
     }
   },
   "tabs": {
@@ -119,14 +127,17 @@
     "moodPlaceholder": "Chia sẻ thêm vì sao bạn lại cảm thấy như vậy...",
     "shareMomentBtn": "Chia sẻ khoảnh khắc",
     "sharingProgress": "Đang đăng tải...",
-    "galleryPermissionDenied": "Vui lòng cấp quyền truy cập thư viện ảnh trong cài đặt thiết bị.",
-    "cameraPermissionDenied": "Vui lòng cấp quyền truy cập camera trong cài đặt thiết bị.",
     "onThisDay": "Ngày này năm xưa",
+    "attachEmotion": "Cảm xúc đi kèm (Tùy chọn)",
+    "deleteConfirmTitle": "Xóa khoảnh khắc",
+    "deleteConfirmDesc": "Bạn có chắc chắn muốn xóa khoảnh khắc này không? Hành động này không thể hoàn tác.",
+    "deleteSuccess": "Đã xóa khoảnh khắc thành công.",
     "errors": {
       "photoRequired": "Vui lòng chụp hoặc chọn một bức ảnh.",
       "contentRequired": "Vui lòng nhập nội dung ghi chú.",
       "emotionRequired": "Vui lòng chọn một cảm xúc.",
-      "createFailed": "Không thể chia sẻ khoảnh khắc. Vui lòng thử lại."
+      "createFailed": "Không thể chia sẻ khoảnh khắc. Vui lòng thử lại.",
+      "deleteFailed": "Không thể xóa khoảnh khắc. Vui lòng thử lại."
     }
   },
   "profile": {
@@ -162,7 +173,7 @@
     "friendsTab": "Bạn bè",
     "requestsTab": "Lời mời",
     "addFriendTab": "Tìm bạn mới",
-    "searchPlaceholder": "Tìm theo username hoặc tên...",
+    "searchPlaceholder": "Tìm chính xác theo username hoặc email...",
     "noFriendsYet": "Bạn chưa có bạn bè nào. Tìm kiếm và kết nối ngay nhé!",
     "noPendingRequests": "Không có lời mời kết bạn nào đang chờ.",
     "sendRequestBtn": "Kết bạn",
@@ -217,18 +228,18 @@
   },
   "emotions": {
     "HAPPY": "Vui vẻ",
-    "CALM": "Bình yên",
-    "PEACEFUL": "Bình yên",
     "EXCITED": "Hào hứng",
-    "LOVED": "Yêu thương",
-    "TIRED": "Mệt mỏi",
-    "SAD": "Buồn bã",
-    "STRESSED": "Căng thẳng",
-    "ANXIOUS": "Lo âu",
+    "LOVED": "Được yêu thương",
     "GRATEFUL": "Biết ơn",
     "PROUD": "Tự hào",
+    "CALM": "Bình yên",
+    "PEACEFUL": "Thanh thản",
+    "TIRED": "Mệt mỏi",
+    "BORED": "Nhàm chán",
     "CONFUSED": "Bối rối",
-    "ANGRY": "Tức giận",
-    "BORED": "Nhàm chán"
+    "ANXIOUS": "Lo âu",
+    "SAD": "Buồn",
+    "STRESSED": "Căng thẳng",
+    "ANGRY": "Tức giận"
   }
 }
