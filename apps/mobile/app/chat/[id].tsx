@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
+  Keyboard,
   Platform,
   ActivityIndicator,
 } from 'react-native';
@@ -19,6 +20,7 @@ import { Body, Caption, Title } from '../../src/components/ui/Typography';
 import { Spacing, BorderRadius } from '../../src/constants/theme';
 import { useAuth } from '../../src/hooks/use-auth';
 import { useMessages, useSendMessage, useMarkAsRead } from '../../src/hooks/use-chat';
+import { useChatSocket } from '../../src/hooks/use-chat-socket';
 import { ChatMessageItem, MessageType } from '@aurora/types';
 import { triggerHapticFeedback } from '../../src/utils/haptics';
 import { ChatSharedMomentCard } from '../../src/components/chat/ChatSharedMomentCard';
@@ -177,10 +179,29 @@ export default function ChatScreen() {
   );
 
   const flatListRef = useRef<FlatList>(null);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, () => {
+      setIsKeyboardVisible(true);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setIsKeyboardVisible(false);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const { data: messagesData, isLoading } = useMessages(conversationId);
   const sendMessageMutation = useSendMessage();
   const markAsReadMutation = useMarkAsRead();
+  const { isFriendTyping, sendTyping } = useChatSocket(conversationId);
 
   useEffect(() => {
     if (conversationId) {
@@ -197,6 +218,7 @@ export default function ChatScreen() {
 
     setInputText('');
     setActiveQuotedMoment(null);
+    sendTyping(false);
 
     sendMessageMutation.mutate({
       conversationId,
@@ -305,8 +327,14 @@ export default function ChatScreen() {
             <Title level={3} color="primary" weight="bold" style={styles.headerName}>
               {friendName || t('chat.friend', 'Bạn bè')}
             </Title>
-            <Caption color="muted" style={styles.headerStatus}>
-              {t('chat.directMessage', 'Tin nhắn 1-1')}
+            <Caption
+              color={isFriendTyping ? 'accent' : 'muted'}
+              weight={isFriendTyping ? 'bold' : 'normal'}
+              style={styles.headerStatus}
+            >
+              {isFriendTyping
+                ? t('chat.typing', 'Đang soạn tin...')
+                : t('chat.directMessage', 'Tin nhắn 1-1')}
             </Caption>
           </View>
         </View>
@@ -318,7 +346,7 @@ export default function ChatScreen() {
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         {isLoading ? (
           <View style={styles.loadingCenter}>
@@ -340,6 +368,31 @@ export default function ChatScreen() {
             maintainVisibleContentPosition={{
               minIndexForVisible: 0,
             }}
+            ListHeaderComponent={
+              isFriendTyping ? (
+                <View style={styles.typingBubbleRow}>
+                  <View
+                    style={[
+                      styles.typingBubble,
+                      {
+                        backgroundColor: isDark ? '#25221F' : '#F7F4EE',
+                        borderColor: isDark
+                          ? 'rgba(255,255,255,0.08)'
+                          : colors.cardBorder,
+                      },
+                    ]}
+                  >
+                    <Caption
+                      color="accent"
+                      weight="medium"
+                      style={styles.typingBubbleText}
+                    >
+                      {friendName || t('chat.friend', 'Bạn bè')} {t('chat.typing', 'đang soạn tin...')}
+                    </Caption>
+                  </View>
+                </View>
+              ) : null
+            }
           />
         )}
 
@@ -400,12 +453,13 @@ export default function ChatScreen() {
         )}
 
         {/* 4. Quick Emoji Pill Bar */}
-        <View style={styles.quickEmojiBar}>
+        <View style={[styles.quickEmojiBar, isKeyboardVisible && { paddingVertical: 3 }]}>
           {['❤️', '🔥', '🥰', '💛', '👏', '✨', '☕'].map((emoji) => (
             <TouchableOpacity
               key={emoji}
               style={[
                 styles.quickEmojiPill,
+                isKeyboardVisible && { width: 38, height: 34, borderRadius: 17 },
                 {
                   backgroundColor: isDark ? '#25221F' : '#F7F4EE',
                   borderColor: isDark ? 'rgba(255,255,255,0.06)' : colors.cardBorder,
@@ -414,7 +468,14 @@ export default function ChatScreen() {
               activeOpacity={0.65}
               onPress={() => handleQuickEmoji(emoji)}
             >
-              <Body style={styles.quickEmojiText}>{emoji}</Body>
+              <Body
+                style={[
+                  styles.quickEmojiText,
+                  isKeyboardVisible && { fontSize: 18, lineHeight: 22 },
+                ]}
+              >
+                {emoji}
+              </Body>
             </TouchableOpacity>
           ))}
         </View>
@@ -426,7 +487,11 @@ export default function ChatScreen() {
             {
               backgroundColor: isDark ? '#1C1A18' : '#FDFBF7',
               borderTopColor: colors.cardBorder,
-              paddingBottom: Math.max(insets.bottom, Spacing.sm),
+              paddingBottom: isKeyboardVisible
+                ? Platform.OS === 'ios'
+                  ? 6
+                  : Spacing.xs
+                : Math.max(insets.bottom, Spacing.sm),
             },
           ]}
         >
@@ -444,7 +509,10 @@ export default function ChatScreen() {
               placeholder={t('chat.inputPlaceholder', 'Nhắn tin riêng...')}
               placeholderTextColor={colors.textMuted}
               value={inputText}
-              onChangeText={setInputText}
+              onChangeText={(text) => {
+                setInputText(text);
+                sendTyping(text.trim().length > 0);
+              }}
               multiline
               maxLength={1000}
             />
@@ -695,5 +763,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: Spacing.xs,
+  },
+  typingBubbleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: Spacing.xs,
+    paddingLeft: Spacing.xs,
+  },
+  typingBubble: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs + 2,
+    borderRadius: 16,
+    borderWidth: 1,
+    maxWidth: '80%',
+  },
+  typingBubbleText: {
+    fontSize: 12.5,
+    fontStyle: 'italic',
   },
 });

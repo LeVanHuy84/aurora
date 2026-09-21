@@ -23,10 +23,8 @@ export function useConversations() {
   return useQuery<ConversationItem[]>({
     queryKey: chatKeys.conversations(),
     queryFn: () => chatService.getConversations(),
-    refetchInterval: 6000, // Polling định kỳ ngầm để cập nhật inbox
-    refetchIntervalInBackground: false,
+    staleTime: 1000 * 60 * 2,
     placeholderData: (previousData) => previousData,
-    staleTime: 3000,
   });
 }
 
@@ -49,10 +47,8 @@ export function useMessages(conversationId?: string, enabled = true) {
     queryKey: chatKeys.messages(conversationId || ''),
     queryFn: () => chatService.getMessages(conversationId!),
     enabled: Boolean(conversationId) && enabled,
-    refetchInterval: 3000, // Polling định kỳ ngầm để nhận tin nhắn mới
-    refetchIntervalInBackground: false,
+    staleTime: 1000 * 60 * 5,
     placeholderData: (previousData) => previousData,
-    staleTime: 1500,
   });
 }
 

@@ -10,6 +10,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   }
 
   canActivate(context: ExecutionContext) {
+    // Nếu là context WebSocket ('ws'), bỏ qua vì WebSocket đã được xác thực riêng tại handleConnection
+    if (context.getType() === 'ws') {
+      return true;
+    }
+
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),

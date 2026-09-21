@@ -203,7 +203,7 @@ describe('AuthService', () => {
 
       expect(result).toHaveProperty('user');
       expect(result).toHaveProperty('tokens');
-      expect(result.tokens.accessToken).toBe('mocked-token');
+      expect(result.tokens?.accessToken).toBe('mocked-token');
     });
 
     it('should throw UnauthorizedException if password does not match', async () => {

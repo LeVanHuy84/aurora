@@ -16,6 +16,7 @@ import { useAppTheme } from '../src/hooks/use-theme';
 import { Body, Caption, Title } from '../src/components/ui/Typography';
 import { Spacing, BorderRadius } from '../src/constants/theme';
 import { useConversations } from '../src/hooks/use-chat';
+import { useChatSocket } from '../src/hooks/use-chat-socket';
 import { ConversationItem } from '@aurora/types';
 
 interface ConversationListItemProps {
@@ -143,6 +144,7 @@ export default function InboxScreen() {
   const insets = useSafeAreaInsets();
   const [isManualRefreshing, setIsManualRefreshing] = React.useState(false);
 
+  useChatSocket();
   const { data: conversations, isLoading, refetch } = useConversations();
 
   const handleManualRefresh = React.useCallback(async () => {

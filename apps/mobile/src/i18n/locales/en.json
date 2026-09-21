@@ -209,6 +209,8 @@
   "chat": {
     "inboxTitle": "Inbox",
     "friend": "Friend",
+    "typing": "Typing...",
+    "directMessage": "Direct Message",
     "noConversations": "No messages yet",
     "noConversationsDesc": "Reply to friends' moments or start chatting to stay connected.",
     "startedConversation": "Started a conversation",

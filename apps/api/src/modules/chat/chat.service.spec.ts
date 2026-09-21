@@ -4,9 +4,15 @@ import { BadRequestException, ForbiddenException, NotFoundException } from '@nes
 import { ChatService } from './chat.service.js';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { ChatGateway } from './chat.gateway.js';
 
 describe('ChatService', () => {
   let service: ChatService;
+
+  const mockChatGateway = {
+    broadcastNewMessage: vi.fn(),
+    broadcastConversationRead: vi.fn(),
+  };
 
   const mockUser1 = {
     id: 'user-uuid-1',
@@ -79,6 +85,7 @@ describe('ChatService', () => {
         ChatService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: NotificationsService, useValue: mockNotificationsService },
+        { provide: ChatGateway, useValue: mockChatGateway },
       ],
     }).compile();
 

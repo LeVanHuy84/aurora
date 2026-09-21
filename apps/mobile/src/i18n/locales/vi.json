@@ -209,6 +209,8 @@
   "chat": {
     "inboxTitle": "Hộp thư",
     "friend": "Bạn bè",
+    "typing": "Đang soạn tin...",
+    "directMessage": "Tin nhắn 1-1",
     "noConversations": "Chưa có tin nhắn nào",
     "noConversationsDesc": "Phản hồi khoảnh khắc của bạn bè hoặc bắt đầu trò chuyện để kết nối.",
     "startedConversation": "Bắt đầu cuộc trò chuyện",

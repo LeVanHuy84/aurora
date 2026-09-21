@@ -16,7 +16,7 @@ export function useMomentInteractions(momentId?: string, enabled = true) {
     queryKey: interactionKeys.moment(momentId || ''),
     queryFn: () => interactionsService.getMomentInteractions(momentId!),
     enabled: Boolean(momentId) && enabled,
-    refetchInterval: 10000, // Tự động refetch mỗi 10s để cập nhật phản hồi mới
+    staleTime: 1000 * 60 * 3,
   });
 }
 

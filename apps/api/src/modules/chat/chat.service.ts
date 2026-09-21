@@ -9,12 +9,14 @@ import { SendMessageDto } from './dto/send-message.dto.js';
 import { GetMessagesQueryDto } from './dto/get-messages-query.dto.js';
 import { MessageType } from '@prisma/client';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { ChatGateway } from './chat.gateway.js';
 
 @Injectable()
 export class ChatService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
+    private readonly chatGateway: ChatGateway,
   ) {}
 
   /**
@@ -368,7 +370,7 @@ export class ChatService {
       data: { lastReadAt: now },
     });
 
-    // Gửi Push Notification đến các thành viên khác trong cuộc trò chuyện
+    // Gửi WebSocket Realtime & Push Notification đến các thành viên khác trong cuộc trò chuyện
     this.prisma.conversationMember
       .findMany({
         where: {
@@ -378,6 +380,12 @@ export class ChatService {
         select: { userId: true },
       })
       .then((otherMembers) => {
+        const otherUserIds = otherMembers.map((m) => m.userId);
+
+        // 1. Broadcast WebSocket realtime tới phòng chat & user inbox
+        this.chatGateway.broadcastNewMessage(conversationId, message, otherUserIds);
+
+        // 2. Gửi Push Notification
         for (const member of otherMembers) {
           this.notificationsService
             .notifyNewMessage(
@@ -420,6 +428,9 @@ export class ChatService {
       },
       data: { lastReadAt: new Date() },
     });
+
+    // Broadcast sự kiện đã đọc
+    this.chatGateway.broadcastConversationRead(conversationId, userId);
 
     return { success: true };
   }
