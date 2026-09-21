@@ -5,7 +5,7 @@ export const interactionsService = {
   /**
    * Thả hoặc cập nhật reaction trên một Moment
    */
-  async addReaction(momentId: string, type: ReactionType = ReactionType.LOVE): Promise<ReactionItem> {
+  async addReaction(momentId: string, type: ReactionType | string = ReactionType.LOVE): Promise<ReactionItem> {
     return apiClient.post<ReactionItem>(`/moments/${momentId}/reactions`, { type });
   },
 

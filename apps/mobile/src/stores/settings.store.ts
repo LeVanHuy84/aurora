@@ -4,46 +4,40 @@ import {
   scheduleDailyReminderNotification,
   cancelDailyReminderNotification,
 } from '../hooks/use-push-notifications';
+import { usersService } from '../services/modules/users.service';
 
 const STORAGE_KEYS = {
   DAILY_REMINDER: 'aurora_setting_daily_reminder',
-  CLOSE_FRIENDS_MOMENTS: 'aurora_setting_close_friends_moments',
-  ALL_FRIENDS_MOMENTS: 'aurora_setting_all_friends_moments',
+  REACTION_MOMENTS: 'aurora_setting_reaction_moments',
 };
 
 interface SettingsState {
   dailyReminder: boolean;
-  closeFriendsMoments: boolean;
-  allFriendsMoments: boolean;
+  reactionMoments: boolean;
   isLoaded: boolean;
   setDailyReminder: (enabled: boolean) => Promise<void>;
-  setCloseFriendsMoments: (enabled: boolean) => Promise<void>;
-  setAllFriendsMoments: (enabled: boolean) => Promise<void>;
+  setReactionMoments: (enabled: boolean) => Promise<void>;
   initSettings: () => Promise<void>;
 }
 
-export const useSettingsStore = create<SettingsState>((set, get) => ({
+export const useSettingsStore = create<SettingsState>((set, _get) => ({
   dailyReminder: true,
-  closeFriendsMoments: true,
-  allFriendsMoments: true,
+  reactionMoments: true,
   isLoaded: false,
 
   initSettings: async () => {
     try {
-      const [dailyRem, cfMoments, allMoments] = await Promise.all([
+      const [dailyRem, reactMoments] = await Promise.all([
         SecureStore.getItemAsync(STORAGE_KEYS.DAILY_REMINDER),
-        SecureStore.getItemAsync(STORAGE_KEYS.CLOSE_FRIENDS_MOMENTS),
-        SecureStore.getItemAsync(STORAGE_KEYS.ALL_FRIENDS_MOMENTS),
+        SecureStore.getItemAsync(STORAGE_KEYS.REACTION_MOMENTS),
       ]);
 
       const dailyReminder = dailyRem !== null ? dailyRem === 'true' : true;
-      const closeFriendsMoments = cfMoments !== null ? cfMoments === 'true' : true;
-      const allFriendsMoments = allMoments !== null ? allMoments === 'true' : true;
+      const reactionMoments = reactMoments !== null ? reactMoments === 'true' : true;
 
       set({
         dailyReminder,
-        closeFriendsMoments,
-        allFriendsMoments,
+        reactionMoments,
         isLoaded: true,
       });
 
@@ -71,21 +65,14 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     }
   },
 
-  setCloseFriendsMoments: async (enabled: boolean) => {
-    set({ closeFriendsMoments: enabled });
+  setReactionMoments: async (enabled: boolean) => {
+    set({ reactionMoments: enabled });
     try {
-      await SecureStore.setItemAsync(STORAGE_KEYS.CLOSE_FRIENDS_MOMENTS, String(enabled));
+      await SecureStore.setItemAsync(STORAGE_KEYS.REACTION_MOMENTS, String(enabled));
+      // Sync setting with backend
+      await usersService.updateMe({ notifyReactions: enabled });
     } catch (err) {
-      console.warn('[SettingsStore] Error saving close friends setting:', err);
-    }
-  },
-
-  setAllFriendsMoments: async (enabled: boolean) => {
-    set({ allFriendsMoments: enabled });
-    try {
-      await SecureStore.setItemAsync(STORAGE_KEYS.ALL_FRIENDS_MOMENTS, String(enabled));
-    } catch (err) {
-      console.warn('[SettingsStore] Error saving all friends setting:', err);
+      console.warn('[SettingsStore] Error saving reaction moments setting:', err);
     }
   },
 }));

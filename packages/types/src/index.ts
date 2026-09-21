@@ -17,11 +17,10 @@ export enum FriendshipStatus {
 }
 
 export enum ReactionType {
-  LOVE = 'LOVE',
-  CARE = 'CARE',
-  FUNNY = 'FUNNY',
-  RELATABLE = 'RELATABLE',
-  PROUD = 'PROUD',
+  LOVE = '❤️',
+  FUNNY = '😂',
+  CARE = '🥰',
+  FIRE = '🔥',
 }
 
 export enum MessageType {
@@ -53,6 +52,7 @@ export interface UserProfile {
   avatarUrl?: string | null;
   bio?: string | null;
   isEmailVerified?: boolean;
+  notifyReactions?: boolean;
   createdAt: string;
 }
 

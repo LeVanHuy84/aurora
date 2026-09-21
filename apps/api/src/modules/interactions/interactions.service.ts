@@ -39,6 +39,15 @@ export class InteractionsService {
   async addOrUpdateReaction(userId: string, momentId: string, dto: CreateReactionDto) {
     const moment = await this.getActiveMoment(momentId);
 
+    const existingReaction = await this.prisma.reaction.findUnique({
+      where: {
+        momentId_userId: {
+          momentId,
+          userId,
+        },
+      },
+    });
+
     const reaction = await this.prisma.reaction.upsert({
       where: {
         momentId_userId: {
@@ -66,8 +75,8 @@ export class InteractionsService {
       },
     });
 
-    // Notify moment owner asynchronously
-    if (moment.userId !== userId) {
+    // Notify moment owner asynchronously only on initial insert (prevent notification spam on updates)
+    if (moment.userId !== userId && !existingReaction) {
       this.notificationsService
         .notifyReaction(userId, moment.userId, momentId, dto.type)
         .catch(() => {});
