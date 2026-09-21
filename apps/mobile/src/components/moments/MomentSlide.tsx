@@ -14,6 +14,7 @@ import { MomentCaption } from './MomentCaption';
 import { MomentViewerInteractionBar } from './MomentViewerInteractionBar';
 import { MomentAuthorInteractionBar } from './MomentAuthorInteractionBar';
 import { MomentInteractionsSheet } from './MomentInteractionsSheet';
+import { EmojiPickerModal } from '../common/EmojiPickerModal';
 
 export interface MomentSlideProps {
   height: number;
@@ -34,6 +35,7 @@ export const MomentSlide = React.memo(function MomentSlide({
   const deleteMomentMutation = useDeleteMoment();
 
   const [interactionsSheetVisible, setInteractionsSheetVisible] = useState(false);
+  const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
   const [burstEmoji, setBurstEmoji] = useState('');
   const [burstKey, setBurstKey] = useState(0);
   const [isOpeningChat, setIsOpeningChat] = useState(false);
@@ -45,7 +47,7 @@ export const MomentSlide = React.memo(function MomentSlide({
   const userReactionType = moment.userReactionType;
 
   const handleQuickReaction = React.useCallback(
-    (emoji: string, targetType: ReactionType) => {
+    (emoji: string, targetType: string) => {
       const isAlreadyThisReaction = hasReacted && userReactionType === targetType;
 
       if (isAlreadyThisReaction) {
@@ -177,6 +179,7 @@ export const MomentSlide = React.memo(function MomentSlide({
             hasReacted={hasReacted}
             userReactionType={userReactionType}
             onReactionPress={handleQuickReaction}
+            onOpenEmojiPicker={() => setEmojiPickerVisible(true)}
             onOpenDirectChat={handleOpenDirectChat}
             isOpeningChat={isOpeningChat}
           />
@@ -188,6 +191,14 @@ export const MomentSlide = React.memo(function MomentSlide({
         visible={interactionsSheetVisible}
         momentId={moment.id}
         onClose={() => setInteractionsSheetVisible(false)}
+      />
+
+      {/* Emoji Picker Modal for Viewer */}
+      <EmojiPickerModal
+        visible={emojiPickerVisible}
+        selectedEmoji={userReactionType}
+        onClose={() => setEmojiPickerVisible(false)}
+        onSelectEmoji={(emoji) => handleQuickReaction(emoji, emoji)}
       />
     </View>
   );

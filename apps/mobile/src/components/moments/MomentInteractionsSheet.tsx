@@ -44,19 +44,21 @@ export function MomentInteractionsSheet({
   };
 
   const getEmojiIcon = (type: string) => {
+    if (!type) return '❤️';
     switch (type) {
       case 'LOVE':
         return '❤️';
-      case 'CARE':
-        return '🥰';
       case 'FUNNY':
         return '😂';
+      case 'CARE':
+        return '🥰';
+      case 'PROUD':
+      case 'FIRE':
+        return '🔥';
       case 'RELATABLE':
         return '💛';
-      case 'PROUD':
-        return '🔥';
       default:
-        return '✨';
+        return type;
     }
   };
 

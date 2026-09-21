@@ -222,11 +222,11 @@ export class NotificationsService {
         }),
         this.prisma.user.findUnique({
           where: { id: momentOwnerId },
-          select: { id: true, fcmToken: true },
+          select: { id: true, fcmToken: true, notifyReactions: true },
         }),
       ]);
 
-      if (!actor || !owner || !owner.fcmToken) return;
+      if (!actor || !owner || !owner.fcmToken || owner.notifyReactions === false) return;
 
       const actorName = actor.displayName || actor.username;
       const emoji = REACTION_EMOJI_MAP[reactionType.toUpperCase()] || reactionType;

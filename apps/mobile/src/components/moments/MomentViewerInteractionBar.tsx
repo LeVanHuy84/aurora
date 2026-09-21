@@ -16,32 +16,40 @@ import { triggerHapticFeedback } from '../../utils/haptics';
 export interface MomentViewerInteractionBarProps {
   hasReacted: boolean;
   userReactionType?: string | null;
-  onReactionPress: (emoji: string, type: ReactionType) => void;
+  onReactionPress: (emoji: string, type: string) => void;
+  onOpenEmojiPicker: () => void;
   onOpenDirectChat: () => void;
   isOpeningChat: boolean;
 }
 
-const REACTION_OPTIONS = [
+const QUICK_REACTION_OPTIONS = [
   { emoji: '❤️', type: ReactionType.LOVE },
-  { emoji: '🔥', type: ReactionType.PROUD },
+  { emoji: '😂', type: ReactionType.FUNNY },
   { emoji: '🥰', type: ReactionType.CARE },
-  { emoji: '💛', type: ReactionType.RELATABLE },
-  { emoji: '✨', type: ReactionType.FUNNY },
+  { emoji: '🔥', type: ReactionType.FIRE },
 ];
 
 export function MomentViewerInteractionBar({
   hasReacted,
   userReactionType,
   onReactionPress,
+  onOpenEmojiPicker,
   onOpenDirectChat,
   isOpeningChat,
 }: MomentViewerInteractionBarProps) {
   const { colors, isDark } = useAppTheme();
   const { t } = useTranslation();
 
+  const isCustomReaction =
+    hasReacted &&
+    Boolean(userReactionType) &&
+    !QUICK_REACTION_OPTIONS.some(
+      (item) => item.type === userReactionType || item.emoji === userReactionType,
+    );
+
   return (
     <View style={styles.container}>
-      {/* ROW 1: 5 REACTION EMOJIS */}
+      {/* ROW 1: 4 QUICK EMOJIS + 1 CUSTOM / PLUS BUTTON */}
       <View
         style={[
           styles.reactionBar,
@@ -51,8 +59,10 @@ export function MomentViewerInteractionBar({
           },
         ]}
       >
-        {REACTION_OPTIONS.map((item) => {
-          const isSelected = hasReacted && userReactionType === item.type;
+        {QUICK_REACTION_OPTIONS.map((item) => {
+          const isSelected =
+            hasReacted &&
+            (userReactionType === item.type || userReactionType === item.emoji);
           return (
             <TouchableOpacity
               key={item.emoji}
@@ -92,6 +102,64 @@ export function MomentViewerInteractionBar({
             </TouchableOpacity>
           );
         })}
+
+        {/* 5th Dynamic Button: Custom reacted emoji or Plus icon to open picker */}
+        {isCustomReaction ? (
+          <TouchableOpacity
+            style={[
+              styles.reactionBtn,
+              styles.reactionBtnSelected,
+              {
+                backgroundColor: isDark ? '#383531' : '#FFFFFF',
+                shadowColor: '#000',
+              },
+            ]}
+            activeOpacity={0.6}
+            onPress={() => {
+              triggerHapticFeedback();
+              onReactionPress(userReactionType!, userReactionType!);
+            }}
+            onLongPress={() => {
+              triggerHapticFeedback();
+              onOpenEmojiPicker();
+            }}
+          >
+            <Body
+              style={[
+                styles.reactionEmoji,
+                styles.reactionEmojiSelected,
+              ]}
+            >
+              {userReactionType}
+            </Body>
+            <View
+              style={[
+                styles.selectedDot,
+                { backgroundColor: colors.accentDark },
+              ]}
+            />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[
+              styles.reactionBtn,
+              {
+                backgroundColor: isDark ? '#2E2B27' : '#EAE4D9',
+              },
+            ]}
+            activeOpacity={0.6}
+            onPress={() => {
+              triggerHapticFeedback();
+              onOpenEmojiPicker();
+            }}
+          >
+            <Ionicons
+              name="add"
+              size={22}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* ROW 2: FULL-WIDTH PRIVATE CHAT BAR */}

@@ -25,6 +25,7 @@ import { useMomentInteractions, useReactMoment } from '../../hooks/use-interacti
 import { useDeleteMoment } from '../../hooks/use-moments';
 import { chatService } from '../../services/modules/chat.service';
 import { MomentInteractionsSheet } from '../moments/MomentInteractionsSheet';
+import { EmojiPickerModal } from '../common/EmojiPickerModal';
 
 export interface MomentDetailModalProps {
   visible: boolean;
@@ -32,12 +33,11 @@ export interface MomentDetailModalProps {
   onClose: () => void;
 }
 
-const QUICK_REACTIONS: { type: ReactionType; emoji: string; label: string }[] = [
-  { type: ReactionType.LOVE, emoji: '❤️', label: 'Yêu thích' },
-  { type: ReactionType.PROUD, emoji: '🔥', label: 'Ấn tượng' },
-  { type: ReactionType.CARE, emoji: '🥰', label: 'Ấm áp' },
-  { type: ReactionType.RELATABLE, emoji: '💛', label: 'Đồng cảm' },
-  { type: ReactionType.FUNNY, emoji: '✨', label: 'Tỏa sáng' },
+const QUICK_REACTIONS: { type: ReactionType; emoji: string }[] = [
+  { type: ReactionType.LOVE, emoji: '❤️' },
+  { type: ReactionType.FUNNY, emoji: '😂' },
+  { type: ReactionType.CARE, emoji: '🥰' },
+  { type: ReactionType.FIRE, emoji: '🔥' },
 ];
 
 export function MomentDetailModal({
@@ -54,6 +54,7 @@ export function MomentDetailModal({
   const isVi = (i18n.language || 'vi').startsWith('vi');
 
   const [interactionsSheetVisible, setInteractionsSheetVisible] = useState(false);
+  const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
   const [isOpeningChat, setIsOpeningChat] = useState(false);
 
   const reactMomentMutation = useReactMoment();
@@ -91,23 +92,25 @@ export function MomentDetailModal({
   const baseEmotionColor = moment.emotion?.color || colors.accent;
 
   const getReactionEmoji = (type?: string) => {
+    if (!type) return '❤️';
     switch (type) {
       case 'LOVE':
         return '❤️';
-      case 'PROUD':
-        return '🔥';
+      case 'FUNNY':
+        return '😂';
       case 'CARE':
         return '🥰';
+      case 'PROUD':
+      case 'FIRE':
+        return '🔥';
       case 'RELATABLE':
         return '💛';
-      case 'FUNNY':
-        return '✨';
       default:
-        return '✨';
+        return type;
     }
   };
 
-  const handleQuickReaction = (targetType: ReactionType) => {
+  const handleQuickReaction = (targetType: string) => {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } catch {
@@ -574,7 +577,9 @@ export function MomentDetailModal({
                 {/* Quick Emojis Bar */}
                 <View style={styles.quickReactionsRow}>
                   {QUICK_REACTIONS.map((item) => {
-                    const isSelected = hasReacted && userReactionType === item.type;
+                    const isSelected =
+                      hasReacted &&
+                      (userReactionType === item.type || userReactionType === item.emoji);
                     return (
                       <TouchableOpacity
                         key={item.type}
@@ -596,6 +601,42 @@ export function MomentDetailModal({
                       </TouchableOpacity>
                     );
                   })}
+
+                  {/* 5th Button: Custom Emoji or Plus button */}
+                  {hasReacted &&
+                  Boolean(userReactionType) &&
+                  !QUICK_REACTIONS.some(
+                    (item) => item.type === userReactionType || item.emoji === userReactionType,
+                  ) ? (
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => handleQuickReaction(userReactionType!)}
+                      onLongPress={() => setEmojiPickerVisible(true)}
+                      style={[
+                        styles.reactionButton,
+                        {
+                          backgroundColor: isDark ? '#3D2F24' : '#FFEBD8',
+                          borderColor: colors.accent,
+                        },
+                      ]}
+                    >
+                      <Caption style={styles.reactionEmoji}>{userReactionType}</Caption>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => setEmojiPickerVisible(true)}
+                      style={[
+                        styles.reactionButton,
+                        {
+                          backgroundColor: colors.surfaceSoft,
+                          borderColor: colors.cardBorder,
+                        },
+                      ]}
+                    >
+                      <Ionicons name="add" size={22} color={colors.textSecondary} />
+                    </TouchableOpacity>
+                  )}
                 </View>
 
                 {/* 1-1 Reply Button */}
@@ -629,6 +670,14 @@ export function MomentDetailModal({
           visible={interactionsSheetVisible}
           momentId={moment.id}
           onClose={() => setInteractionsSheetVisible(false)}
+        />
+
+        {/* Emoji Picker Modal (Viewer) */}
+        <EmojiPickerModal
+          visible={emojiPickerVisible}
+          selectedEmoji={userReactionType}
+          onClose={() => setEmojiPickerVisible(false)}
+          onSelectEmoji={(emoji) => handleQuickReaction(emoji)}
         />
       </View>
     </Modal>

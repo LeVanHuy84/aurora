@@ -20,6 +20,7 @@ export class UsersService {
         bio: true,
         provider: true,
         fcmToken: true,
+        notifyReactions: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -41,6 +42,7 @@ export class UsersService {
         ...(dto.displayName !== undefined && { displayName: dto.displayName }),
         ...(dto.bio !== undefined && { bio: dto.bio }),
         ...(dto.avatarUrl !== undefined && { avatarUrl: dto.avatarUrl }),
+        ...(dto.notifyReactions !== undefined && { notifyReactions: dto.notifyReactions }),
       },
       select: {
         id: true,
@@ -50,6 +52,7 @@ export class UsersService {
         avatarUrl: true,
         bio: true,
         provider: true,
+        notifyReactions: true,
         updatedAt: true,
       },
     });

@@ -31,12 +31,10 @@ export function SettingsSection({
 
   const {
     dailyReminder,
-    closeFriendsMoments,
-    allFriendsMoments,
+    reactionMoments,
     isLoaded,
     setDailyReminder,
-    setCloseFriendsMoments,
-    setAllFriendsMoments,
+    setReactionMoments,
     initSettings,
   } = useSettingsStore();
 
@@ -323,27 +321,13 @@ export function SettingsSection({
 
         <View style={styles.switchRow}>
           <Caption color="primary" style={styles.switchLabel}>
-            {t('profile.friendActivity', 'Khoảnh khắc mới từ bạn thân')}
+            {t('profile.reactionActivity', 'Thông báo khi bạn bè thả cảm xúc')}
           </Caption>
           <Switch
-            value={closeFriendsMoments}
-            onValueChange={setCloseFriendsMoments}
+            value={reactionMoments}
+            onValueChange={setReactionMoments}
             trackColor={{ false: colors.surfaceSoft, true: colors.accent }}
-            thumbColor={closeFriendsMoments ? '#FFFFFF' : '#F4F3F0'}
-          />
-        </View>
-
-        <View style={[styles.innerDivider, { backgroundColor: colors.divider }]} />
-
-        <View style={styles.switchRow}>
-          <Caption color="primary" style={styles.switchLabel}>
-            {t('profile.allFriendsActivity', 'Khoảnh khắc mới từ tất cả bạn bè')}
-          </Caption>
-          <Switch
-            value={allFriendsMoments}
-            onValueChange={setAllFriendsMoments}
-            trackColor={{ false: colors.surfaceSoft, true: colors.accent }}
-            thumbColor={allFriendsMoments ? '#FFFFFF' : '#F4F3F0'}
+            thumbColor={reactionMoments ? '#FFFFFF' : '#F4F3F0'}
           />
         </View>
       </View>

@@ -4,7 +4,6 @@ import { BadRequestException, ForbiddenException, NotFoundException } from '@nes
 import { FriendshipStatus, MomentType, Visibility } from '@prisma/client';
 import { MomentsService } from './moments.service.js';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
-import { NotificationsService } from '../notifications/notifications.service.js';
 
 describe('MomentsService', () => {
   let service: MomentsService;
@@ -69,7 +68,6 @@ describe('MomentsService', () => {
       providers: [
         MomentsService,
         { provide: PrismaService, useValue: mockPrismaService },
-        { provide: NotificationsService, useValue: mockNotificationsService },
       ],
     }).compile();
 

@@ -64,6 +64,7 @@ model User {
   provider      AuthProvider  @default(LOCAL)
   providerId    String?       // Subject ID từ Google/Apple OAuth
   fcmToken      String?       // Token cho Push Notification
+  notifyReactions Boolean     @default(true) // Bật/tắt nhận thông báo khi có người reaction moment
   isEmailVerified Boolean     @default(false)
 
   createdAt     DateTime      @default(now())
