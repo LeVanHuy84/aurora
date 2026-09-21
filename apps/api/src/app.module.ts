@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
@@ -22,6 +23,7 @@ import { InteractionsModule } from './modules/interactions/interactions.module.j
 import { EmotionsModule } from './modules/emotions/emotions.module.js';
 import { ChatModule } from './modules/chat/chat.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
+import { MailModule } from './modules/mail/mail.module.js';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -29,6 +31,9 @@ const __dirname = path.dirname(__filename);
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {
@@ -42,6 +47,7 @@ const __dirname = path.dirname(__filename);
       ],
     }),
     PrismaModule,
+    MailModule,
     AuthModule,
     UsersModule,
     MediaModule,

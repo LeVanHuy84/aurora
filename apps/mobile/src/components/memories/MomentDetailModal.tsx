@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -18,10 +19,13 @@ import { Ionicons } from '../common/Icon';
 import { MomentItem, MomentType, ReactionType, Visibility } from '@aurora/types';
 import { Spacing, BorderRadius } from '../../constants/theme';
 import { getEmotionLabel } from '../../utils/emotion';
+import { formatFullDateTime } from '../../utils/date';
 import { useAuth } from '../../hooks/use-auth';
 import { useMomentInteractions, useReactMoment } from '../../hooks/use-interactions';
+import { useDeleteMoment } from '../../hooks/use-moments';
 import { chatService } from '../../services/modules/chat.service';
 import { MomentInteractionsSheet } from '../moments/MomentInteractionsSheet';
+import { EmojiPickerModal } from '../common/EmojiPickerModal';
 
 export interface MomentDetailModalProps {
   visible: boolean;
@@ -29,12 +33,11 @@ export interface MomentDetailModalProps {
   onClose: () => void;
 }
 
-const QUICK_REACTIONS: { type: ReactionType; emoji: string; label: string }[] = [
-  { type: ReactionType.LOVE, emoji: '❤️', label: 'Yêu thích' },
-  { type: ReactionType.PROUD, emoji: '🔥', label: 'Ấn tượng' },
-  { type: ReactionType.CARE, emoji: '🥰', label: 'Ấm áp' },
-  { type: ReactionType.RELATABLE, emoji: '💛', label: 'Đồng cảm' },
-  { type: ReactionType.FUNNY, emoji: '✨', label: 'Tỏa sáng' },
+const QUICK_REACTIONS: { type: ReactionType; emoji: string }[] = [
+  { type: ReactionType.LOVE, emoji: '❤️' },
+  { type: ReactionType.FUNNY, emoji: '😂' },
+  { type: ReactionType.CARE, emoji: '🥰' },
+  { type: ReactionType.FIRE, emoji: '🔥' },
 ];
 
 export function MomentDetailModal({
@@ -44,14 +47,18 @@ export function MomentDetailModal({
 }: MomentDetailModalProps) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useAppTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { user: currentUser } = useAuth();
 
+  const isVi = (i18n.language || 'vi').startsWith('vi');
+
   const [interactionsSheetVisible, setInteractionsSheetVisible] = useState(false);
+  const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
   const [isOpeningChat, setIsOpeningChat] = useState(false);
 
   const reactMomentMutation = useReactMoment();
+  const deleteMomentMutation = useDeleteMoment();
   const { data: interactionsData } = useMomentInteractions(
     moment?.id,
     visible && !!moment?.id,
@@ -69,14 +76,7 @@ export function MomentDetailModal({
   const threads = interactionsData?.threads || [];
   const latestThread = threads[0] || null;
 
-  const formatDate = (isoString: string) => {
-    try {
-      const d = new Date(isoString);
-      return `${d.toLocaleDateString([], { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })} lúc ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    } catch {
-      return '';
-    }
-  };
+  const formatDate = (isoString: string) => formatFullDateTime(isoString, isVi);
 
   const getVisibilityLabel = (visibility?: Visibility) => {
     switch (visibility) {
@@ -92,23 +92,25 @@ export function MomentDetailModal({
   const baseEmotionColor = moment.emotion?.color || colors.accent;
 
   const getReactionEmoji = (type?: string) => {
+    if (!type) return '❤️';
     switch (type) {
       case 'LOVE':
         return '❤️';
-      case 'PROUD':
-        return '🔥';
+      case 'FUNNY':
+        return '😂';
       case 'CARE':
         return '🥰';
+      case 'PROUD':
+      case 'FIRE':
+        return '🔥';
       case 'RELATABLE':
         return '💛';
-      case 'FUNNY':
-        return '✨';
       default:
-        return '✨';
+        return type;
     }
   };
 
-  const handleQuickReaction = (targetType: ReactionType) => {
+  const handleQuickReaction = (targetType: string) => {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } catch {
@@ -173,6 +175,36 @@ export function MomentDetailModal({
     });
   };
 
+  const handleDeleteMoment = () => {
+    try {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    } catch {
+      // ignore
+    }
+
+    Alert.alert(
+      t('moments.deleteConfirmTitle', 'Xóa khoảnh khắc'),
+      t('moments.deleteConfirmDesc', 'Bạn có chắc chắn muốn xóa khoảnh khắc này không? Hành động này không thể hoàn tác.'),
+      [
+        {
+          text: t('common.cancel', 'Hủy'),
+          style: 'cancel',
+        },
+        {
+          text: t('common.delete', 'Xóa'),
+          style: 'destructive',
+          onPress: () => {
+            deleteMomentMutation.mutate(moment.id, {
+              onSuccess: () => {
+                onClose();
+              },
+            });
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <Modal
       visible={visible}
@@ -210,7 +242,21 @@ export function MomentDetailModal({
             )}
           </View>
 
-          <View style={styles.placeholderBtn} />
+          {isOwner ? (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={handleDeleteMoment}
+              style={[
+                styles.closeBtn,
+                { backgroundColor: isDark ? '#3D2424' : '#FDE8E8' },
+              ]}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+            >
+              <Ionicons name="trash-outline" size={18} color={colors.danger} />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.placeholderBtn} />
+          )}
         </View>
 
         <ScrollView
@@ -531,7 +577,9 @@ export function MomentDetailModal({
                 {/* Quick Emojis Bar */}
                 <View style={styles.quickReactionsRow}>
                   {QUICK_REACTIONS.map((item) => {
-                    const isSelected = hasReacted && userReactionType === item.type;
+                    const isSelected =
+                      hasReacted &&
+                      (userReactionType === item.type || userReactionType === item.emoji);
                     return (
                       <TouchableOpacity
                         key={item.type}
@@ -553,6 +601,42 @@ export function MomentDetailModal({
                       </TouchableOpacity>
                     );
                   })}
+
+                  {/* 5th Button: Custom Emoji or Plus button */}
+                  {hasReacted &&
+                  Boolean(userReactionType) &&
+                  !QUICK_REACTIONS.some(
+                    (item) => item.type === userReactionType || item.emoji === userReactionType,
+                  ) ? (
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => handleQuickReaction(userReactionType!)}
+                      onLongPress={() => setEmojiPickerVisible(true)}
+                      style={[
+                        styles.reactionButton,
+                        {
+                          backgroundColor: isDark ? '#3D2F24' : '#FFEBD8',
+                          borderColor: colors.accent,
+                        },
+                      ]}
+                    >
+                      <Caption style={styles.reactionEmoji}>{userReactionType}</Caption>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => setEmojiPickerVisible(true)}
+                      style={[
+                        styles.reactionButton,
+                        {
+                          backgroundColor: colors.surfaceSoft,
+                          borderColor: colors.cardBorder,
+                        },
+                      ]}
+                    >
+                      <Ionicons name="add" size={22} color={colors.textSecondary} />
+                    </TouchableOpacity>
+                  )}
                 </View>
 
                 {/* 1-1 Reply Button */}
@@ -586,6 +670,14 @@ export function MomentDetailModal({
           visible={interactionsSheetVisible}
           momentId={moment.id}
           onClose={() => setInteractionsSheetVisible(false)}
+        />
+
+        {/* Emoji Picker Modal (Viewer) */}
+        <EmojiPickerModal
+          visible={emojiPickerVisible}
+          selectedEmoji={userReactionType}
+          onClose={() => setEmojiPickerVisible(false)}
+          onSelectEmoji={(emoji) => handleQuickReaction(emoji)}
         />
       </View>
     </Modal>

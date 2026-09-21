@@ -45,22 +45,28 @@
   - Automated Lint, Type-Check & Build test cho cả `apps/api` và `apps/mobile` khi `git push` hoặc `pull_request`.
   - Continuous Deployment (CD) cho Backend API & Expo EAS Build/Preview.
 - [x] **Task 4.2:** **Push Notifications Service Base:** Tích hợp `expo-notifications` và cấu hình logic gửi push qua Expo Push Service.
-- [x] **Task 4.3:** **Tối ưu hóa hiệu năng Mobile:** Áp dụng `expo-image` để nén và cache ảnh mượt mà, tối ưu re-render và trải nghiệm người dùng.
+- [x] **Task 4.3:** **Tối ưu hóa hiệu năng Mobile:** Áp dụng `expo-image` để nén và cache ảnh mượt mà, tối ưu re-render và cấu hình TanStack Query (`staleTime`, `gcTime`).
 - [x] **Task 4.4:** **Backend Production Deployment:** 
-  - Deploy NestJS API lên môi trường Production (Render / Docker / VPS).
-  - Kết nối cơ sở dữ liệu PostgreSQL Cloud (Supabase / Neon / Render Postgres) & cấu hình biến môi trường production.
-- [ ] **Task 4.5:** **EAS Build & Native OAuth Verification (Google & Apple):**
-  - Cấu hình `eas.json` và tạo bản build Native (EAS Development Build / Preview APK / iOS TestFlight).
-  - Lấy mã **SHA-1 Fingerprint** từ bản build và cấu hình **Android Client ID / iOS Client ID** chính thức trên Google Cloud Console.
-  - Kiểm thử toàn diện luồng **Google Sign-In & Apple Sign-In** trực tiếp trên thiết bị thật (bản Native Build, không qua Expo Go proxy).
-- [ ] **Task 4.6:** **Native Production Push Credentials Setup (FCM v1 & Apple APNs):**
-  - Cấu hình Firebase Cloud Messaging v1 (`service-account.json`) cho Android Standalone APK/AAB trên EAS Credentials.
-  - Cấu hình Apple Push Notifications Key (`.p8`) cho iOS TestFlight/App Store trên EAS Credentials để chạy thông báo độc lập hoàn toàn trên bản Native Build.
-- [ ] **Task 4.7:** **Kiểm thử toàn diện E2E:** Test luồng sử dụng thực tế giữa các thiết bị thật (Đăng ký, Đăng nhập OAuth/Email, Tạo Moment, Thả cảm xúc, Chat 1-1, Push Notifications nền).
+  - Deploy NestJS API lên môi trường Production (Render).
+  - Kết nối cơ sở dữ liệu PostgreSQL Cloud (Neon Database) & cấu hình biến môi trường production.
+- [x] **Task 4.5:** **EAS Build & Native OAuth Verification (Android):**
+  - Cấu hình `eas.json`, `app.json`, `metro.config.js` chuẩn Expo Monorepo.
+  - Build thành công bản **EAS Preview APK** độc lập trên Android.
+  - Lấy mã **SHA-1 Fingerprint** từ Keystore EAS và cấu hình **Android Client ID** chính thức trên Google Cloud Console.
+  - Tích hợp và kiểm thử an toàn luồng **Google Sign-In Native** (kèm fallback bảo vệ runtime).
+- [x] **Task 4.6:** **Native Production Push Credentials Setup (FCM v1 Android):**
+  - Đưa `google-services.json` vào `apps/mobile/`, cấu hình `.gitignore` và `.easignore`.
+  - Upload khóa **Firebase Cloud Messaging v1 (`service-account.json`)** lên EAS Credentials để kích hoạt thông báo nền độc lập trên Android.
+- [ ] **Task 4.7:** **Kiểm thử toàn diện E2E (End-to-End Testing):** Test luồng sử dụng thực tế giữa các thiết bị Android và Backend Production (Đăng ký, Đăng nhập OAuth/Email, Tạo Moment Photo/Mood/Note, Thả cảm xúc Emoji, Chat 1-1, Nhắc nhở nhật ký 20:00 & Push Notifications nền).
 
 ---
 
 ## 🔮 Phase 5: Nâng Cấp Tương Lai (Future Enhancements - Post-MVP)
+- [ ] **iOS Deployment & Apple Credentials (App Store / TestFlight):**
+  - Cấu hình Apple Developer Account ($99/năm) & Provisioning Profiles.
+  - Tích hợp Apple Push Notification Service (APNs Key `.p8`) trên EAS Credentials.
+  - Hoàn thiện Apple Sign-In & Build bản iOS TestFlight / App Store Submission.
 - [ ] **AI Weekly/Monthly Reflection:** Tích hợp AI phân tích xu hướng cảm xúc hàng tuần/tháng.
 - [ ] **Location & Music Attachment:** Đính kèm vị trí địa lý hoặc bài hát Spotify vào Moment.
 - [ ] **Widgets iOS/Android:** Widget ngoài màn hình chính hiển thị khoảnh khắc mới nhất của Bạn thân.
+

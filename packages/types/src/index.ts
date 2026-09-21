@@ -17,11 +17,10 @@ export enum FriendshipStatus {
 }
 
 export enum ReactionType {
-  LOVE = 'LOVE',
-  CARE = 'CARE',
-  FUNNY = 'FUNNY',
-  RELATABLE = 'RELATABLE',
-  PROUD = 'PROUD',
+  LOVE = '❤️',
+  FUNNY = '😂',
+  CARE = '🥰',
+  FIRE = '🔥',
 }
 
 export enum MessageType {
@@ -52,6 +51,8 @@ export interface UserProfile {
   displayName: string;
   avatarUrl?: string | null;
   bio?: string | null;
+  isEmailVerified?: boolean;
+  notifyReactions?: boolean;
   createdAt: string;
 }
 
@@ -81,6 +82,15 @@ export interface AuthTokens {
 export interface AuthResponse {
   user: UserProfile;
   tokens: AuthTokens;
+  requiresEmailVerification?: boolean;
+}
+
+export interface RegisterResponse {
+  requiresEmailVerification?: boolean;
+  email?: string;
+  message?: string;
+  user?: UserProfile;
+  tokens?: AuthTokens;
 }
 
 export interface LoginPayload {
@@ -93,6 +103,15 @@ export interface RegisterPayload {
   username: string;
   displayName: string;
   password: string;
+}
+
+export interface VerifyOtpPayload {
+  email: string;
+  otp: string;
+}
+
+export interface ResendOtpPayload {
+  email: string;
 }
 
 export interface OAuthPayload {

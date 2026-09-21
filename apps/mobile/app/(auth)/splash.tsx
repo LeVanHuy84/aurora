@@ -17,6 +17,7 @@ export default function SplashScreen() {
 
   return (
     <ScreenContainer
+      edges={['top', 'bottom']}
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
     >
@@ -109,9 +110,10 @@ export default function SplashScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: 0,
   },
   contentContainer: {
+    paddingHorizontal: 16,
     justifyContent: 'space-between',
     paddingVertical: Spacing.md,
   },

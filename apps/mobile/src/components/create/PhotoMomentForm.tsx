@@ -5,25 +5,31 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '../common/Icon';
 import { useAppTheme } from '../../hooks/use-theme';
 import { Button } from '../ui/Button';
-import { Title, Caption } from '../ui/Typography';
+import { Title, Caption, Body } from '../ui/Typography';
+import { EmotionSelector } from '../moments/EmotionSelector';
+import { EmotionItem } from '@aurora/types';
 import { Spacing, BorderRadius } from '../../constants/theme';
 
 export interface PhotoMomentFormProps {
   selectedImage: string | null;
   content: string;
+  selectedEmotion?: EmotionItem | null;
   onChangeContent: (text: string) => void;
   onRemoveImage: () => void;
   onCaptureCamera: () => void;
   onPickFromGallery: () => void;
+  onSelectEmotion?: (emotion: EmotionItem | null) => void;
 }
 
 export function PhotoMomentForm({
   selectedImage,
   content,
+  selectedEmotion,
   onChangeContent,
   onRemoveImage,
   onCaptureCamera,
   onPickFromGallery,
+  onSelectEmotion,
 }: PhotoMomentFormProps) {
   const { colors, isDark } = useAppTheme();
   const { t } = useTranslation();
@@ -121,6 +127,23 @@ export function PhotoMomentForm({
           {content.length}/500
         </Caption>
       </View>
+
+      {/* Optional Emotion Attachment */}
+      {onSelectEmotion ? (
+        <View style={styles.emotionSection}>
+          <View style={styles.emotionSectionHeader}>
+            <Ionicons name="sparkles-outline" size={15} color={colors.accentDark} />
+            <Body weight="semibold" color="secondary" style={styles.emotionSectionTitle}>
+              {t('moments.attachEmotion', 'Cảm xúc đi kèm (Tùy chọn)')}
+            </Body>
+          </View>
+          <EmotionSelector
+            selectedId={selectedEmotion?.id}
+            selectedCode={selectedEmotion?.code}
+            onSelectEmotion={onSelectEmotion}
+          />
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -207,5 +230,18 @@ const styles = StyleSheet.create({
   },
   charCounter: {
     fontSize: 11.5,
+  },
+  emotionSection: {
+    marginTop: Spacing.md,
+  },
+  emotionSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: Spacing.xs + 2,
+    paddingHorizontal: 2,
+  },
+  emotionSectionTitle: {
+    fontSize: 13.5,
   },
 });

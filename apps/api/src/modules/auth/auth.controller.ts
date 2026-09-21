@@ -5,6 +5,8 @@ import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RefreshTokenDto } from './dto/refresh-token.dto.js';
 import { OAuthDto } from './dto/oauth.dto.js';
+import { VerifyOtpDto } from './dto/verify-otp.dto.js';
+import { ResendOtpDto } from './dto/resend-otp.dto.js';
 import { Public } from '../../common/decorators/public.decorator.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 
@@ -15,11 +17,31 @@ export class AuthController {
 
   @Public()
   @Post('register')
-  @ApiOperation({ summary: 'Register new user account' })
-  @ApiResponse({ status: 201, description: 'User registered successfully' })
+  @ApiOperation({ summary: 'Register new user account and send OTP' })
+  @ApiResponse({ status: 201, description: 'User registered successfully and OTP sent' })
   @ApiResponse({ status: 409, description: 'Email or Username already exists' })
   async register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('verify-otp')
+  @ApiOperation({ summary: 'Verify email 6-digit OTP code' })
+  @ApiResponse({ status: 200, description: 'Email verified and logged in successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired OTP code' })
+  async verifyOtp(@Body() dto: VerifyOtpDto) {
+    return this.authService.verifyOtp(dto);
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('resend-otp')
+  @ApiOperation({ summary: 'Resend email verification OTP' })
+  @ApiResponse({ status: 200, description: 'New OTP sent to email' })
+  @ApiResponse({ status: 400, description: 'Resend rate limit cooldown active' })
+  async resendOtp(@Body() dto: ResendOtpDto) {
+    return this.authService.resendOtp(dto);
   }
 
   @Public()

@@ -1,8 +1,11 @@
 import { apiClient } from '../api-client';
 import {
   AuthResponse,
+  RegisterResponse,
   LoginPayload,
   RegisterPayload,
+  VerifyOtpPayload,
+  ResendOtpPayload,
   OAuthPayload,
   UserProfile,
   AuthTokens,
@@ -21,8 +24,26 @@ export const authService = {
   /**
    * Register a new account
    */
-  async register(payload: RegisterPayload): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>('/auth/register', payload, {
+  async register(payload: RegisterPayload): Promise<RegisterResponse> {
+    return apiClient.post<RegisterResponse>('/auth/register', payload, {
+      requiresAuth: false,
+    });
+  },
+
+  /**
+   * Verify 6-digit email OTP
+   */
+  async verifyOtp(payload: VerifyOtpPayload): Promise<AuthResponse> {
+    return apiClient.post<AuthResponse>('/auth/verify-otp', payload, {
+      requiresAuth: false,
+    });
+  },
+
+  /**
+   * Resend verification OTP to email
+   */
+  async resendOtp(payload: ResendOtpPayload): Promise<{ success: boolean; message: string }> {
+    return apiClient.post<{ success: boolean; message: string }>('/auth/resend-otp', payload, {
       requiresAuth: false,
     });
   },

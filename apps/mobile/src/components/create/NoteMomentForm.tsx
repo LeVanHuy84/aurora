@@ -4,16 +4,22 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '../common/Icon';
 import { useAppTheme } from '../../hooks/use-theme';
 import { Body, Caption } from '../ui/Typography';
+import { EmotionSelector } from '../moments/EmotionSelector';
+import { EmotionItem } from '@aurora/types';
 import { Spacing } from '../../constants/theme';
 
 export interface NoteMomentFormProps {
   content: string;
+  selectedEmotion?: EmotionItem | null;
   onChangeContent: (text: string) => void;
+  onSelectEmotion?: (emotion: EmotionItem | null) => void;
 }
 
 export function NoteMomentForm({
   content,
+  selectedEmotion,
   onChangeContent,
+  onSelectEmotion,
 }: NoteMomentFormProps) {
   const { colors, isDark } = useAppTheme();
   const { t } = useTranslation();
@@ -58,6 +64,23 @@ export function NoteMomentForm({
           <Caption color="muted">{content.length}/500</Caption>
         </View>
       </View>
+
+      {/* Optional Emotion Attachment */}
+      {onSelectEmotion ? (
+        <View style={styles.emotionSection}>
+          <View style={styles.emotionSectionHeader}>
+            <Ionicons name="sparkles-outline" size={15} color={colors.accentDark} />
+            <Body weight="semibold" color="secondary" style={styles.emotionSectionTitle}>
+              {t('moments.attachEmotion', 'Cảm xúc đi kèm (Tùy chọn)')}
+            </Body>
+          </View>
+          <EmotionSelector
+            selectedId={selectedEmotion?.id}
+            selectedCode={selectedEmotion?.code}
+            onSelectEmotion={onSelectEmotion}
+          />
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -100,5 +123,18 @@ const styles = StyleSheet.create({
   memoFooter: {
     alignItems: 'flex-end',
     marginTop: Spacing.xs,
+  },
+  emotionSection: {
+    marginTop: Spacing.md,
+  },
+  emotionSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: Spacing.xs + 2,
+    paddingHorizontal: 2,
+  },
+  emotionSectionTitle: {
+    fontSize: 13.5,
   },
 });

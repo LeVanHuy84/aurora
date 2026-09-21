@@ -16,134 +16,198 @@ import { useAppTheme } from '../src/hooks/use-theme';
 import { Body, Caption, Title } from '../src/components/ui/Typography';
 import { Spacing, BorderRadius } from '../src/constants/theme';
 import { useConversations } from '../src/hooks/use-chat';
+import { useChatSocket } from '../src/hooks/use-chat-socket';
 import { ConversationItem } from '@aurora/types';
+
+interface ConversationListItemProps {
+  item: ConversationItem;
+  colors: any;
+  isDark: boolean;
+  onPress: () => void;
+  timeAgoText: string;
+  defaultFriendText: string;
+  defaultStartedText: string;
+}
+
+const ConversationListItem = React.memo(
+  function ConversationListItem({
+    item,
+    colors,
+    isDark,
+    onPress,
+    timeAgoText,
+    defaultFriendText,
+    defaultStartedText,
+  }: ConversationListItemProps) {
+    const friend = item.friend;
+    const hasUnread = (item.unreadCount || 0) > 0;
+
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        style={[
+          styles.conversationItem,
+          {
+            backgroundColor: hasUnread
+              ? isDark
+                ? '#2B2620'
+                : '#FFFDF9'
+              : colors.card,
+            borderColor: hasUnread ? colors.accent : colors.cardBorder,
+          },
+        ]}
+        onPress={onPress}
+      >
+        <View style={styles.avatarContainer}>
+          {friend?.avatarUrl ? (
+            <Image
+              source={{ uri: friend.avatarUrl }}
+              style={styles.avatar}
+              contentFit="cover"
+              transition={100}
+              cachePolicy="memory-disk"
+            />
+          ) : (
+            <View
+              style={[
+                styles.avatarFallback,
+                { backgroundColor: colors.accent },
+              ]}
+            >
+              <Caption color="white" weight="bold" style={{ fontSize: 16 }}>
+                {(friend?.displayName || friend?.username || 'U')[0].toUpperCase()}
+              </Caption>
+            </View>
+          )}
+          {hasUnread && <View style={styles.unreadDot} />}
+        </View>
+
+        <View style={styles.contentContainer}>
+          <View style={styles.topRow}>
+            <Body
+              weight={hasUnread ? 'bold' : 'semibold'}
+              color="primary"
+              numberOfLines={1}
+              style={styles.nameText}
+            >
+              {friend?.displayName || friend?.username || defaultFriendText}
+            </Body>
+            <Caption color="muted" style={styles.timeText}>
+              {timeAgoText}
+            </Caption>
+          </View>
+
+          <View style={styles.bottomRow}>
+            <Caption
+              color={hasUnread ? 'primary' : 'secondary'}
+              weight={hasUnread ? 'semibold' : 'normal'}
+              numberOfLines={1}
+              style={styles.lastMessageText}
+            >
+              {item.lastMessage?.content || defaultStartedText}
+            </Caption>
+
+            {hasUnread && (
+              <View
+                style={[
+                  styles.unreadBadge,
+                  { backgroundColor: colors.accentDark },
+                ]}
+              >
+                <Caption color="white" weight="bold" style={{ fontSize: 11 }}>
+                  {item.unreadCount}
+                </Caption>
+              </View>
+            )}
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  },
+  (prev, next) => {
+    return (
+      prev.item.id === next.item.id &&
+      prev.item.unreadCount === next.item.unreadCount &&
+      prev.item.lastMessageAt === next.item.lastMessageAt &&
+      prev.item.lastMessage?.content === next.item.lastMessage?.content &&
+      prev.timeAgoText === next.timeAgoText &&
+      prev.isDark === next.isDark &&
+      prev.colors === next.colors
+    );
+  },
+);
 
 export default function InboxScreen() {
   const { colors, isDark } = useAppTheme();
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const [isManualRefreshing, setIsManualRefreshing] = React.useState(false);
 
-  const { data: conversations, isLoading, refetch, isRefetching } = useConversations();
+  useChatSocket();
+  const { data: conversations, isLoading, refetch } = useConversations();
 
-  const formatTimeAgo = (dateString: string) => {
+  const handleManualRefresh = React.useCallback(async () => {
+    setIsManualRefreshing(true);
     try {
-      const now = new Date();
-      const past = new Date(dateString);
-      const diffInMinutes = Math.floor(
-        (now.getTime() - past.getTime()) / (1000 * 60),
-      );
-
-      if (diffInMinutes < 1) return t('common.justNow', 'Vừa xong');
-      if (diffInMinutes < 60) return `${diffInMinutes}m`;
-      const diffInHours = Math.floor(diffInMinutes / 60);
-      if (diffInHours < 24) return `${diffInHours}h`;
-      const diffInDays = Math.floor(diffInHours / 24);
-      return `${diffInDays}d`;
-    } catch {
-      return '';
+      await refetch();
+    } finally {
+      setIsManualRefreshing(false);
     }
-  };
+  }, [refetch]);
 
-  const getFriendInfo = (item: ConversationItem) => item.friend;
+  const formatTimeAgo = React.useCallback(
+    (dateString: string) => {
+      try {
+        const now = new Date();
+        const past = new Date(dateString);
+        const diffInMinutes = Math.floor(
+          (now.getTime() - past.getTime()) / (1000 * 60),
+        );
+
+        if (diffInMinutes < 1) return t('common.justNow', 'Vừa xong');
+        if (diffInMinutes < 60) return `${diffInMinutes}m`;
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        if (diffInHours < 24) return `${diffInHours}h`;
+        const diffInDays = Math.floor(diffInHours / 24);
+        return `${diffInDays}d`;
+      } catch {
+        return '';
+      }
+    },
+    [t],
+  );
+
+  const handleOpenChat = React.useCallback(
+    (item: ConversationItem) => {
+      const friend = item.friend;
+      router.push({
+        pathname: '/chat/[id]',
+        params: {
+          id: item.id,
+          friendName: friend?.displayName || friend?.username,
+          friendAvatar: friend?.avatarUrl || '',
+        },
+      });
+    },
+    [router],
+  );
 
   const renderItem = React.useCallback(
     ({ item }: { item: ConversationItem }) => {
-      const friend = getFriendInfo(item);
-      const hasUnread = (item.unreadCount || 0) > 0;
-
       return (
-        <TouchableOpacity
-          activeOpacity={0.7}
-          style={[
-            styles.conversationItem,
-            {
-              backgroundColor: hasUnread
-                ? isDark
-                  ? '#2B2620'
-                  : '#FFFDF9'
-                : colors.card,
-              borderColor: hasUnread ? colors.accent : colors.cardBorder,
-            },
-          ]}
-          onPress={() => {
-            router.push({
-              pathname: '/chat/[id]',
-              params: {
-                id: item.id,
-                friendName: friend?.displayName || friend?.username,
-                friendAvatar: friend?.avatarUrl || '',
-              },
-            });
-          }}
-        >
-          <View style={styles.avatarContainer}>
-            {friend?.avatarUrl ? (
-              <Image
-                source={{ uri: friend.avatarUrl }}
-                style={styles.avatar}
-                contentFit="cover"
-                transition={150}
-                cachePolicy="memory-disk"
-              />
-            ) : (
-              <View
-                style={[
-                  styles.avatarFallback,
-                  { backgroundColor: colors.accent },
-                ]}
-              >
-                <Caption color="white" weight="bold" style={{ fontSize: 16 }}>
-                  {(friend?.displayName || friend?.username || 'U')[0].toUpperCase()}
-                </Caption>
-              </View>
-            )}
-            {hasUnread && <View style={styles.unreadDot} />}
-          </View>
-
-          <View style={styles.contentContainer}>
-            <View style={styles.topRow}>
-              <Body
-                weight={hasUnread ? 'bold' : 'semibold'}
-                color="primary"
-                numberOfLines={1}
-                style={styles.nameText}
-              >
-                {friend?.displayName || friend?.username || t('chat.friend', 'Bạn bè')}
-              </Body>
-              <Caption color="muted" style={styles.timeText}>
-                {formatTimeAgo(item.lastMessageAt || item.updatedAt)}
-              </Caption>
-            </View>
-
-            <View style={styles.bottomRow}>
-              <Caption
-                color={hasUnread ? 'primary' : 'secondary'}
-                weight={hasUnread ? 'semibold' : 'normal'}
-                numberOfLines={1}
-                style={styles.lastMessageText}
-              >
-                {item.lastMessage?.content || t('chat.startedConversation', 'Bắt đầu cuộc trò chuyện')}
-              </Caption>
-
-              {hasUnread && (
-                <View
-                  style={[
-                    styles.unreadBadge,
-                    { backgroundColor: colors.accentDark },
-                  ]}
-                >
-                  <Caption color="white" weight="bold" style={{ fontSize: 11 }}>
-                    {item.unreadCount}
-                  </Caption>
-                </View>
-              )}
-            </View>
-          </View>
-        </TouchableOpacity>
+        <ConversationListItem
+          item={item}
+          colors={colors}
+          isDark={isDark}
+          onPress={() => handleOpenChat(item)}
+          timeAgoText={formatTimeAgo(item.lastMessageAt || item.updatedAt)}
+          defaultFriendText={t('chat.friend', 'Bạn bè')}
+          defaultStartedText={t('chat.startedConversation', 'Bắt đầu cuộc trò chuyện')}
+        />
       );
     },
-    [colors, isDark, t, router],
+    [colors, isDark, handleOpenChat, formatTimeAgo, t],
   );
 
   return (
@@ -188,8 +252,8 @@ export default function InboxScreen() {
         ]}
         refreshControl={
           <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={refetch}
+            refreshing={isManualRefreshing}
+            onRefresh={handleManualRefresh}
             tintColor={colors.accentDark}
           />
         }

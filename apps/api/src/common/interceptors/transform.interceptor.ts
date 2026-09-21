@@ -17,6 +17,10 @@ export interface Response<T> {
 @Injectable()
 export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> {
   intercept(context: ExecutionContext, next: CallHandler): Observable<Response<T>> {
+    if (context.getType() === 'ws') {
+      return next.handle();
+    }
+
     const ctx = context.switchToHttp();
     const response = ctx.getResponse();
 

@@ -15,6 +15,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
   constructor(private readonly i18n?: I18nService) {}
 
   async catch(exception: unknown, host: ArgumentsHost) {
+    if (host.getType() === 'ws') {
+      return;
+    }
+
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const i18nContext = I18nContext.current(host);

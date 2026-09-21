@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '../../src/components/common/Icon';
@@ -25,14 +25,62 @@ export default function CreateMomentScreen() {
   const { colors, isDark } = useAppTheme();
   const createMoment = useCreateMoment();
 
-  // Form states
+  // Active Tab
   const [momentType, setMomentType] = useState<MomentType>(MomentType.PHOTO);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [content, setContent] = useState('');
-  const [selectedEmotion, setSelectedEmotion] = useState<EmotionItem | null>(null);
+
+  // 1. Photo Tab State
+  const [photoState, setPhotoState] = useState<{
+    image: string | null;
+    caption: string;
+    emotion: EmotionItem | null;
+  }>({
+    image: null,
+    caption: '',
+    emotion: null,
+  });
+
+  // 2. Note Tab State
+  const [noteState, setNoteState] = useState<{
+    content: string;
+    emotion: EmotionItem | null;
+  }>({
+    content: '',
+    emotion: null,
+  });
+
+  // 3. Mood Tab State
+  const [moodState, setMoodState] = useState<{
+    emotion: EmotionItem | null;
+    content: string;
+  }>({
+    emotion: null,
+    content: '',
+  });
+
+  // Common Settings
   const [visibility, setVisibility] = useState<Visibility>(Visibility.CLOSE_FRIENDS);
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Reset all states helper
+  const resetAllStates = useCallback(() => {
+    setMomentType(MomentType.PHOTO);
+    setPhotoState({ image: null, caption: '', emotion: null });
+    setNoteState({ content: '', emotion: null });
+    setMoodState({ emotion: null, content: '' });
+    setVisibility(Visibility.CLOSE_FRIENDS);
+    setErrorMessage('');
+    setIsUploading(false);
+  }, []);
+
+  // Release/reset states whenever user navigates away from Create tab
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        resetAllStates();
+      };
+    }, [resetAllStates]),
+  );
 
   // Handle Image Pick from Gallery
   const handlePickFromGallery = async () => {
@@ -51,7 +99,7 @@ export default function CreateMomentScreen() {
       });
 
       if (!result.canceled && result.assets[0]?.uri) {
-        setSelectedImage(result.assets[0].uri);
+        setPhotoState((prev) => ({ ...prev, image: result.assets[0].uri }));
         setErrorMessage('');
       }
     } catch (err: any) {
@@ -75,7 +123,7 @@ export default function CreateMomentScreen() {
       });
 
       if (!result.canceled && result.assets[0]?.uri) {
-        setSelectedImage(result.assets[0].uri);
+        setPhotoState((prev) => ({ ...prev, image: result.assets[0].uri }));
         setErrorMessage('');
       }
     } catch (err: any) {
@@ -84,30 +132,31 @@ export default function CreateMomentScreen() {
   };
 
   const handleClose = () => {
+    resetAllStates();
     router.replace('/(tabs)');
   };
 
   // Validation check for primary CTA
   const isSubmitDisabled =
-    (momentType === MomentType.PHOTO && !selectedImage) ||
-    (momentType === MomentType.NOTE && !content.trim()) ||
-    (momentType === MomentType.MOOD && !selectedEmotion);
+    (momentType === MomentType.PHOTO && !photoState.image) ||
+    (momentType === MomentType.NOTE && !noteState.content.trim()) ||
+    (momentType === MomentType.MOOD && !moodState.emotion);
 
   // Submit Handler
   const handleShareMoment = async () => {
     setErrorMessage('');
 
-    if (momentType === MomentType.PHOTO && !selectedImage) {
+    if (momentType === MomentType.PHOTO && !photoState.image) {
       setErrorMessage(t('moments.errors.photoRequired'));
       return;
     }
 
-    if (momentType === MomentType.NOTE && !content.trim()) {
+    if (momentType === MomentType.NOTE && !noteState.content.trim()) {
       setErrorMessage(t('moments.errors.contentRequired'));
       return;
     }
 
-    if (momentType === MomentType.MOOD && !selectedEmotion) {
+    if (momentType === MomentType.MOOD && !moodState.emotion) {
       setErrorMessage(t('moments.errors.emotionRequired'));
       return;
     }
@@ -116,23 +165,34 @@ export default function CreateMomentScreen() {
 
     try {
       let finalImageUrl: string | undefined = undefined;
+      let finalContent: string | undefined = undefined;
+      let finalEmotionId: string | undefined = undefined;
 
-      if (momentType === MomentType.PHOTO && selectedImage) {
-        finalImageUrl = await mediaService.uploadImage(selectedImage);
+      if (momentType === MomentType.PHOTO) {
+        finalImageUrl = await mediaService.uploadImage(photoState.image!);
+        finalContent = photoState.caption.trim() || undefined;
+        finalEmotionId = photoState.emotion
+          ? photoState.emotion.id || photoState.emotion.code
+          : undefined;
+      } else if (momentType === MomentType.NOTE) {
+        finalContent = noteState.content.trim();
+        finalEmotionId = noteState.emotion
+          ? noteState.emotion.id || noteState.emotion.code
+          : undefined;
+      } else if (momentType === MomentType.MOOD) {
+        finalContent = moodState.content.trim() || undefined;
+        finalEmotionId = moodState.emotion!.id || moodState.emotion!.code;
       }
 
       await createMoment.mutateAsync({
         type: momentType,
-        content: content.trim() || undefined,
+        content: finalContent,
         imageUrl: finalImageUrl,
-        emotionId: selectedEmotion ? (selectedEmotion.id || selectedEmotion.code) : undefined,
+        emotionId: finalEmotionId,
         visibility,
       });
 
-      setIsUploading(false);
-      setSelectedImage(null);
-      setContent('');
-      setSelectedEmotion(null);
+      resetAllStates();
       router.replace('/(tabs)');
     } catch (err: any) {
       setIsUploading(false);
@@ -175,28 +235,32 @@ export default function CreateMomentScreen() {
       {/* 2. Type-specific Form Component */}
       {momentType === MomentType.PHOTO && (
         <PhotoMomentForm
-          selectedImage={selectedImage}
-          content={content}
-          onChangeContent={setContent}
-          onRemoveImage={() => setSelectedImage(null)}
+          selectedImage={photoState.image}
+          content={photoState.caption}
+          selectedEmotion={photoState.emotion}
+          onChangeContent={(text) => setPhotoState((prev) => ({ ...prev, caption: text }))}
+          onRemoveImage={() => setPhotoState((prev) => ({ ...prev, image: null }))}
           onCaptureCamera={handleCaptureCamera}
           onPickFromGallery={handlePickFromGallery}
+          onSelectEmotion={(emotion) => setPhotoState((prev) => ({ ...prev, emotion }))}
         />
       )}
 
       {momentType === MomentType.NOTE && (
         <NoteMomentForm
-          content={content}
-          onChangeContent={setContent}
+          content={noteState.content}
+          selectedEmotion={noteState.emotion}
+          onChangeContent={(text) => setNoteState((prev) => ({ ...prev, content: text }))}
+          onSelectEmotion={(emotion) => setNoteState((prev) => ({ ...prev, emotion }))}
         />
       )}
 
       {momentType === MomentType.MOOD && (
         <MoodMomentForm
-          selectedEmotion={selectedEmotion}
-          content={content}
-          onSelectEmotion={setSelectedEmotion}
-          onChangeContent={setContent}
+          selectedEmotion={moodState.emotion}
+          content={moodState.content}
+          onSelectEmotion={(emotion) => setMoodState((prev) => ({ ...prev, emotion }))}
+          onChangeContent={(text) => setMoodState((prev) => ({ ...prev, content: text }))}
         />
       )}
 

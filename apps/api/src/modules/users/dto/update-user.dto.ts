@@ -18,4 +18,8 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   avatarUrl?: string;
+
+  @ApiPropertyOptional({ example: true, description: 'Bật/tắt nhận push notification khi có người reaction moment' })
+  @IsOptional()
+  notifyReactions?: boolean;
 }

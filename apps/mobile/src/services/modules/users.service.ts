@@ -5,6 +5,7 @@ export interface UpdateUserPayload {
   displayName?: string;
   bio?: string;
   avatarUrl?: string | null;
+  notifyReactions?: boolean;
 }
 
 export const usersService = {

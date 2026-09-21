@@ -8,6 +8,7 @@ import { Title, Body, Caption } from '../ui/Typography';
 import { Ionicons } from '../common/Icon';
 import { MomentItem, MomentType, Visibility } from '@aurora/types';
 import { getEmotionLabel } from '../../utils/emotion';
+import { formatTimeOnly } from '../../utils/date';
 import { Spacing, BorderRadius } from '../../constants/theme';
 
 export interface HistoryTimelineProps {
@@ -109,14 +110,7 @@ export const HistoryTimeline = React.memo(function HistoryTimeline({
     }
   };
 
-  const formatTime = (isoString: string) => {
-    try {
-      const d = new Date(isoString);
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return '';
-    }
-  };
+  const formatTime = (isoString: string) => formatTimeOnly(isoString);
 
   const handleCardPress = (item: MomentItem) => {
     try {

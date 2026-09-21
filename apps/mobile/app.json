@@ -7,12 +7,6 @@
     "icon": "./assets/icon.png",
     "scheme": "aurora",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FDFBF7"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.aurora.diary",
@@ -50,7 +44,8 @@
           "icon": "./assets/icon.png",
           "color": "#FDFBF7"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "extra": {
       "router": {},
