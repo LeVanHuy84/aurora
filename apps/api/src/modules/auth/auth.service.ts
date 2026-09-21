@@ -2,34 +2,48 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthProvider } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
+import { MailService } from '../mail/mail.service.js';
+import { ConfigService } from '@nestjs/config';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RefreshTokenDto } from './dto/refresh-token.dto.js';
 import { OAuthDto } from './dto/oauth.dto.js';
+import { VerifyOtpDto } from './dto/verify-otp.dto.js';
+import { ResendOtpDto } from './dto/resend-otp.dto.js';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
+    private readonly configService: ConfigService,
   ) {}
 
+  private generateOtp(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
   async register(dto: RegisterDto) {
+    const cleanEmail = dto.email.trim().toLowerCase();
+    const cleanUsername = dto.username.trim().toLowerCase();
+
     const existingEmail = await this.prisma.user.findFirst({
-      where: { email: dto.email, deletedAt: null },
+      where: { email: cleanEmail, deletedAt: null },
     });
     if (existingEmail) {
       throw new ConflictException('EMAIL_EXISTS');
     }
 
     const existingUsername = await this.prisma.user.findFirst({
-      where: { username: dto.username, deletedAt: null },
+      where: { username: cleanUsername, deletedAt: null },
     });
     if (existingUsername) {
       throw new ConflictException('USERNAME_EXISTS');
@@ -39,11 +53,12 @@ export class AuthService {
 
     const user = await this.prisma.user.create({
       data: {
-        email: dto.email,
-        username: dto.username,
-        displayName: dto.displayName,
+        email: cleanEmail,
+        username: cleanUsername,
+        displayName: dto.displayName.trim(),
         password: hashedPassword,
         provider: AuthProvider.LOCAL,
+        isEmailVerified: false,
       },
       select: {
         id: true,
@@ -53,19 +68,139 @@ export class AuthService {
         avatarUrl: true,
         bio: true,
         provider: true,
+        isEmailVerified: true,
         createdAt: true,
       },
+    });
+
+    // Generate and save 6-digit OTP
+    const otp = this.generateOtp();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await this.prisma.emailOtp.deleteMany({ where: { email: cleanEmail } });
+    await this.prisma.emailOtp.create({
+      data: {
+        email: cleanEmail,
+        otp,
+        expiresAt,
+      },
+    });
+
+    // Dispatch verification email asynchronously
+    this.mailService.sendVerificationOtp(cleanEmail, otp, user.displayName).catch(() => {});
+
+    return {
+      requiresEmailVerification: true,
+      email: user.email,
+      message: 'OTP_SENT',
+    };
+  }
+
+  async verifyOtp(dto: VerifyOtpDto) {
+    const cleanEmail = dto.email.trim().toLowerCase();
+    const cleanOtp = dto.otp.trim();
+
+    const user = await this.prisma.user.findFirst({
+      where: { email: cleanEmail, deletedAt: null },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        displayName: true,
+        avatarUrl: true,
+        bio: true,
+        provider: true,
+        isEmailVerified: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('USER_NOT_FOUND');
+    }
+
+    const otpRecord = await this.prisma.emailOtp.findFirst({
+      where: { email: cleanEmail, otp: cleanOtp },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!otpRecord) {
+      throw new BadRequestException('INVALID_OTP');
+    }
+
+    if (new Date() > otpRecord.expiresAt) {
+      throw new BadRequestException('OTP_EXPIRED');
+    }
+
+    // Mark email as verified & delete OTP records
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { isEmailVerified: true },
+    });
+
+    await this.prisma.emailOtp.deleteMany({
+      where: { email: cleanEmail },
     });
 
     const tokens = await this.generateTokens(user.id, user.email);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
 
-    return { user, tokens };
+    return {
+      user: { ...user, isEmailVerified: true },
+      tokens,
+    };
+  }
+
+  async resendOtp(dto: ResendOtpDto) {
+    const cleanEmail = dto.email.trim().toLowerCase();
+
+    const user = await this.prisma.user.findFirst({
+      where: { email: cleanEmail, deletedAt: null },
+    });
+
+    if (!user) {
+      throw new NotFoundException('USER_NOT_FOUND');
+    }
+
+    if (user.isEmailVerified) {
+      throw new BadRequestException('EMAIL_ALREADY_VERIFIED');
+    }
+
+    // Check rate limit: cooldown 60 seconds
+    const recentOtp = await this.prisma.emailOtp.findFirst({
+      where: { email: cleanEmail },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (recentOtp) {
+      const elapsed = Date.now() - recentOtp.createdAt.getTime();
+      if (elapsed < 60 * 1000) {
+        const remainingSeconds = Math.ceil((60 * 1000 - elapsed) / 1000);
+        throw new BadRequestException(`RESEND_COOLDOWN_${remainingSeconds}S`);
+      }
+    }
+
+    const otp = this.generateOtp();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await this.prisma.emailOtp.deleteMany({ where: { email: cleanEmail } });
+    await this.prisma.emailOtp.create({
+      data: {
+        email: cleanEmail,
+        otp,
+        expiresAt,
+      },
+    });
+
+    await this.mailService.sendVerificationOtp(cleanEmail, otp, user.displayName);
+
+    return { success: true, message: 'OTP_RESENT' };
   }
 
   async login(dto: LoginDto) {
+    const cleanEmail = dto.email.trim().toLowerCase();
     const user = await this.prisma.user.findFirst({
-      where: { email: dto.email, deletedAt: null },
+      where: { email: cleanEmail, deletedAt: null },
     });
 
     if (!user || !user.password) {
@@ -75,6 +210,33 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('INVALID_CREDENTIALS');
+    }
+
+    // If local user has not verified email, send OTP if none active and require verification
+    if (!user.isEmailVerified && user.provider === AuthProvider.LOCAL) {
+      const activeOtp = await this.prisma.emailOtp.findFirst({
+        where: { email: cleanEmail, expiresAt: { gt: new Date() } },
+      });
+
+      if (!activeOtp) {
+        const otp = this.generateOtp();
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+        await this.prisma.emailOtp.deleteMany({ where: { email: cleanEmail } });
+        await this.prisma.emailOtp.create({
+          data: {
+            email: cleanEmail,
+            otp,
+            expiresAt,
+          },
+        });
+        this.mailService.sendVerificationOtp(cleanEmail, otp, user.displayName).catch(() => {});
+      }
+
+      return {
+        requiresEmailVerification: true,
+        email: user.email,
+        message: 'EMAIL_NOT_VERIFIED',
+      };
     }
 
     const tokens = await this.generateTokens(user.id, user.email);
@@ -190,6 +352,7 @@ export class AuthService {
           avatarUrl,
           provider: AuthProvider.GOOGLE,
           providerId,
+          isEmailVerified: true,
         },
         select: {
           id: true,
@@ -199,6 +362,7 @@ export class AuthService {
           avatarUrl: true,
           bio: true,
           provider: true,
+          isEmailVerified: true,
           createdAt: true,
         },
       });
@@ -207,6 +371,7 @@ export class AuthService {
         where: { id: user.id },
         data: {
           providerId,
+          isEmailVerified: true,
           ...(avatarUrl && !user.avatarUrl ? { avatarUrl } : {}),
         },
       });
@@ -238,6 +403,7 @@ export class AuthService {
         avatarUrl: true,
         bio: true,
         provider: true,
+        isEmailVerified: true,
         createdAt: true,
       },
     });
@@ -257,6 +423,7 @@ export class AuthService {
           displayName,
           provider: AuthProvider.APPLE,
           providerId,
+          isEmailVerified: true,
         },
         select: {
           id: true,
@@ -266,7 +433,16 @@ export class AuthService {
           avatarUrl: true,
           bio: true,
           provider: true,
+          isEmailVerified: true,
           createdAt: true,
+        },
+      });
+    } else {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          providerId,
+          isEmailVerified: true,
         },
       });
     }
@@ -279,9 +455,12 @@ export class AuthService {
 
   async refreshToken(dto: RefreshTokenDto) {
     let payload: { sub?: string; userId?: string; email: string };
+    const jwtSecret =
+      this.configService.get<string>('JWT_SECRET') ||
+      'aurora_super_secret_jwt_key_change_me_in_production';
     try {
       payload = this.jwtService.verify(dto.refreshToken, {
-        secret: process.env.JWT_SECRET || 'aurora_super_secret_jwt_key_change_me_in_production',
+        secret: jwtSecret,
       });
     } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');
@@ -336,19 +515,25 @@ export class AuthService {
   }
 
   private async generateTokens(userId: string, email: string) {
+    const jwtSecret =
+      this.configService.get<string>('JWT_SECRET') ||
+      'aurora_super_secret_jwt_key_change_me_in_production';
+    const accessExpiresIn = (this.configService.get<string>('JWT_EXPIRATION') || '15m') as any;
+    const refreshExpiresIn = (this.configService.get<string>('JWT_REFRESH_EXPIRATION') || '30d') as any;
+
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         { sub: userId, userId, email },
         {
-          secret: process.env.JWT_SECRET || 'aurora_super_secret_jwt_key_change_me_in_production',
-          expiresIn: '15m',
+          secret: jwtSecret,
+          expiresIn: accessExpiresIn,
         },
       ),
       this.jwtService.signAsync(
         { sub: userId, userId, email },
         {
-          secret: process.env.JWT_SECRET || 'aurora_super_secret_jwt_key_change_me_in_production',
-          expiresIn: '30d',
+          secret: jwtSecret,
+          expiresIn: refreshExpiresIn,
         },
       ),
     ]);

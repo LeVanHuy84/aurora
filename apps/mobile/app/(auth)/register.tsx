@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '../../src/components/common/Icon';
@@ -70,13 +70,22 @@ export default function RegisterScreen() {
     if (!validateForm()) return;
 
     try {
-      await register({
+      const cleanEmail = email.trim().toLowerCase();
+      const res = await register({
         displayName: displayName.trim(),
         username: username.trim().toLowerCase(),
-        email: email.trim().toLowerCase(),
+        email: cleanEmail,
         password,
       });
-      router.replace('/');
+
+      if (res?.requiresEmailVerification) {
+        router.push({
+          pathname: '/(auth)/verify-otp',
+          params: { email: cleanEmail },
+        });
+      } else {
+        router.replace('/');
+      }
     } catch (err: any) {
       setGeneralError(err?.message || t('auth.errors.registerFailed'));
     }
@@ -87,6 +96,8 @@ export default function RegisterScreen() {
   return (
     <ScreenContainer
       scrollable
+      edges={['top']}
+      style={styles.container}
       contentContainerStyle={styles.scrollContent}
       header={
         <View style={styles.topBar}>
@@ -207,11 +218,13 @@ export default function RegisterScreen() {
           onPress={signInWithGoogle}
           loading={isOAuthLoading}
         />
-        <SocialButton
-          provider="apple"
-          onPress={signInWithApple}
-          loading={isOAuthLoading}
-        />
+        {Platform.OS === 'ios' && (
+          <SocialButton
+            provider="apple"
+            onPress={signInWithApple}
+            loading={isOAuthLoading}
+          />
+        )}
       </View>
 
       {/* Terms & Conditions Notice */}
@@ -236,12 +249,15 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 0,
+  },
   scrollContent: {
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: 16,
     paddingBottom: Spacing.xl,
   },
   topBar: {
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: 16,
     paddingVertical: Spacing.sm,
   },
   backButton: {

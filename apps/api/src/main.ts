@@ -1,4 +1,5 @@
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
@@ -26,7 +27,9 @@ async function bootstrap() {
   // Swagger Documentation Setup
   const config = new DocumentBuilder()
     .setTitle('Aurora API')
-    .setDescription('Backend REST API documentation for Aurora Private Social Diary')
+    .setDescription(
+      'Backend REST API documentation for Aurora Private Social Diary',
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .build();
@@ -34,12 +37,13 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = process.env.PORT ?? 3000;
+  const configService = app.get(ConfigService);
+  const port = configService.get<number>('PORT', 3000);
   await app.listen(port, '0.0.0.0');
 
   const baseUrl =
-    process.env.BASE_URL ??
-    process.env.RENDER_EXTERNAL_URL ??
+    configService.get<string>('BASE_URL') ??
+    configService.get<string>('RENDER_EXTERNAL_URL') ??
     `http://localhost:${port}`;
 
   console.log(`🚀 Aurora API running on: ${baseUrl}/api/v1`);
