@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import * as Haptics from 'expo-haptics';
 import { MomentItem, MomentType, ReactionType } from '@aurora/types';
 import { useAuth } from '../../hooks/use-auth';
 import { useReactMoment } from '../../hooks/use-interactions';
+import { useDeleteMoment } from '../../hooks/use-moments';
 import { chatService } from '../../services/modules/chat.service';
 import { MomentCanvas } from './MomentCanvas';
 import { MomentPostMeta } from './MomentPostMeta';
@@ -25,8 +28,10 @@ export const MomentSlide = React.memo(function MomentSlide({
 }: MomentSlideProps) {
   const { user: currentUser } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const reactMomentMutation = useReactMoment();
+  const deleteMomentMutation = useDeleteMoment();
 
   const [interactionsSheetVisible, setInteractionsSheetVisible] = useState(false);
   const [burstEmoji, setBurstEmoji] = useState('');
@@ -105,6 +110,32 @@ export const MomentSlide = React.memo(function MomentSlide({
     [moment, router],
   );
 
+  const handleDeleteMoment = React.useCallback(() => {
+    try {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    } catch {
+      // ignore
+    }
+
+    Alert.alert(
+      t('moments.deleteConfirmTitle', 'Xóa khoảnh khắc'),
+      t('moments.deleteConfirmDesc', 'Bạn có chắc chắn muốn xóa khoảnh khắc này không? Hành động này không thể hoàn tác.'),
+      [
+        {
+          text: t('common.cancel', 'Hủy'),
+          style: 'cancel',
+        },
+        {
+          text: t('common.delete', 'Xóa'),
+          style: 'destructive',
+          onPress: () => {
+            deleteMomentMutation.mutate(moment.id);
+          },
+        },
+      ],
+    );
+  }, [deleteMomentMutation, moment.id, t]);
+
   return (
     <View style={[styles.slideContainer, { height }]}>
       <View style={styles.cardWrapper}>
@@ -115,14 +146,16 @@ export const MomentSlide = React.memo(function MomentSlide({
           burstKey={burstKey}
         />
 
-        {/* 2. POST META (User Info, Time, Visibility Badge, Mood Pill) */}
+        {/* 2. POST META (User Info, Time, Visibility Badge, Mood Pill, Options Menu) */}
         <MomentPostMeta
           user={moment.user}
           createdAt={moment.createdAt}
           visibility={moment.visibility}
           emotion={moment.emotion}
           momentType={moment.type}
+          isOwner={isOwner}
           onUserPress={onUserPress}
+          onDeletePress={isOwner ? handleDeleteMoment : undefined}
         />
 
         {/* 3. CAPTION FOR PHOTO (Max 2 lines with See More / Less) */}

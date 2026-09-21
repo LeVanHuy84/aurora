@@ -148,4 +148,19 @@ export function useHistoryMoments(limit = 50) {
   });
 }
 
+/**
+ * Hook to soft delete a moment
+ */
+export function useDeleteMoment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (momentId: string) => momentsService.delete(momentId),
+    onSuccess: () => {
+      // Invalidate all moment queries so feed, calendar, today, and history refresh immediately
+      queryClient.invalidateQueries({ queryKey: momentKeys.all });
+    },
+  });
+}
+
 

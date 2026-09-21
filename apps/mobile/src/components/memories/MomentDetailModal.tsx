@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -18,8 +19,10 @@ import { Ionicons } from '../common/Icon';
 import { MomentItem, MomentType, ReactionType, Visibility } from '@aurora/types';
 import { Spacing, BorderRadius } from '../../constants/theme';
 import { getEmotionLabel } from '../../utils/emotion';
+import { formatFullDateTime } from '../../utils/date';
 import { useAuth } from '../../hooks/use-auth';
 import { useMomentInteractions, useReactMoment } from '../../hooks/use-interactions';
+import { useDeleteMoment } from '../../hooks/use-moments';
 import { chatService } from '../../services/modules/chat.service';
 import { MomentInteractionsSheet } from '../moments/MomentInteractionsSheet';
 
@@ -44,14 +47,17 @@ export function MomentDetailModal({
 }: MomentDetailModalProps) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useAppTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { user: currentUser } = useAuth();
+
+  const isVi = (i18n.language || 'vi').startsWith('vi');
 
   const [interactionsSheetVisible, setInteractionsSheetVisible] = useState(false);
   const [isOpeningChat, setIsOpeningChat] = useState(false);
 
   const reactMomentMutation = useReactMoment();
+  const deleteMomentMutation = useDeleteMoment();
   const { data: interactionsData } = useMomentInteractions(
     moment?.id,
     visible && !!moment?.id,
@@ -69,14 +75,7 @@ export function MomentDetailModal({
   const threads = interactionsData?.threads || [];
   const latestThread = threads[0] || null;
 
-  const formatDate = (isoString: string) => {
-    try {
-      const d = new Date(isoString);
-      return `${d.toLocaleDateString([], { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })} lúc ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    } catch {
-      return '';
-    }
-  };
+  const formatDate = (isoString: string) => formatFullDateTime(isoString, isVi);
 
   const getVisibilityLabel = (visibility?: Visibility) => {
     switch (visibility) {
@@ -173,6 +172,36 @@ export function MomentDetailModal({
     });
   };
 
+  const handleDeleteMoment = () => {
+    try {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    } catch {
+      // ignore
+    }
+
+    Alert.alert(
+      t('moments.deleteConfirmTitle', 'Xóa khoảnh khắc'),
+      t('moments.deleteConfirmDesc', 'Bạn có chắc chắn muốn xóa khoảnh khắc này không? Hành động này không thể hoàn tác.'),
+      [
+        {
+          text: t('common.cancel', 'Hủy'),
+          style: 'cancel',
+        },
+        {
+          text: t('common.delete', 'Xóa'),
+          style: 'destructive',
+          onPress: () => {
+            deleteMomentMutation.mutate(moment.id, {
+              onSuccess: () => {
+                onClose();
+              },
+            });
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <Modal
       visible={visible}
@@ -210,7 +239,21 @@ export function MomentDetailModal({
             )}
           </View>
 
-          <View style={styles.placeholderBtn} />
+          {isOwner ? (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={handleDeleteMoment}
+              style={[
+                styles.closeBtn,
+                { backgroundColor: isDark ? '#3D2424' : '#FDE8E8' },
+              ]}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+            >
+              <Ionicons name="trash-outline" size={18} color={colors.danger} />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.placeholderBtn} />
+          )}
         </View>
 
         <ScrollView

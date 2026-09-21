@@ -8,6 +8,8 @@ import { Body, Caption } from '../ui/Typography';
 import { Spacing, BorderRadius } from '../../constants/theme';
 import { MomentVisibilityBadge } from './MomentVisibilityBadge';
 import { getEmotionLabel } from '../../utils/emotion';
+import { formatTimeAgo } from '../../utils/date';
+import { Ionicons } from '../common/Icon';
 
 export interface MomentPostMetaProps {
   user?: UserProfile | FriendUser;
@@ -15,7 +17,9 @@ export interface MomentPostMetaProps {
   visibility: Visibility;
   emotion?: EmotionItem | null;
   momentType: MomentType;
+  isOwner?: boolean;
   onUserPress?: (userId: string) => void;
+  onDeletePress?: () => void;
 }
 
 export function MomentPostMeta({
@@ -24,29 +28,15 @@ export function MomentPostMeta({
   visibility,
   emotion,
   momentType,
+  isOwner = false,
   onUserPress,
+  onDeletePress,
 }: MomentPostMetaProps) {
   const { colors, isDark } = useAppTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  const formatTimeAgo = (dateString: string) => {
-    try {
-      const now = new Date();
-      const past = new Date(dateString);
-      const diffInMinutes = Math.floor(
-        (now.getTime() - past.getTime()) / (1000 * 60),
-      );
-
-      if (diffInMinutes < 1) return t('moments.justNow', 'Vừa xong');
-      if (diffInMinutes < 60) return `${diffInMinutes}m`;
-      const diffInHours = Math.floor(diffInMinutes / 60);
-      if (diffInHours < 24) return `${diffInHours}h`;
-      const diffInDays = Math.floor(diffInHours / 24);
-      return `${diffInDays}d`;
-    } catch {
-      return '';
-    }
-  };
+  const isVi = (i18n.language || 'vi').startsWith('vi');
+  const timeAgoText = formatTimeAgo(createdAt, isVi);
 
   return (
     <View style={styles.container}>
@@ -80,12 +70,12 @@ export function MomentPostMeta({
             {user?.displayName || user?.username || 'User'}
           </Body>
           <Caption color="muted" style={styles.timeText}>
-            · {formatTimeAgo(createdAt)}
+            · {timeAgoText}
           </Caption>
         </View>
       </TouchableOpacity>
 
-      {/* Right: Badges (Visibility + Emotion) */}
+      {/* Right: Badges (Visibility + Emotion + Options Menu) */}
       <View style={styles.badgesGroup}>
         <MomentVisibilityBadge visibility={visibility} />
 
@@ -110,6 +100,20 @@ export function MomentPostMeta({
               {getEmotionLabel(emotion, t)}
             </Caption>
           </View>
+        )}
+
+        {isOwner && onDeletePress && (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={onDeletePress}
+            style={[
+              styles.deleteBtn,
+              { backgroundColor: isDark ? '#3D2424' : '#FDE8E8' },
+            ]}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons name="trash-outline" size={14} color={colors.danger} />
+          </TouchableOpacity>
         )}
       </View>
     </View>
@@ -172,5 +176,12 @@ const styles = StyleSheet.create({
   },
   emotionIcon: {
     fontSize: 11.5,
+  },
+  deleteBtn: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

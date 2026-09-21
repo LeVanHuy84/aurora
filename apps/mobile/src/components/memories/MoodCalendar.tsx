@@ -70,17 +70,20 @@ export function MoodCalendar({
 
   // Map moments by day of month (1..31)
   const momentsByDay: { [day: number]: CalendarMomentItem[] } = {};
-  moments.forEach((item) => {
-    const itemDate = new Date(item.createdAt);
-    if (
-      itemDate.getMonth() + 1 === currentMonth &&
-      itemDate.getFullYear() === currentYear
-    ) {
-      const day = itemDate.getDate();
-      if (!momentsByDay[day]) momentsByDay[day] = [];
-      momentsByDay[day].push(item);
-    }
-  });
+  if (Array.isArray(moments)) {
+    moments.forEach((item) => {
+      if (!item?.createdAt) return;
+      const itemDate = new Date(item.createdAt);
+      if (
+        itemDate.getMonth() + 1 === currentMonth &&
+        itemDate.getFullYear() === currentYear
+      ) {
+        const day = itemDate.getDate();
+        if (!momentsByDay[day]) momentsByDay[day] = [];
+        momentsByDay[day].push(item);
+      }
+    });
+  }
 
   return (
     <View
@@ -108,6 +111,9 @@ export function MoodCalendar({
               ? `Tháng ${currentMonth}, ${currentYear}`
               : `${firstDayOfMonth.toLocaleString('en-US', { month: 'long' })} ${currentYear}`}
           </Title>
+          {isLoading && (
+            <ActivityIndicator size="small" color={colors.accent} style={{ marginLeft: 2 }} />
+          )}
           {!isCurrentMonthToday && (
             <TouchableOpacity
               activeOpacity={0.7}
@@ -149,20 +155,15 @@ export function MoodCalendar({
       </View>
 
       {/* Days Grid */}
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color={colors.accent} />
-        </View>
-      ) : (
-        <View style={styles.gridContainer}>
-          {/* Empty padding cells */}
-          {Array.from({ length: startingDayIndex }).map((_, idx) => (
-            <View key={`empty-${idx}`} style={styles.dayCellEmpty} />
-          ))}
+      <View style={styles.gridContainer}>
+        {/* Empty padding cells */}
+        {Array.from({ length: startingDayIndex }).map((_, idx) => (
+          <View key={`empty-${idx}`} style={styles.dayCellEmpty} />
+        ))}
 
-          {/* Actual days */}
-          {Array.from({ length: daysInMonth }).map((_, idx) => {
-            const dayNum = idx + 1;
+        {/* Actual days */}
+        {Array.from({ length: daysInMonth }).map((_, idx) => {
+          const dayNum = idx + 1;
             const cellDate = new Date(currentYear, currentMonth - 1, dayNum);
 
             const isSelected =
@@ -250,7 +251,6 @@ export function MoodCalendar({
             );
           })}
         </View>
-      )}
     </View>
   );
 }

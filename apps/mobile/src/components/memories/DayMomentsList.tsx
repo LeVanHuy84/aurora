@@ -10,6 +10,7 @@ import { Ionicons } from '../common/Icon';
 import { MomentItem, MomentType } from '@aurora/types';
 import { Spacing, BorderRadius } from '../../constants/theme';
 import { getEmotionLabel } from '../../utils/emotion';
+import { formatTimeOnly } from '../../utils/date';
 
 export interface DayMomentsListProps {
   selectedDate: Date;
@@ -31,14 +32,7 @@ export const DayMomentsList = React.memo(function DayMomentsList({
 
   const formattedDate = `${selectedDate.getDate()}/${selectedDate.getMonth() + 1}/${selectedDate.getFullYear()}`;
 
-  const formatTime = (isoString: string) => {
-    try {
-      const d = new Date(isoString);
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return '';
-    }
-  };
+  const formatTime = (isoString: string) => formatTimeOnly(isoString);
 
   return (
     <View style={styles.container}>
@@ -68,7 +62,7 @@ export const DayMomentsList = React.memo(function DayMomentsList({
             },
           ]}
         >
-          <Caption style={{ fontSize: 32, marginBottom: 8 }}>🌱</Caption>
+          <Caption style={styles.emptyIcon}>🌱</Caption>
           <Body color="secondary" style={styles.emptyText}>
             {isToday
               ? t('memories.emptyToday', 'Bạn chưa lưu khoảnh khắc nào trong ngày hôm nay.')
@@ -214,6 +208,7 @@ const styles = StyleSheet.create({
   },
   emptyIcon: {
     fontSize: 32,
+    lineHeight: 40,
     marginBottom: Spacing.xs,
   },
   emptyText: {
