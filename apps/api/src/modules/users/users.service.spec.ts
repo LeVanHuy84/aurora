@@ -123,8 +123,8 @@ describe('UsersService', () => {
           deletedAt: null,
           id: { not: 'user-uuid-1' },
           OR: [
-            { username: { contains: 'friend', mode: 'insensitive' } },
-            { displayName: { contains: 'friend', mode: 'insensitive' } },
+            { username: { equals: 'friend', mode: 'insensitive' } },
+            { email: { equals: 'friend', mode: 'insensitive' } },
           ],
         },
         take: 20,

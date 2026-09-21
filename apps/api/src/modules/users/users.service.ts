@@ -68,14 +68,19 @@ export class UsersService {
 
   async searchUsers(currentUserId: string, query: SearchUserDto) {
     const take = query.limit ? Math.min(parseInt(query.limit, 10) || 20, 50) : 20;
+    const cleanQuery = query.q?.trim().toLowerCase();
+
+    if (!cleanQuery) {
+      return [];
+    }
 
     return this.prisma.user.findMany({
       where: {
         deletedAt: null,
         id: { not: currentUserId },
         OR: [
-          { username: { contains: query.q, mode: 'insensitive' } },
-          { displayName: { contains: query.q, mode: 'insensitive' } },
+          { username: { equals: cleanQuery, mode: 'insensitive' } },
+          { email: { equals: cleanQuery, mode: 'insensitive' } },
         ],
       },
       take,
